@@ -1,1 +1,10 @@
-@import "tailwindcss";
+@import "tailwindcss";@theme {
+  --font-geist: 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  --font-serif: 'Instrument Serif', serif;
+}
+
+body {
+  font-family: 'Geist', sans-serif;
+  background-color: #000;
+}
