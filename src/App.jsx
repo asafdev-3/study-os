@@ -10,6 +10,7 @@ import Lembretes from './pages/Lembretes'
 import Perfil from './pages/Perfil'
 import Configuracoes from './pages/Configuracoes'
 import Login from './pages/Login'
+import Lock from './pages/Lock'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/lembretes" element={<Lembretes />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/configuracoes" element={<Configuracoes />} />
+        <Route path="/lock" element={<Lock />} />
       </Routes>
     </BrowserRouter>
   )
