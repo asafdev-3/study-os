@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Mic, ArrowUp, Image } from 'lucide-react'
-import Navbar from '../components/Navbar'
 
 const mensagensIniciais = [
   {
@@ -148,7 +147,6 @@ function Chat() {
         </div>
       </div>
 
-      <Navbar />
     </div>
   )
 }

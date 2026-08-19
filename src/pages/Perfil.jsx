@@ -1,6 +1,5 @@
 // Perfil.jsx — perfil do usuário com XP, ritmo e conquistas
 
-import Navbar from '../components/Navbar'
 
 const conquistas = [
   { id: 1, nome: 'Coruja',     desc: '10 sessões depois das 23h',          tempo: 'há 2 dias', desbloqueada: true  },
@@ -122,7 +121,6 @@ function Perfil() {
         ))}
       </div>
 
-      <Navbar />
     </div>
   )
 }

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { ChevronRight, LogOut } from 'lucide-react'
-import Navbar from '../components/Navbar'
 
 function Toggle({ ativo, onChange }) {
   return (
@@ -165,7 +164,6 @@ function Configuracoes() {
 
       <p className="text-[#26262e] text-xs text-center mb-6">STUDYOS · V0.9.2</p>
 
-      <Navbar />
     </div>
   )
 }

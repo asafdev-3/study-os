@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Search, Camera, Sparkles } from 'lucide-react'
-import Navbar from '../components/Navbar'
 
 const materias = ['Tudo', 'Química', 'Cálculo', 'História', 'Inglês', 'Física']
 
@@ -131,7 +130,6 @@ function Anotacoes() {
         </button>
       </div>
 
-      <Navbar />
     </div>
   )
 }

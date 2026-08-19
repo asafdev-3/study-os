@@ -1,7 +1,6 @@
 // Dashboard.jsx — tela principal do StudyOS
 // Fontes: Geist (sistema), Instrument Serif (NYX), Geist Mono (números)
 
-import Navbar from '../components/Navbar'
 
 const plano = [
   { id: 1, tarefa: 'Ler resumo de História',      tempo: '20 min', feito: true  },
@@ -14,6 +13,7 @@ const plano = [
 function Dashboard() {
   const feitos = plano.filter(t => t.feito).length
 
+
   return (
     <div className="min-h-screen bg-black text-white pb-28 px-5 max-w-sm mx-auto">
 
@@ -24,10 +24,8 @@ function Dashboard() {
           <h1 style={{ fontFamily: 'Geist, sans-serif' }} className="text-[28px] font-semibold leading-tight">
             Boa noite, <em style={{ fontFamily: 'Instrument Serif, serif', fontWeight: 400 }}>Asaf</em>
           </h1>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-[#161616] border border-[#26262e] flex items-center justify-center text-xs font-medium text-[#f4f4f5]">
-          AV
-        </div>
+        </div> 
+        <div className="w-10 h-10" />
       </div>
 
       {/* Card NYX — borda gradiente */}
@@ -115,7 +113,6 @@ function Dashboard() {
         ✦ seu pico de foco costuma ser entre 23h e 01h
       </p>
 
-      <Navbar />
     </div>
   )
 }

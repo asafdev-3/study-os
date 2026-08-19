@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Plus, Check } from 'lucide-react'
-import Navbar from '../components/Navbar'
 
 const filtros = ['Todos', 'Hoje', 'Semana', 'Sem prazo']
 
@@ -99,7 +98,6 @@ function Lembretes() {
         <Plus size={22} className="text-white" />
       </button>
 
-      <Navbar />
     </div>
   )
 }
