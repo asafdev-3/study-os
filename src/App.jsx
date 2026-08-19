@@ -12,6 +12,7 @@ import Configuracoes from './pages/Configuracoes'
 import Login from './pages/Login'
 import Lock from './pages/Lock'
 import Splash from './pages/Splash'
+import Configuracoes from './pages/Configuracoes'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/lock" element={<Lock />} />
         <Route path="/" element={<Splash />} />
+        <Route path="/configuracoes" element={<Configuracoes />} />
       </Routes>
     </BrowserRouter>
   )
