@@ -1,7 +1,7 @@
 // Login.jsx — tela de entrada do StudyOS
 // Campos: email, senha | Ações: entrar, oauth (Google, GitHub, Discord)
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../assets/logo_studyos.png'
 import { Eye, EyeOff } from 'lucide-react'
@@ -13,6 +13,11 @@ function Login() {
   const [mostrarSenha, setMostrarSenha] = useState(false)
   // useNavigate permite trocar de rota programaticamente
   const navigate = useNavigate()
+  const [visivel, setVisivel] = useState(false)
+
+useEffect(() => {
+  setTimeout(() => setVisivel(true), 50)
+}, [])
   function handleLogin(e) {
     e.preventDefault()
     // Por enquanto navega direto pro dashboard (sem auth real)
@@ -20,7 +25,8 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6">
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 transition-opacity duration-1000"
+      style={{ opacity: visivel ? 1 : 0 }}>
       <div className="w-full max-w-sm flex flex-col items-center gap-8">
 
         {/* Logo */}

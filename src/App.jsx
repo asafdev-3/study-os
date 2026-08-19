@@ -11,12 +11,13 @@ import Perfil from './pages/Perfil'
 import Configuracoes from './pages/Configuracoes'
 import Login from './pages/Login'
 import Lock from './pages/Lock'
+import Splash from './pages/Splash'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/anotacoes" element={<Anotacoes />} />
         <Route path="/chat" element={<Chat />} />
@@ -24,6 +25,7 @@ function App() {
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/lock" element={<Lock />} />
+        <Route path="/" element={<Splash />} />
       </Routes>
     </BrowserRouter>
   )
