@@ -1,10 +1,7 @@
-// TopBar.jsx — barra superior global com engrenagem
-
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Settings } from 'lucide-react'
 
-// Telas que não mostram a topbar
-const semTopBar = ['/', '/login', '/lock']
+const semTopBar = ['/', '/login', '/lock', '/upgrade', '/sucesso', '/esqueci-senha', '/nfc', '/chat']
 
 function TopBar() {
   const navigate = useNavigate()

@@ -10,8 +10,13 @@ import Chat from './pages/Chat'
 import Lembretes from './pages/Lembretes'
 import Perfil from './pages/Perfil'
 import Configuracoes from './pages/Configuracoes'
+import Upgrade from './pages/Upgrade'
+import Sucesso from './pages/Sucesso'
 import TopBar from './components/TopBar'
 import Navbar from './components/Navbar'
+import Caverna from './pages/Caverna'
+import EsqueciSenha from './pages/EsqueciSenha'
+import NFC from './pages/NFC'
 
 function PageWrapper({ children }) {
   return (
@@ -20,7 +25,7 @@ function PageWrapper({ children }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
-    >
+      >
       {children}
     </motion.div>
   )
@@ -41,6 +46,11 @@ function AnimatedRoutes() {
         <Route path="/lembretes" element={<PageWrapper><Lembretes /></PageWrapper>} />
         <Route path="/perfil" element={<PageWrapper><Perfil /></PageWrapper>} />
         <Route path="/configuracoes" element={<PageWrapper><Configuracoes /></PageWrapper>} />
+        <Route path="/upgrade" element={<PageWrapper><Upgrade /></PageWrapper>} />
+        <Route path="/sucesso" element={<PageWrapper><Sucesso /></PageWrapper>} />
+        <Route path="/caverna" element={<PageWrapper><Caverna /></PageWrapper>} />
+        <Route path="/esqueci-senha" element={<PageWrapper><EsqueciSenha /></PageWrapper>} />
+        <Route path="/nfc" element={<PageWrapper><NFC /></PageWrapper>} />
       </Routes>
     </AnimatePresence>
   )
@@ -50,7 +60,7 @@ function App() {
   return (
     <BrowserRouter>
       <TopBar />
-      <Navbar />        {/* fora do AnimatePresence — nunca some */}
+      <Navbar />
       <AnimatedRoutes />
     </BrowserRouter>
   )
