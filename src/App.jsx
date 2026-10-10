@@ -17,6 +17,7 @@ import Navbar from './components/Navbar'
 import Caverna from './pages/Caverna'
 import EsqueciSenha from './pages/EsqueciSenha'
 import NFC from './pages/NFC'
+import NovaAnotacao from './pages/NovaAnotacao'
 
 function PageWrapper({ children }) {
   return (
@@ -51,6 +52,7 @@ function AnimatedRoutes() {
         <Route path="/caverna" element={<PageWrapper><Caverna /></PageWrapper>} />
         <Route path="/esqueci-senha" element={<PageWrapper><EsqueciSenha /></PageWrapper>} />
         <Route path="/nfc" element={<PageWrapper><NFC /></PageWrapper>} />
+        <Route path="/nova-anotacao" element={<NovaAnotacao />} />
       </Routes>
     </AnimatePresence>
   )
