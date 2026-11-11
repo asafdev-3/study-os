@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { StudyLink } from './StudyLink'
 import { Home, FileText, MessageCircle, GraduationCap, User, Settings } from 'lucide-react'
 
 const items = [
@@ -21,10 +22,10 @@ export default function Navbar() {
       <div className="study-navigation-inner">
         <img className="study-navigation-brand" src="/icons/icon-192.png" alt="StudyOS" width="34" height="34" />
         {visibleItems.map(({ label, icon: Icon, path }) => (
-          <NavLink key={path} to={path} className="study-tab">
+          <StudyLink as={NavLink} key={path} to={path} className="study-tab">
             <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
             <span>{label}</span>
-          </NavLink>
+          </StudyLink>
         ))}
       </div>
     </nav>

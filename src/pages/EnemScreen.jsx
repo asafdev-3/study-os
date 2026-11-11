@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase }   from "../lib/supabase";
+import { FOCUS_SECONDS, readFocus } from "../lib/focus";
 import { notifyFocus } from "../lib/preferences";
 import { KIRA_DAILY_LIMIT } from "../lib/groq";
 import { useKira } from "../lib/useKira";
@@ -194,18 +195,6 @@ function BolsasModal({ bolsa, onClose }) {
 }
 
 // ─── Sessão de Foco ───────────────────────────────────────────────────────────
-const FOCUS_SECONDS = 25 * 60;
-
-function readFocus(key) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    if (value?.id && AREAS.some(({ id }) => id === value.areaId)
-        && Number.isFinite(value.seconds) && value.seconds >= 0 && value.seconds <= FOCUS_SECONDS
-        && (value.deadline === null || Number.isFinite(value.deadline))) return value;
-  } catch { /* O timer continua disponível sem armazenamento. */ }
-  return null;
-}
-
 function SessaoFoco({ userId }) {
   const key = `studyos:focus:${userId}`;
   const [focus, setFocus] = useState(() => readFocus(key));

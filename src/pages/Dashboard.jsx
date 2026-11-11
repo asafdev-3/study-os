@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, BookOpen, Sparkles, Timer } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { StudyLink } from '../components/StudyLink'
+import { readFocus } from '../lib/focus'
 
 const materias = {
   matematica: 'Matemática', natureza: 'Ciências da Natureza', humanas: 'Ciências Humanas',
@@ -19,6 +21,8 @@ function materiaPrincipal(value) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const [userId, setUserId] = useState(null)
+  const [openedAt] = useState(Date.now)
   const [perfil, setPerfil] = useState(null)
   const [erro, setErro] = useState(false)
   const [tentativa, setTentativa] = useState(0)
@@ -34,7 +38,7 @@ export default function Dashboard() {
       if (!active) return
       if (error) throw error
       if (!data?.onboarding_completo) navigate('/onboarding', { replace: true })
-      else setPerfil(data)
+      else { setUserId(user.id); setPerfil(data) }
     }
     carregar().catch(() => { if (active) setErro(true) })
     return () => { active = false }
@@ -46,12 +50,18 @@ export default function Dashboard() {
     : 'Me ajude a escolher um assunto para revisar para o ENEM hoje.'
   const primeiroNome = perfil?.nome?.trim().split(/\s+/)[0]
 
+  const focus = userId ? readFocus(`studyos:focus:${userId}`) : null
+  const completed = focus?.deadline != null && focus.deadline <= openedAt
+  const inProgress = Boolean(focus) && !completed
+
   return (
-    <main className="study-page study-dashboard">
-      <header className="study-home-header">
-        <p>{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-        <h1>{primeiroNome ? `Olá, ${primeiroNome}.` : 'Seu espaço de estudo.'}</h1>
-        {perfil?.curso_objetivo && <p>Objetivo · {perfil.curso_objetivo}</p>}
+    <main className="study-page study-home">
+      <header className="study-home-title">
+        <div>
+          <p>{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          <h1>{primeiroNome ? `Olá, ${primeiroNome}.` : 'StudyOS'}</h1>
+        </div>
+        {perfil?.curso_objetivo && <p>{perfil.curso_objetivo}</p>}
       </header>
 
       {erro && <p role="status" className="study-note">
@@ -59,25 +69,32 @@ export default function Dashboard() {
         <button type="button" onClick={() => { setErro(false); setTentativa((value) => value + 1) }}>Tentar novamente</button>
       </p>}
 
-      <section className="study-focus-card">
-        <Timer size={22} aria-hidden="true" />
-        <div>
-          <h2>Sessão de foco</h2>
-          <p>25 minutos para estudar uma matéria.</p>
+      <section className="study-home-focus" aria-labelledby="study-focus-title">
+        <div className="study-home-dial" aria-hidden="true">
+          <div className="study-home-dial-face">
+            <Timer size={19} strokeWidth={1.5} />
+            <span>{inProgress ? (focus.deadline ? 'Em foco' : 'Pausado') : '25:00'}</span>
+            <span>{inProgress ? 'SESSÃO ATUAL' : 'TEMPO DE FOCO'}</span>
+          </div>
         </div>
-        <Link className="study-primary" to="/enem">Abrir timer <ArrowRight size={17} aria-hidden="true" /></Link>
+        <h2 id="study-focus-title">Sessão de foco</h2>
+        <StudyLink className="study-primary" to="/enem">
+          {inProgress ? 'Retomar sessão' : completed ? 'Ver sessão' : 'Abrir sessão'} <ArrowRight size={16} aria-hidden="true" />
+        </StudyLink>
       </section>
 
-      <section className="study-suggestion">
-        <span className="study-eyebrow"><Sparkles size={14} aria-hidden="true" /> Kira sugere</span>
-        <h2>{materia ? `Revise ${materia}` : 'Escolha um assunto para revisar'}</h2>
-        <p>{materia ? 'Comece por uma questão e veja onde precisa praticar.' : 'Comece pela matéria em que você tem mais dúvida.'}</p>
-        <Link to="/chat" state={{ prompt: pergunta }}>Conversar com a Kira <ArrowRight size={16} aria-hidden="true" /></Link>
+      <section className="study-home-actions" aria-label="Mais opções de estudo">
+        <StudyLink to="/chat" state={{ prompt: pergunta }}>
+          <Sparkles size={20} strokeWidth={1.6} aria-hidden="true" />
+          <span><strong>Kira sugere</strong><small>{materia ? `Revise ${materia}` : 'Escolha um assunto para revisar'}</small></span>
+          <ArrowRight size={17} aria-hidden="true" />
+        </StudyLink>
+        <StudyLink to="/anotacoes">
+          <BookOpen size={20} strokeWidth={1.6} aria-hidden="true" />
+          <span><strong>Minhas anotações</strong></span>
+          <ArrowRight size={17} aria-hidden="true" />
+        </StudyLink>
       </section>
-
-      <Link className="study-notes-link" to="/anotacoes">
-        <BookOpen size={19} aria-hidden="true" /> Minhas anotações <ArrowRight size={17} aria-hidden="true" />
-      </Link>
     </main>
   )
 }

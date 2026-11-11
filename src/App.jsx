@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { lazy, Suspense, useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 import { readPreferences } from './lib/preferences'
+import { loadStudyRoute } from './lib/studyRoutes'
 
 import Splash from './pages/Splash'
 import Login from './pages/Login'
@@ -10,18 +11,18 @@ import Navbar from './components/Navbar'
 import './components/glass.css'
 
 const Lock = lazy(() => import('./pages/Lock'))
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const Anotacoes = lazy(() => import('./pages/Anotacoes'))
-const Chat = lazy(() => import('./pages/Chat'))
+const Dashboard = lazy(loadStudyRoute['/dashboard'])
+const Anotacoes = lazy(loadStudyRoute['/anotacoes'])
+const Chat = lazy(loadStudyRoute['/chat'])
 const Lembretes = lazy(() => import('./pages/Lembretes'))
-const Perfil = lazy(() => import('./pages/Perfil'))
-const Configuracoes = lazy(() => import('./pages/Configuracoes'))
+const Perfil = lazy(loadStudyRoute['/perfil'])
+const Configuracoes = lazy(loadStudyRoute['/configuracoes'])
 const Upgrade = lazy(() => import('./pages/Upgrade'))
 const Sucesso = lazy(() => import('./pages/Sucesso'))
 const EsqueciSenha = lazy(() => import('./pages/EsqueciSenha'))
 const NFC = lazy(() => import('./pages/NFC'))
 const NovaAnotacao = lazy(() => import('./pages/NovaAnotacao'))
-const EnemScreen = lazy(() => import('./pages/EnemScreen'))
+const EnemScreen = lazy(loadStudyRoute['/enem'])
 const Onboarding = lazy(() => import('./pages/Onboarding'))
 
 const oauthReturn = new URLSearchParams(window.location.search).has('code')
@@ -60,7 +61,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
     <Routes location={location} key={location.pathname}>
       <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
       <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-      <Route path="/lock" element={<PageWrapper><Lock onUnlock={desbloquear} /></PageWrapper>} />
+      <Route path="/lock" element={<Lock onUnlock={desbloquear} />} />
       <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
       <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />
       <Route path="/chat" element={<Chat />} />
@@ -95,7 +96,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
   )
 }
 
-function App() {
+function StudySession() {
   useEffect(() => {
     document.documentElement.dataset.studyMotion = readPreferences().reduceMotion ? 'reduced' : 'system'
   }, [])
@@ -136,11 +137,12 @@ function App() {
 
   if (auth.session === undefined) return <TelaCarregando />
 
-  return (
-    <BrowserRouter>
-      <AppContent key={auth.session?.user.id ?? "visitante"} sessao={auth.session} bloqueado={auth.locked} desbloquear={desbloquear} />
-    </BrowserRouter>
-  )
+  return <AppContent key={auth.session?.user.id ?? 'visitante'} sessao={auth.session}
+    bloqueado={auth.locked} desbloquear={desbloquear} />
 }
 
-export default App
+const router = createBrowserRouter([{ path: '*', element: <StudySession /> }])
+
+export default function App() {
+  return <RouterProvider router={router} />
+}
