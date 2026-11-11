@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { StudyLink } from '../components/StudyLink'
 import { Plus, Search, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { sendToKira } from '../lib/groq'
@@ -78,11 +80,14 @@ function NovaNota({ onSave, onCancel }) {
 }
 
 export default function Anotacoes() {
+  const [params, setParams] = useSearchParams()
+  const linkedNote = params.get('nota')
+  const activeArea = Object.hasOwn(areas, params.get('area')) ? params.get('area') : ''
+  const noteTarget = useRef(null)
   const [notes, setNotes] = useState(null)
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [query, setQuery] = useState('')
-  const [activeArea, setActiveArea] = useState('')
   const [writing, setWriting] = useState(false)
 
   useEffect(() => {
@@ -99,6 +104,10 @@ export default function Anotacoes() {
     load().catch(() => { if (active) setError(true) })
     return () => { active = false }
   }, [retry])
+
+  useEffect(() => {
+    if (notes && linkedNote) noteTarget.current?.scrollIntoView({ block: 'center' })
+  }, [notes, linkedNote])
 
   async function save(note) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -130,16 +139,17 @@ export default function Anotacoes() {
       </label>
       <div className="study-note-filters" aria-label="Filtrar por área">
         {[['', 'Tudo'], ...Object.entries(areas)].map(([id, label]) => (
-          <button type="button" key={id} aria-pressed={activeArea === id} onClick={() => setActiveArea(id)}>{label}</button>
+          <button type="button" key={id} aria-pressed={activeArea === id} onClick={() => setParams(id ? { area: id } : {})}>{label}</button>
         ))}
       </div>
       {error && <p role="alert" className="study-note">Não foi possível carregar suas anotações.{' '}
         <button onClick={() => { setError(false); setRetry((value) => value + 1) }} type="button">Tentar novamente</button></p>}
       {!notes && !error && <p role="status" className="study-note">Carregando anotações…</p>}
       {filtered?.length === 0 && <p className="study-note">{term || activeArea ? 'Nenhuma anotação neste filtro.' : 'Você ainda não tem anotações.'}</p>}
+      {linkedNote && notes && !notes.some(note => note.id === linkedNote) && <p role="status" className="study-note">Esta anotação não está disponível nesta conta. <StudyLink to="/anotacoes">Ver meu caderno</StudyLink></p>}
       <div className="study-notes-grid">
         {filtered?.map((note) => (
-          <details className="study-note-card" key={note.id} data-area={note.area ?? 'geral'}>
+          <details className={'study-note-card' + (note.id === linkedNote ? ' study-note-target' : '')} ref={note.id === linkedNote ? noteTarget : undefined} open={note.id === linkedNote ? true : undefined} key={note.id} data-area={note.area ?? 'geral'}>
             <summary><small>{areas[note.area] ?? 'Geral'}</small><strong>{note.title || 'Sem título'}</strong>
               {note.content && <span>{note.content}</span>}
             </summary>

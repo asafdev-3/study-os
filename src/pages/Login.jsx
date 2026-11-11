@@ -1,5 +1,7 @@
 // Login.jsx — StudyOS
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
 
 const GoogleIcon = () => (
@@ -12,6 +14,8 @@ const GoogleIcon = () => (
 )
 
 function Login() {
+  const location = useLocation()
+  useEffect(() => { rememberDestination(location.state?.destino) }, [location.state])
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 

@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase'
 import { readPreferences } from './lib/preferences'
 import { loadStudyRoute } from './lib/studyRoutes'
 
+import { pendingDestination, clearDestination } from './lib/nfc'
 import Splash from './pages/Splash'
 import Login from './pages/Login'
 import TopBar from './components/TopBar'
@@ -42,6 +43,12 @@ function PageWrapper({ children }) {
   return <div className="study-page-enter">{children}</div>
 }
 
+function DashboardEntry() {
+  const [destination] = useState(pendingDestination)
+  useEffect(() => { clearDestination() }, [])
+  return destination ? <Navigate to={destination} replace /> : <Dashboard />
+}
+
 function AppRoutes({ sessao, bloqueado, desbloquear }) {
   const location = useLocation()
   const publica = ROTAS_PUBLICAS.includes(location.pathname)
@@ -55,7 +62,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
   }
 
   if (!sessao && !publica) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace state={{ destino: location.pathname + location.search }} />
   }
 
   return (
@@ -63,7 +70,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
       <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
       <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
       <Route path="/lock" element={<Lock onUnlock={desbloquear} />} />
-      <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+      <Route path="/dashboard" element={<PageWrapper><DashboardEntry /></PageWrapper>} />
       <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />
       <Route path="/chat" element={<Chat />} />
       <Route path="/lembretes" element={<PageWrapper><Lembretes /></PageWrapper>} />
@@ -89,7 +96,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
       {comSidebar && <PaywallModal />}
-      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={comSidebar ? 'md:pl-[88px]' : ''}>
+      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={comSidebar && location.pathname !== '/dashboard' ? 'md:pl-[88px]' : ''}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />
         </Suspense>
