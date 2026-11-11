@@ -171,11 +171,6 @@ html[data-study-chat], html[data-study-chat] body {
   .study-chat-header { padding-top: 22px; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .study-page-enter { animation: study-page-enter 180ms cubic-bezier(.2,.8,.2,1); }
-  @keyframes study-page-enter { from { opacity: .86; } to { opacity: 1; } }
-}
-
 .study-notebook-form { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--study-line); border-radius: 18px; margin-bottom: 16px; background: #11131b; }
 .study-notebook-form h2 { font-size: 20px; font-weight: 600; }
 .study-notebook-form label { display: grid; gap: 5px; color: var(--study-muted); font-size: 13px; }
@@ -225,7 +220,7 @@ html[data-study-chat], html[data-study-chat] body {
 .study-settings-row strong { display: block; font-weight: 600; }
 .study-settings-row small { display: block; color: var(--study-muted); font-size: 12px; margin-top: 2px; }
 .study-settings-row select { border: 1px solid var(--study-line); border-radius: 8px; padding: 6px; }
-html[data-study-motion="reduced"] .study-page-enter { animation: none; }
+
 
 .study-lock {
   width: 100%; min-height: 100dvh; display: grid;
@@ -254,7 +249,7 @@ html[data-study-motion="reduced"] .study-page-enter { animation: none; }
   border: 1px solid #59608d; background: #1a2137; color: #c0ceff;
   box-shadow: 0 0 0 5px #858be416, inset 0 1px 0 #b4c4ff26;
 }
-.study-lock[data-entering] button { color: #9ce9d9; background: #182e35; }
+
 .study-lock-action button:focus-visible { outline: 2px solid var(--study-accent); outline-offset: 8px; }
 
 .study-home {
@@ -302,21 +297,6 @@ html[data-study-motion="reduced"] .study-page-enter { animation: none; }
 @media (max-width: 767px) {
   :root { --gl-blur: blur(12px) saturate(135%); --gl-blur-sm: blur(8px) saturate(125%); }
 }
-@media (prefers-reduced-motion: no-preference) {
-  html:not([data-study-motion="reduced"]) .study-lock-action button {
-    transition: background-color 190ms ease, color 190ms ease, scale 190ms cubic-bezier(.2,.8,.2,1);
-  }
-  html:not([data-study-motion="reduced"]) .study-lock-action button:active { scale: .95; }
-  html:not([data-study-motion="reduced"]) .study-lock[data-entering] button { scale: .96; }
-  html:active-view-transition .study-page-enter { animation: none; }
-  ::view-transition-old(root) { animation: study-screen-out 170ms ease-out both; }
-  ::view-transition-new(root) { animation: study-screen-in 245ms cubic-bezier(.22,1,.36,1) both; }
-  @keyframes study-screen-out { to { opacity: 0; } }
-  @keyframes study-screen-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-}
-.study-navigation { view-transition-name: study-navigation; }
-::view-transition-old(study-navigation), ::view-transition-new(study-navigation) { animation-duration: 140ms; }
-
 .study-enem { width: min(100%, 680px); margin-inline: auto; padding-inline: clamp(14px, 4.6vw, 28px); }
 .study-enem-header { padding: calc(24px + env(safe-area-inset-top, 0px)) 52px 14px 0; }
 .study-enem-header h1 { font-size: clamp(27px, 8vw, 39px); line-height: 1.13; letter-spacing: -.045em; font-weight: 650; }
@@ -391,6 +371,52 @@ html[data-study-motion="reduced"] .study-page-enter { animation: none; }
 @media (min-width: 768px) { .study-paywall { inset: 0; height: max-content; margin: auto; } }
 @media (prefers-reduced-motion: no-preference) {
   html:not([data-study-motion="reduced"]) .study-paywall[open] { animation: study-paywall-enter 220ms cubic-bezier(.22,1,.36,1); }
-  html:not([data-study-motion="reduced"]) .study-enem-pane { animation: study-page-enter 170ms ease-out; }
   @keyframes study-paywall-enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+}
+
+.study-lock-action button { position: relative; }
+.study-lock-ring { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); pointer-events: none; transform: rotate(-90deg); }
+.study-lock-ring circle { fill: none; stroke-width: 2; }
+.study-lock-ring-track { stroke: #9ba7ef38; }
+.study-lock-ring-progress { stroke: url(#study-lock-accent); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 77; }
+.study-lock[data-phase="scan"] .study-lock-ring-progress,
+.study-lock[data-phase="confirmed"] .study-lock-ring-progress { stroke-dashoffset: 0; }
+.study-lock[data-phase="confirmed"] button { color: #9ce9d9; background: #182e35; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) .study-page-enter {
+    animation: study-unfold 300ms cubic-bezier(.16,1,.3,1);
+    transform-origin: 48% 45%;
+  }
+  html:not([data-study-motion="reduced"]) .study-chat:focus-within { animation: none; }
+  .study-page-enter:not(.study-chat) { position: relative; }
+  html:not([data-study-motion="reduced"]) .study-page-enter::after {
+    content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: linear-gradient(90deg, transparent 44%, #03061242 49.5%, #bbc8ff1c 50%, transparent 55%);
+    opacity: 0; animation: study-fold-shade 300ms ease-out;
+  }
+  html:not([data-study-motion="reduced"]) .study-chat:focus-within::after { animation: none; opacity: 0; }
+  html:not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
+    animation: study-unfold 230ms cubic-bezier(.16,1,.3,1);
+  }
+  html:not([data-study-motion="reduced"]) .study-lock-action button {
+    transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+  }
+  html:not([data-study-motion="reduced"]) .study-lock-action button:active { transform: scale(.95); }
+  html:not([data-study-motion="reduced"]) .study-lock-ring-progress {
+    transition: stroke-dashoffset 440ms cubic-bezier(.25,.75,.25,1);
+  }
+  html:not([data-study-motion="reduced"]) .study-lock[data-phase="scan"] .study-lock-ring {
+    animation: study-lock-pulse 440ms ease-out;
+  }
+  @keyframes study-unfold {
+    from { opacity: .56; transform: perspective(980px) rotateY(-12deg) scale(.975); }
+    60% { opacity: 1; }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes study-fold-shade { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes study-lock-pulse {
+    0%, 100% { transform: rotate(-90deg) scale(1); }
+    55% { transform: rotate(-90deg) scale(1.075); }
+  }
 }

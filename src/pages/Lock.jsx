@@ -10,7 +10,8 @@ export default function Lock({ onUnlock }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [now, setNow] = useState(() => new Date())
-  const [entering, setEntering] = useState(false)
+  const [phase, setPhase] = useState('idle')
+  const confirmTimer = useRef(0)
   const timer = useRef(0)
   const DayIcon = now.getHours() >= 6 && now.getHours() < 18 ? Sun : Moon
 
@@ -27,37 +28,44 @@ export default function Lock({ onUnlock }) {
     return () => {
       clearTimeout(timeout)
       clearTimeout(timer.current)
+      clearTimeout(confirmTimer.current)
       document.removeEventListener('visibilitychange', update)
     }
   }, [])
 
   function enter() {
-    if (entering) return
+    if (phase !== 'idle') return
     const reduce = readPreferences().reduceMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const destination = location.state?.destino ?? '/dashboard'
     function unlock() {
       onUnlock()
-      navigate(destination, { replace: true, viewTransition: !reduce })
+      navigate(destination, { replace: true })
     }
     if (reduce) unlock()
     else {
-      setEntering(true)
-      timer.current = setTimeout(unlock, 220)
+      setPhase('scan')
+      confirmTimer.current = setTimeout(() => setPhase('confirmed'), 440)
+      timer.current = setTimeout(unlock, 620)
     }
   }
 
   return (
-    <main className="study-lock" data-entering={entering || undefined}>
+    <main className="study-lock" data-phase={phase}>
       <header className="study-lock-brand"><img src="/icons/icon-192.png" alt="StudyOS" width="58" height="58" /></header>
       <div className="study-lock-clock">
         <p><DayIcon size={15} aria-hidden="true" />{dateFormat.format(now)}</p>
         <time dateTime={now.toISOString()}>{timeFormat.format(now)}</time>
       </div>
       <div className="study-lock-action">
-        <button type="button" aria-label="Entrar no StudyOS" onClick={enter} disabled={entering}>
-          {entering ? <Check size={28} strokeWidth={1.7} aria-hidden="true" /> : <Fingerprint size={32} strokeWidth={1.5} aria-hidden="true" />}
+        <button type="button" aria-label="Entrar no StudyOS" onClick={enter} disabled={phase !== 'idle'}>
+          <svg className="study-lock-ring" viewBox="0 0 88 88" aria-hidden="true">
+            <defs><linearGradient id="study-lock-accent"><stop stopColor="#8b7cff" /><stop offset="1" stopColor="#5ce1c2" /></linearGradient></defs>
+            <circle cx="44" cy="44" r="41" className="study-lock-ring-track" />
+            <circle cx="44" cy="44" r="41" pathLength="100" className="study-lock-ring-progress" />
+          </svg>
+          {phase === 'confirmed' ? <Check size={28} strokeWidth={1.7} aria-hidden="true" /> : <Fingerprint size={32} strokeWidth={1.5} aria-hidden="true" />}
         </button>
-        <p role="status">{entering ? 'Acesso liberado' : 'Toque para entrar'}</p>
+        <p role="status">{phase === 'confirmed' ? 'Acesso liberado' : phase === 'scan' ? 'Abrindo StudyOS…' : 'Toque para entrar'}</p>
       </div>
     </main>
   )

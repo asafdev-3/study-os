@@ -74,7 +74,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
       <Route path="/esqueci-senha" element={<PageWrapper><EsqueciSenha /></PageWrapper>} />
       <Route path="/nfc" element={<PageWrapper><NFC /></PageWrapper>} />
       <Route path="/nova-anotacao" element={<NovaAnotacao />} />
-      <Route path="/enem" element={<EnemScreen userId={sessao?.user.id} />} />
+      <Route path="/enem" element={<PageWrapper><EnemScreen userId={sessao?.user.id} /></PageWrapper>} />
       <Route path="/onboarding" element={<Onboarding />} />
     </Routes>
   )

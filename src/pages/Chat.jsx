@@ -82,7 +82,7 @@ export default function Chat() {
   }
 
   return (
-    <main className="study-chat" ref={page}>
+    <main className="study-chat study-page-enter" ref={page}>
       <header className="study-chat-header">
         <div className="study-kira-mark"><img src={kiraImage} alt="" width="42" height="42" /></div>
         <div><h1>Kira</h1><p>Tutora do StudyOS</p></div>

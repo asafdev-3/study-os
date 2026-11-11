@@ -390,6 +390,7 @@ function NotasCorte({ minhaMedia, simulada }) {
 // ─── Tela Principal ───────────────────────────────────────────────────────────
 export default function EnemScreen({ userId }) {
   const [tab, setTab] = useState("foco");
+  const [switched, setSwitched] = useState(false);
   const [bolsaAberta, setBolsaAberta] = useState(null);
   const [scores, setScores] = useState(null);
   const [kiraInput, setKiraInput] = useState("");
@@ -425,17 +426,17 @@ export default function EnemScreen({ userId }) {
   ];
 
   return (
-    <main className="study-page study-enem">
+    <main className="study-page study-enem" data-switched={switched || undefined}>
       <header className="study-enem-header">
         <h1>Modo ENEM</h1>
         <p>Foco, revisão e planejamento.</p>
       </header>
       <div className="study-enem-tabs" role="group" aria-label="Seções do modo ENEM">
         {tabs.map(([id, label]) => (
-          <button key={id} type="button" aria-pressed={tab === id} onClick={() => setTab(id)}>{label}</button>
+          <button key={id} type="button" aria-pressed={tab === id} onClick={() => { if (id !== tab) { setSwitched(true); setTab(id); } }}>{label}</button>
         ))}
       </div>
-      <div hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>
+      <div className="study-enem-pane" hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>
       {tab === "corte" && <section className="study-enem-pane" aria-label="Notas de corte e bolsas">
         <NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} />
         <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>
