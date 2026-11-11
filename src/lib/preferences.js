@@ -10,6 +10,7 @@ export function updatePreferences(patch) {
   const next = { ...readPreferences(), ...patch }
   localStorage.setItem(key, JSON.stringify(next))
   document.documentElement.dataset.studyMotion = next.reduceMotion ? 'reduced' : 'system'
+  window.dispatchEvent(new Event('studyos:preferences'))
   return next
 }
 

@@ -2,7 +2,8 @@ import { createBrowserRouter, RouterProvider, Routes, Route, useLocation, Naviga
 import { lazy, Suspense, useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 import { readPreferences } from './lib/preferences'
-import { loadStudyRoute } from './lib/studyRoutes'
+import { StudyMotion, PageMotion } from './components/StudyMotion'
+import { loadStudyRoute, warmStudyRoutes } from './lib/studyRoutes'
 
 import { pendingDestination, clearDestination } from './lib/nfc'
 import Splash from './pages/Splash'
@@ -22,7 +23,7 @@ const Configuracoes = lazy(loadStudyRoute['/configuracoes'])
 const Upgrade = lazy(() => import('./pages/Upgrade'))
 const Sucesso = lazy(() => import('./pages/Sucesso'))
 const EsqueciSenha = lazy(() => import('./pages/EsqueciSenha'))
-const NFC = lazy(() => import('./pages/NFC'))
+const NFC = lazy(loadStudyRoute['/nfc'])
 const NovaAnotacao = lazy(() => import('./pages/NovaAnotacao'))
 const EnemScreen = lazy(loadStudyRoute['/enem'])
 const Onboarding = lazy(() => import('./pages/Onboarding'))
@@ -40,7 +41,7 @@ const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/esqueci-senha']
 const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock']
 
 function PageWrapper({ children }) {
-  return <div className="study-page-enter">{children}</div>
+  return <PageMotion>{children}</PageMotion>
 }
 
 function DashboardEntry() {
@@ -88,6 +89,11 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
 }
 
 function AppContent({ sessao, bloqueado, desbloquear }) {
+  const userId = sessao?.user.id
+  useEffect(() => {
+    if (!userId || bloqueado) return
+    return warmStudyRoutes()
+  }, [userId, bloqueado])
   const location = useLocation()
   const comSidebar = !!sessao && !bloqueado && !SEM_SIDEBAR.includes(location.pathname)
 
@@ -153,5 +159,5 @@ function StudySession() {
 const router = createBrowserRouter([{ path: '*', element: <StudySession /> }])
 
 export default function App() {
-  return <RouterProvider router={router} />
+  return <StudyMotion><RouterProvider router={router} /></StudyMotion>
 }

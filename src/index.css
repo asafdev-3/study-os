@@ -342,13 +342,14 @@ html[data-study-chat], html[data-study-chat] body {
 .study-lock[data-phase="confirmed"] button { color: #9ce9d9; background: #182e35; }
 
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-study-motion="reduced"]) .study-page-enter {
-    animation: study-soft-focus 240ms cubic-bezier(.22,1,.36,1);
-  }
-  html:not([data-study-motion="reduced"]) .study-chat:focus-within { animation: none; }
-  html:not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
+  html:not([data-study-motion="reduced"]) .study-page-enter :is(.study-room-welcome, .study-notes-header, .study-enem-header, .study-home-header),
+  html:not([data-study-motion="reduced"]) .study-chat-header {
     animation: study-soft-focus 200ms cubic-bezier(.22,1,.36,1);
   }
+  html:not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
+    animation: study-pane-fade 200ms cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes study-pane-fade { from { opacity: .85; } to { opacity: 1; } }
   html:not([data-study-motion="reduced"]) .study-lock-action button {
     transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
   }
@@ -360,7 +361,7 @@ html[data-study-chat], html[data-study-chat] body {
     animation: study-lock-pulse 440ms ease-out;
   }
   @keyframes study-soft-focus {
-    from { opacity: .84; filter: blur(2px); }
+    from { opacity: .9; filter: blur(1.5px); }
     to { opacity: 1; filter: none; }
   }
   @keyframes study-lock-pulse {
@@ -481,4 +482,19 @@ html[data-study-chat], html[data-study-chat] body {
   .study-paper-meta { padding-bottom: 9px; }
   .study-desk-paper p { -webkit-line-clamp: 2; margin-block: 6px 12px; }
   .study-room-subject { margin-top: 6px; }
+}
+
+/* Animate only the indicator, not the navigation layout or page geometry. */
+.study-tab { position: relative; isolation: isolate; -webkit-tap-highlight-color: transparent; }
+.study-tab[aria-current="page"] { background: transparent; }
+.study-tab-indicator { position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: #2a3652; pointer-events: none; }
+@media (hover: none) {
+  .glass:hover, .glass-deep:hover, .glass-sm:hover { filter: none; transition: none; }
+}
+@media (max-width: 767px) {
+  .study-enem .glass, .study-enem .glass-deep { -webkit-backdrop-filter: none; backdrop-filter: none; background: #181e2d; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) :is(.study-primary, .study-room-nfc, .study-chat-prompts button, .study-composer button, .study-enem-tabs button) { transition: transform 160ms cubic-bezier(.22,1,.36,1), background-color 160ms ease; }
+  html:not([data-study-motion="reduced"]) :is(.study-primary, .study-room-nfc, .study-chat-prompts button, .study-composer button, .study-enem-tabs button):active { transform: scale(.97); }
 }

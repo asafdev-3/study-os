@@ -1,0 +1,72 @@
+# StudyOS — entrada para o Claude
+
+## Leia primeiro
+1. Este arquivo: estado atual e decisões que não devem ser perdidas.
+2. `docs/motion-and-safari.md`: rodada atual de movimento e limite dos testes.
+3. `docs/design-and-nfc.md`: identidade, NFC e destinos.
+4. Histórico completo local: `/home/vortex/Documentos/AI-BRAIN/02-PROJECTS/STUDYOS/STUDYOS__MASTER.md`.
+
+## Projeto e execução
+- Checkout: `/home/vortex/study-os`.
+- GitHub: https://github.com/asafdev-3/study-os — branch main.
+- Produção: https://study-os-three-pearl.vercel.app
+- Vercel: equipe `asafdev-3s-projects`, projeto `study-os`; vínculo em `.vercel/project.json`.
+- React 19, Vite 8, Tailwind 4, React Router 7, Framer Motion 13, Supabase.
+- `npm run build`; lint direcionado aos arquivos editados; `node --test tests/nfc.test.mjs`.
+- Configuração local em `.env.local`. Nunca imprimir ou versionar segredos.
+- Publicação atual pelo Vercel CLI. Push no GitHub NÃO implica deploy automático; integração Git da Vercel ainda não conectada.
+- Antes de editar, conferir `git status` e `git log -5 --oneline`. Não sobrescrever mudanças do usuário.
+
+## Pedido atual, com prioridade
+Vitor relata falta de fluidez no Safari do iPhone XR, iOS 18. Deseja animações como diferencial, com Framer Motion. A rodada atual reduz trabalho de pintura e carregamento e retoma movimento na navegação e nas mensagens. Ainda NÃO há validação física de FPS no aparelho. Não declarar a reclamação definitivamente resolvida sem testar nele.
+
+## Decisões de produto e design
+- Comunicação curta, direta, sem elogios. Menos é mais.
+- Preservar a identidade escura azul/violeta StudyOS. FÔGO inspira composição e conforto; não copiar floresta/fogueira.
+- Usuário rejeitou várias versões genéricas e mudanças arbitrárias do original. Não redesenhar novamente sem motivo concreto.
+- Home atual (base `b420732`): sala de estudo noturna original, WebP 47 kB, última anotação real, foco compacto e Kira.
+- “Efeito iPhone Duo” significa SOMENTE desfoque leve. Sem dobra, perspectiva, rotação ou zoom da página.
+- Digital do Lock é importante e deve manter anel, pulso e confirmação. É bloqueio visual de sessão, NÃO biometria real.
+- Não bloquear navegação esperando uma animação de saída; não animar todas as superfícies simultaneamente.
+- NFC é prioridade da mostra. Não voltar a adiar com base em notas antigas do MASTER.
+
+## Arquitetura atual
+- `src/App.jsx`: autenticação, bloqueio, rotas lazy, retorno de destino NFC.
+- `src/components/StudyMotion.jsx`: LazyMotion + MotionConfig e PageMotion.
+- `src/lib/motion.js`: preferência reativa de movimento reduzido e curva compartilhada.
+- `src/lib/motionFeatures.js`: domMax carregado separadamente; não substituir imports m por motion global sem medir bundle.
+- `src/lib/studyRoutes.js`: cache de imports, prefetch por intenção e aquecimento ocioso após desbloqueio. Respeita Save-Data.
+- `Navbar.jsx`: indicador compartilhado com layoutId/spring; barra permanece estável.
+- `Chat.jsx`: viewport visual fixa para Safari/teclado, rolagem apenas nas mensagens, entrada Motion de mensagens.
+- `src/lib/focus.js` + `EnemScreen.jsx`: timer com deadline absoluto e persistência por usuário; não usar contagem que para ao sair da aba.
+- `Anotacoes.jsx`: caderno, filtros, criação real no Supabase, Kira sugere e deep link para nota.
+- `NFC.jsx` + `src/lib/nfc.js`: URLs de foco/matéria/nota. A simulação aleatória foi removida.
+- `src/lib/groq.js`, `useKira.js`, `PaywallModal.jsx`: envio autenticado, cota e modal global.
+
+## Integrações e estado funcional
+- Supabase: projeto `oejjojxeqarhbuniukac`. Auth Google; callback autorizado em produção /dashboard.
+- Kira: Edge Function valida sessão via Auth; segredo `GROQ_API_KEY` configurado pelo usuário. Ele confirmou resposta boa.
+- Cota: 10 mensagens/dia por usuário, fuso São Paulo. HTTP 429 DAILY_LIMIT abre o modal na primeira tentativa excedente (chat, ENEM, sugestões). Última resposta permitida continua visível.
+- Lock na reabertura e retorno após 60 s em background; não substituir por nova tela de login.
+- NFC: /nfc?acao=foco&area=mt prepara foco com confirmação; não substitui sessão existente. /anotacoes?area=cn filtra matéria. /anotacoes?nota=ID abre nota privada da conta.
+- Login preserva destino permitido em sessionStorage por 30 minutos; Lock preserva query.
+- iPhone: escrever URL na tag via aplicativo externo e abrir pela notificação do sistema. Android compatível: NDEFReader.write. NÃO há bloqueio de outros apps.
+- Configurações têm páginas próprias. Preferências são locais.
+- Notificação de foco depende de suporte/permissão e sessão registrada; não é push agendado com app fechado.
+- Stripe apenas sandbox: API de checkout existe. Faltam segredos/preços de teste e validação ponta a ponta; webhook e sincronização de plano NÃO prontos. Não liberar cobrança real.
+- Notas de corte/bolsas têm dados ilustrativos. Não apresentá-los como dados oficiais.
+
+## Pendências para finalizar
+1. Safari XR real: Lock, dez trocas rápidas entre abas, notas longas, abrir/fechar teclado, resposta longa, ENEM, retorno do background e movimento reduzido.
+2. Conferir comportamento com rede lenta/cache frio e avaliar performance com gravação do Web Inspector. Testes desktop não provam FPS do XR.
+3. Etiqueta NFC física no iPhone e Android; login e destinos; manter tag regravável para troca de domínio.
+4. Revisão visual consistente das demais telas: perfil, ENEM, configurações e caderno sem novo redesign indiscriminado.
+5. Stripe sandbox completo, webhook/entitlement antes de produção; OCR e demais funcionalidades ainda incompletas.
+6. Verificar cadastro/onboarding/login OAuth reais, logout/troca de conta, notas persistidas e paywall real.
+7. Bundle inicial ainda tem aviso >500 kB minificado; avaliar separação de dependências sem aumentar bloqueios de navegação.
+8. Offline integral e notificações agendadas não implementados.
+
+## Evidência e continuidade
+Os testes de navegador usam conta, respostas Supabase e NFC simulados. Não alteram dados reais.
+Leia `tests/motion.browser.mjs` e `tests/nfc.test.mjs`. Relatório da rodada em `docs/motion-and-safari.md`.
+O MASTER é histórico: instruções novas deste arquivo prevalecem sobre decisões antigas incompatíveis (NFC adiado, dobra 3D, desfoque na página inteira).

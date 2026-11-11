@@ -2,7 +2,7 @@
 
 ## Direção visual
 Sala de estudo noturna, azul profundo e acentos azul-violeta do StudyOS. O caderno mostra a última anotação real. Timer e Kira ficam numa faixa de ações, sem dominar a composição.
-A transição pedida pelo usuário é somente desfoque leve: 2 px por 240 ms entre rotas, 200 ms entre seções ENEM. Sem dobra, perspectiva, escala ou sombra central. Lock com digital preservado. Respeita movimento reduzido.
+A transição pedida pelo usuário é somente desfoque leve. Atualização: cabeçalhos usam 1,5 px / 200 ms; rotas usam opacidade via Framer Motion. Ver docs/motion-and-safari.md. Sem dobra, perspectiva, escala ou sombra central. Lock com digital preservado. Respeita movimento reduzido.
 
 ## Asset
 `public/images/study-room.webp` — 1536 × 1024, 47.494 bytes. Imagem original criada com a ferramenta de geração de imagens e convertida para WebP para uso no projeto.
