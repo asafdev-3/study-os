@@ -63,7 +63,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
       <Route path="/lock" element={<PageWrapper><Lock onUnlock={desbloquear} /></PageWrapper>} />
       <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
       <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />
-      <Route path="/chat" element={<PageWrapper><Chat /></PageWrapper>} />
+      <Route path="/chat" element={<Chat />} />
       <Route path="/lembretes" element={<PageWrapper><Lembretes /></PageWrapper>} />
       <Route path="/perfil" element={<PageWrapper><Perfil /></PageWrapper>} />
       <Route path="/configuracoes/:secao?" element={<PageWrapper><Configuracoes /></PageWrapper>} />
