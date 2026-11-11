@@ -101,3 +101,20 @@ body {
   .study-page-enter { animation: study-page-enter 160ms ease-out; }
   @keyframes study-page-enter { from { opacity: 0; } to { opacity: 1; } }
 }
+
+.study-notebook-form { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--study-line); border-radius: 18px; margin-bottom: 16px; background: #11131b; }
+.study-notebook-form h2 { font-size: 20px; font-weight: 600; }
+.study-notebook-form label { display: grid; gap: 5px; color: var(--study-muted); font-size: 13px; }
+.study-notebook-form :is(input, textarea, select), .study-notebook-search {
+  width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--study-line); border-radius: 10px;
+  padding: 9px; font-size: 16px; color: var(--study-ink); background: #0a0d14;
+}
+.study-notebook-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.study-notebook-actions button:not(.study-primary) { min-height: 44px; padding-inline: 9px; color: var(--study-accent); }
+.study-notebook-actions button:disabled { opacity: .5; }
+.study-notebook-search { display: flex; gap: 9px; align-items: center; margin-bottom: 12px; }
+.study-notebook-search input { min-width: 0; width: 100%; }
+.study-notebook-item { border-bottom: 1px solid var(--study-line); padding: 13px 0; }
+.study-notebook-item summary { cursor: pointer; overflow-wrap: anywhere; }
+.study-notebook-item small { color: var(--study-muted); display: block; padding-left: 14px; }
+.study-notebook-item p { padding: 10px 14px 0; }
