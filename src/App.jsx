@@ -8,6 +8,7 @@ import Splash from './pages/Splash'
 import Login from './pages/Login'
 import TopBar from './components/TopBar'
 import Navbar from './components/Navbar'
+import PaywallModal from './components/PaywallModal'
 import './components/glass.css'
 
 const Lock = lazy(() => import('./pages/Lock'))
@@ -87,6 +88,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
     <>
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
+      {comSidebar && <PaywallModal />}
       <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={comSidebar ? 'md:pl-[88px]' : ''}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />

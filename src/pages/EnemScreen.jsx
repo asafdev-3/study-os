@@ -2,6 +2,7 @@
 // Modo ENEM: Sessão de Foco + Notas de Corte + Kira ENEM + BolsasModal
 
 import { useState, useEffect, useRef } from "react";
+import { ArrowUp, ChevronRight, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase }   from "../lib/supabase";
 import { FOCUS_SECONDS, readFocus } from "../lib/focus";
@@ -10,7 +11,6 @@ import { KIRA_DAILY_LIMIT } from "../lib/groq";
 import { useKira } from "../lib/useKira";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
-const ENEM_DATE = new Date("2026-11-15T08:00:00-03:00");
 
 const AREAS = [
   { id: "lc",  label: "Linguagens", short: "LC",  color: "#f59e0b" },
@@ -22,14 +22,6 @@ const AREAS = [
 
 // Fallback enquanto Supabase não estiver configurado ou o usuário não tiver scores
 const NOTAS_FALLBACK = { lc: 630, ch: 681, cn: 663, mt: 633, red: 708 };
-
-const KIRA_TIPS = [
-  "Foque nas questões de Ciências da Natureza hoje — sua taxa de acerto está abaixo da média.",
-  "Você tem 3 revisões pendentes de Matemática. São 15 min cada.",
-  "Redação: leia 2 artigos de opinião hoje. Argumentação é treinável.",
-  "Simulado recomendado: 5 questões de Humanas + 5 de Linguagens. 25 min total.",
-  "Sua nota projetada aumentou 18 pontos essa semana. Consistência supera intensidade.",
-];
 
 const QUICK_PROMPTS = [
   "O que estudar hoje",
@@ -101,9 +93,6 @@ const BOLSAS = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getDaysToEnem() {
-  return Math.max(0, Math.ceil((ENEM_DATE - new Date()) / 86400000));
-}
 function fmt(s) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
@@ -282,86 +271,49 @@ function SessaoFoco({ userId }) {
     setSaveState("idle");
     setRetry((value) => value + 1);
   }
-  const pct   = ((25 * 60 - seconds) / (25 * 60)) * 100;
-  const r     = 90, circ = 2 * Math.PI * r;
+  const progress = (1 - seconds / FOCUS_SECONDS) * 100;
 
   return (
-    <div className="glass-deep glass-sheen" style={{ borderRadius: 28, padding: 24, position: "relative", overflow: "hidden", color: "#f4f4f5" }}>
-      <p style={{ ...T.label, margin: "0 0 16px" }}>SESSÃO DE FOCO</p>
-
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24 }}>
-        {AREAS.map(a => (
-          <button key={a.id} disabled={Boolean(focus) && (!done || saveState === "idle")} onClick={() => { reset(); setAreaChoice(a); }} style={{
-            padding: "7px 11px", minHeight: 44, borderRadius: 99, fontSize: 11, fontWeight: 700,
-            background: area.id === a.id ? a.color + "1e" : "rgba(255,255,255,.04)",
-            border: `1px solid ${area.id === a.id ? a.color + "55" : "rgba(255,255,255,.07)"}`,
-            color: area.id === a.id ? a.color : "#52525b",
-            cursor: "pointer", transition: ".2s ease",
-          }}>{a.short}</button>
+    <section className="study-enem-focus" aria-label="Sessão de foco">
+      <div className="study-enem-areas" role="group" aria-label="Área de estudo">
+        {AREAS.map((item) => (
+          <button key={item.id} type="button" aria-label={item.label}
+            aria-pressed={area.id === item.id} disabled={Boolean(focus) && (!done || saveState === "idle")}
+            onClick={() => { reset(); setAreaChoice(item); }}>
+            {item.short}
+          </button>
         ))}
       </div>
-
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
-        <div style={{ position: "relative", width: "min(200px, 100%)", aspectRatio: "1" }}>
-          <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ transform: "rotate(-90deg)" }}>
-            <defs>
-              <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor={area.color} />
-                <stop offset="100%" stopColor="#22d3a0" />
-              </linearGradient>
-            </defs>
-            <circle cx="100" cy="100" r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="8" />
-            <circle cx="100" cy="100" r={r} fill="none"
-              stroke="url(#timerGrad)" strokeWidth="8" strokeLinecap="round"
-              strokeDasharray={circ} strokeDashoffset={circ - (pct / 100) * circ}
-              style={{ transition: "stroke-dashoffset 1s linear" }}
-            />
-          </svg>
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...T.label, marginBottom: 2 }}>{running ? "FOCANDO" : done ? "CONCLUÍDO" : "PAUSADO"}</span>
-            <strong style={{ fontSize: 44, letterSpacing: "-.06em", fontVariantNumeric: "tabular-nums", lineHeight: 1.1, color: "#f4f4f5" }}>
-              {fmt(seconds)}
-            </strong>
-            <span style={{ fontSize: 11, color: area.color, marginTop: 2 }}>{area.label}</span>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 10 }}>
-          {!done ? (
-            <button className={running ? "btn btn-danger" : "btn btn-enem"} onClick={toggleTimer} style={{ minWidth: 140 }}>
-              {running ? "Pausar" : "Iniciar Foco"}
-            </button>
-          ) : (
-            <button className="btn btn-ghost" disabled={(done && saveState === "idle")} onClick={reset}>Reiniciar</button>
-          )}
-          {!done && focus && (
-            <button className="btn btn-ghost" aria-label="Cancelar sessão de foco" onClick={reset} style={{ padding: "0 16px" }}>✕</button>
-          )}
+      <div className="study-enem-dial" style={{ "--enem-progress": `${progress}%`, "--enem-area": area.color }}>
+        <div className="study-enem-dial-face">
+          <span>{running ? "Em foco" : done ? "Concluído" : focus ? "Pausado" : "Sessão de foco"}</span>
+          <strong aria-label={`${Math.floor(seconds / 60)} minutos e ${seconds % 60} segundos`}>{fmt(seconds)}</strong>
+          <span>{area.label}</span>
         </div>
       </div>
-
-      <AnimatePresence>
-        {done && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="glass-green" style={{ borderRadius: 16, padding: "13px 16px", marginTop: 20, textAlign: "center" }}
-          >
-            <p role="status" style={{ margin: 0, fontSize: 14, color: "#6eebd5", fontWeight: 600 }}>
-              {(done && saveState === "idle") && "Salvando sessão…"}
-              {saveState === "saved" && `+30 XP · Sessão em ${area.label}`}
-              {saveState === "error" && "Falha ao salvar a sessão."}
-            </p>
-            {saveState === "error" && (
-              <button className="btn btn-ghost" onClick={retrySave}>Tentar novamente</button>
-            )}
-          </motion.div>
+      <div className="study-enem-controls">
+        {done ? (
+          <button type="button" className="study-primary" disabled={saveState === "idle"} onClick={reset}>Nova sessão</button>
+        ) : (
+          <button type="button" className="study-primary" onClick={toggleTimer}>
+            {running ? "Pausar" : focus ? "Retomar foco" : "Iniciar foco"}
+          </button>
         )}
-      </AnimatePresence>
-    </div>
+        {!done && focus && <button type="button" aria-label="Cancelar sessão de foco" onClick={reset}>
+          <RotateCcw size={18} aria-hidden="true" />
+        </button>}
+      </div>
+      {done && <div className="study-note">
+        <p role="status">{saveState === "idle" ? "Salvando sessão…" : saveState === "saved"
+          ? `Sessão registrada · +30 XP` : "Falha ao salvar a sessão."}</p>
+        {saveState === "error" && <button type="button" onClick={retrySave}>Tentar novamente</button>}
+      </div>}
+    </section>
   );
 }
 
 // ─── Notas de Corte ───────────────────────────────────────────────────────────
-function NotasCorte({ minhaMedia }) {
+function NotasCorte({ minhaMedia, simulada }) {
   const [busca, setBusca]           = useState("");
   const [soComBolsa, setSoComBolsa] = useState(false);
 
@@ -372,31 +324,30 @@ function NotasCorte({ minhaMedia }) {
   return (
     <div style={{ color: "#f4f4f5" }}>
       <div className="glass-deep" style={{ borderRadius: 20, padding: "16px 18px", marginBottom: 14 }}>
-        <p style={{ ...T.label, margin: "0 0 10px" }}>SUA NOTA ATUAL</p>
+        <p style={{ ...T.label, margin: "0 0 10px" }}>{simulada ? "MÉDIA DE EXEMPLO" : "MÉDIA REGISTRADA"}</p>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <input type="range" min="400" max="1000" step="5" value={minhaMedia}
-            onChange={() => {}} style={{ flex: 1, accentColor: "#2563eb" }} readOnly />
+          <progress className="study-enem-score" aria-label="Pontuação de 0 a 1.000" max="1000" value={minhaMedia} />
           <strong style={{ fontSize: 26, minWidth: 55, textAlign: "right", color: "#93c5fd", letterSpacing: "-.04em" }}>
             {minhaMedia}
           </strong>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <input className="input-glass" placeholder="Buscar faculdade ou curso..." value={busca}
+      <div className="study-enem-search">
+        <input className="input-glass" aria-label="Buscar faculdade ou curso" placeholder="Faculdade ou curso" value={busca}
           onChange={e => setBusca(e.target.value)} style={{ flex: 1 }} />
         <button className={soComBolsa ? "btn btn-enem" : "btn btn-ghost"}
           onClick={() => setSoComBolsa(b => !b)} style={{ padding: "0 14px", fontSize: 12 }}>Bolsa</button>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {filtradas.map((f, i) => {
+        {filtradas.map((f) => {
           const pct    = minhaMedia / f.corte;
           const status = pct >= 1 ? "ok" : pct >= .9 ? "perto" : "longe";
           const cor    = status === "ok" ? "#10b981" : status === "perto" ? "#f59e0b" : "#6b7280";
           return (
             <motion.div key={f.nome} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * .04 }} className="glass" style={{ borderRadius: 18, padding: "14px 16px" }}
+              transition={{ duration: .16 }} className="glass" style={{ borderRadius: 18, padding: "14px 16px" }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                 <div style={{ flex: 1 }}>
@@ -430,7 +381,7 @@ function NotasCorte({ minhaMedia }) {
         )}
       </div>
       <p style={{ fontSize: 11, color: "#2e2e35", marginTop: 14, textAlign: "center" }}>
-        Dados SISU/MEC · edição 2025 · atualização após divulgação 2026
+        Notas de corte ilustrativas. Confira os valores oficiais antes de decidir.
       </p>
     </div>
   );
@@ -438,330 +389,86 @@ function NotasCorte({ minhaMedia }) {
 
 // ─── Tela Principal ───────────────────────────────────────────────────────────
 export default function EnemScreen({ userId }) {
-  const daysLeft = getDaysToEnem();
-
-  // ── UI state ──
-  const [tab,         setTab]         = useState("foco");
-  const [tipIdx,      setTipIdx]      = useState(0);
+  const [tab, setTab] = useState("foco");
   const [bolsaAberta, setBolsaAberta] = useState(null);
+  const [scores, setScores] = useState(null);
+  const [kiraInput, setKiraInput] = useState("");
+  const { messages, remaining, loading, error, send, clear } = useKira(tab === "kira");
+  const log = useRef(null);
 
-  // ── Notas (Supabase → fallback mock) ──
-  const [notas,      setNotas]      = useState(NOTAS_FALLBACK);
-  const [minhaMedia, setMinhaMedia] = useState(mediaDeNotas(NOTAS_FALLBACK));
-
-  // ── Kira chat ──
-  const [kiraInput,   setKiraInput]   = useState("");
-  const {
-    messages: kiraMsgs, remaining: kiraRemaining, loading: kiraLoading,
-    error: kiraError, send: sendKira, clear: clearKira,
-  } = useKira(tab === "kira");
-  const kiraEndRef = useRef(null);
-
-  // Busca notas reais do Supabase quando montar
   useEffect(() => {
-    async function fetchNotas() {
-      const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: {} }));
-      if (!user) return;
+    if (tab !== "corte" || !userId) return;
+    let active = true;
+    supabase.from("enem_scores").select("lc, ch, cn, mt, red").eq("user_id", userId)
+      .maybeSingle().then(({ data }) => { if (active && data) setScores(data); });
+    return () => { active = false; };
+  }, [tab, userId]);
 
-      const { data } = await supabase
-        .from("enem_scores")
-        .select("lc, ch, cn, mt, red")
-        .eq("user_id", user.id)
-        .single();
-
-      if (data) {
-        setNotas(data);
-        setMinhaMedia(mediaDeNotas(data));
-      }
-    }
-    fetchNotas();
-  }, []);
-
-  // Rotação dos tips
   useEffect(() => {
-    const id = setInterval(() => setTipIdx(i => (i + 1) % KIRA_TIPS.length), 8000);
-    return () => clearInterval(id);
-  }, []);
+    if (log.current) log.current.scrollTop = log.current.scrollHeight;
+  }, [messages, loading, tab]);
 
-  // Scroll automático no chat da Kira
   useEffect(() => {
-    kiraEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [kiraMsgs, kiraLoading]);
-
-  // Lock scroll quando modal aberta
-  useEffect(() => {
-    document.body.style.overflow = bolsaAberta ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    if (!bolsaAberta) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
   }, [bolsaAberta]);
 
-  async function enviarParaKira(texto) {
-    const msg = (texto || kiraInput).trim();
-    if (!msg || kiraLoading) return;
-    if (await sendKira(msg) && !texto) setKiraInput("");
+  async function enviar(texto) {
+    const draft = texto ?? kiraInput;
+    if (await send(draft) && !texto) setKiraInput((current) => current === draft ? "" : current);
   }
 
-  const progresso = Math.max(2, 100 - (daysLeft / 365) * 100);
-  const barCor    = daysLeft <= 7 ? "#ef4444" : daysLeft <= 30 ? "#f59e0b" : "#2563eb";
   const tabs = [
-    { id: "foco",  label: "Sessão"    },
-    { id: "corte", label: "Corte"     },
-    { id: "kira",  label: "Kira ENEM" },
+    ["foco", "Foco"], ["corte", "Notas de corte"], ["kira", "Kira"],
   ];
 
   return (
-    <>
-      <div style={{
-        minHeight: "100dvh",
-        background: "#0b101a",
-        color: "#f4f4f5",
-        padding: "0 0 max(32px, var(--study-nav-space))",
-        position: "relative",
-        fontFamily: "inherit",
-      }}>
-        {/* Glow */}
-        <div style={{
-          position: "fixed", inset: 0, pointerEvents: "none",
-          background: "radial-gradient(ellipse at 50% -5%, rgba(29,78,216,.20) 0%, transparent 52%)",
-        }} />
-
-        {/* ── Header ── */}
-        <div style={{ padding: "calc(62px + env(safe-area-inset-top, 0px)) 20px 0", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
-            <div>
-              <span style={{ ...T.label }}>MODO ENEM</span>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginTop: 4 }}>
-                <span style={{ fontSize: 60, fontWeight: 900, letterSpacing: "-.06em", lineHeight: 1, color: "#f4f4f5" }}>
-                  {daysLeft}
-                </span>
-                <span style={{ fontSize: 16, color: "#71717a", fontWeight: 500 }}>dias</span>
-              </div>
-            </div>
-
-            <div className="glass-blue" style={{ borderRadius: 20, padding: "12px 16px", textAlign: "right", minWidth: 110 }}>
-              <p style={{ margin: 0, fontSize: 9, letterSpacing: ".18em", color: "#60a5fa", fontWeight: 700 }}>SUA MÉDIA</p>
-              <strong style={{ fontSize: 28, display: "block", letterSpacing: "-.05em", lineHeight: 1.1, color: "#f4f4f5" }}>{minhaMedia}</strong>
-              <p style={{ margin: "3px 0 0", fontSize: 9, color: "#6b7280" }}>pts projetados</p>
-            </div>
-          </div>
-
-          {/* Barra temporal */}
-          <div style={{ marginBottom: 18 }}>
-            <div className="progress-track" style={{ height: 3 }}>
-              <div className="progress-fill" style={{ width: `${progresso}%`, background: barCor, transition: "none" }} />
-            </div>
-            <p style={{ fontSize: 10, color: "#3f3f46", marginTop: 6, letterSpacing: ".04em" }}>
-              ENEM · {ENEM_DATE.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
-            </p>
-          </div>
-
-          {/* Kira tip rotativo */}
-          <AnimatePresence mode="wait">
-            <motion.div key={tipIdx}
-              initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: .28 }}
-              className="glass-violet glass-sheen"
-              style={{ borderRadius: 20, padding: "13px 16px", marginBottom: 18, position: "relative", overflow: "hidden" }}
-            >
-              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <div style={{
-                  width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
-                  background: "radial-gradient(circle, #2d7ff9, rgba(124,58,237,.5))",
-                  display: "grid", placeItems: "center", fontSize: 10,
-                }}>✦</div>
-                <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: "#d4d4d8" }}>{KIRA_TIPS[tipIdx]}</p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Grid de áreas com notas reais */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6, marginBottom: 18 }}>
-            {AREAS.map(a => (
-              <div key={a.id} className="glass" style={{ borderRadius: 16, padding: "11px 6px", textAlign: "center" }}>
-                <div style={{
-                  width: 6, height: 6, borderRadius: "50%", background: a.color,
-                  margin: "0 auto 7px", boxShadow: `0 0 7px ${a.color}88`,
-                }} />
-                <span style={{ fontSize: 9, color: "#52525b", letterSpacing: ".08em", display: "block", fontWeight: 700 }}>{a.short}</span>
-                <strong style={{ fontSize: 15, display: "block", color: a.color, marginTop: 5, letterSpacing: "-.03em" }}>
-                  {notas[a.id]}
-                </strong>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Tabs ── */}
-        <div style={{ padding: "0 20px", marginBottom: 16 }}>
-          <div className="glass" style={{ borderRadius: 18, padding: 5, display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
-            {tabs.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{
-                border: "none", borderRadius: 13, padding: "10px 8px",
-                background: tab === t.id ? "rgba(255,255,255,.08)" : "transparent",
-                color: tab === t.id ? "#f4f4f5" : "#52525b",
-                cursor: "pointer", fontFamily: "inherit", fontWeight: 700, fontSize: 12,
-                transition: ".2s ease",
-                boxShadow: tab === t.id ? "inset 0 1px 0 rgba(255,255,255,.12), 0 4px 10px rgba(0,0,0,.18)" : "none",
-              }}>{t.label}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Conteúdo ── */}
-        <div style={{ padding: "0 20px" }}>
-          <motion.div hidden={tab !== "foco"} initial={false}
-            animate={tab === "foco" ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
-            transition={{ duration: .2 }}>
-            <SessaoFoco key={userId} userId={userId} />
-          </motion.div>
-          <AnimatePresence mode="wait">
-
-            {tab === "corte" && (
-              <motion.div key="corte" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: .2 }}>
-                <NotasCorte minhaMedia={minhaMedia} />
-              </motion.div>
-            )}
-
-            {tab === "kira" && (
-              <motion.div key="kira" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: .2 }}>
-
-                {/* Kira chat compacto */}
-                <div className="glass-deep glass-sheen" style={{ borderRadius: 24, padding: "18px 20px", position: "relative", overflow: "hidden", marginBottom: 14, color: "#f4f4f5" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: "50%",
-                      background: "radial-gradient(circle, #2d7ff9, rgba(124,58,237,.5))",
-                      display: "grid", placeItems: "center", fontSize: 14,
-                      boxShadow: "0 0 16px rgba(45,127,249,.3)", flexShrink: 0,
-                    }}>✦</div>
-                    <div style={{ flex: 1 }}>
-                      <strong style={{ display: "block", fontSize: 14, letterSpacing: "-.02em", color: "#f4f4f5" }}>Kira · Modo ENEM</strong>
-                      <span style={{ fontSize: 11, color: kiraLoading ? "#f59e0b" : "#22d3a0" }}>
-                        {kiraLoading ? "Preparando resposta…" : kiraRemaining === null
-                          ? "Assistente de estudos"
-                          : `${kiraRemaining}/${KIRA_DAILY_LIMIT} mensagens hoje`}
-                      </span>
-                    </div>
-                    {kiraMsgs.length > 0 && (
-                      <button
-                        onClick={clearKira}
-                        disabled={kiraLoading}
-                        title="Limpar conversa"
-                        style={{
-                          background: "rgba(255,255,255,.05)",
-                          border: "1px solid rgba(255,255,255,.08)",
-                          borderRadius: 8, padding: "4px 8px",
-                          color: "#52525b", fontSize: 11, cursor: "pointer",
-                          flexShrink: 0,
-                        }}>
-                        limpar
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Quick prompts */}
-                  <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 12, scrollbarWidth: "none" }}>
-                    {QUICK_PROMPTS.map(p => (
-                      <button key={p} onClick={() => enviarParaKira(p)} disabled={kiraLoading}
-                        className="btn btn-ghost"
-                        style={{ padding: "6px 11px", fontSize: 11, minHeight: 34, borderRadius: 10, whiteSpace: "nowrap", flexShrink: 0 }}>
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Histórico de mensagens */}
-                  {kiraMsgs.length > 0 && (
-                    <div style={{
-                      maxHeight: 260, overflowY: "auto",
-                      display: "flex", flexDirection: "column", gap: 8,
-                      marginBottom: 12, paddingRight: 2,
-                      scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,.08) transparent",
-                    }}>
-                      {kiraMsgs.map((m, i) => (
-                        <div key={i} style={{
-                          padding: "9px 13px",
-                          borderRadius: 14,
-                          fontSize: 13, lineHeight: 1.55,
-                          maxWidth: "92%",
-                          alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                          background: m.role === "user"
-                            ? "rgba(37,99,235,.22)"
-                            : "rgba(255,255,255,.05)",
-                          border: m.role === "user"
-                            ? "1px solid rgba(37,99,235,.35)"
-                            : "1px solid rgba(255,255,255,.07)",
-                          color: "#d4d4d8",
-                        }}>
-                          {m.content}
-                        </div>
-                      ))}
-                      {kiraLoading && (
-                        <div style={{
-                          padding: "9px 13px", borderRadius: 14, alignSelf: "flex-start",
-                          background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)",
-                          color: "#52525b", fontSize: 12,
-                        }}>
-                          ···
-                        </div>
-                      )}
-                      <div ref={kiraEndRef} />
-                    </div>
-                  )}
-
-                  {kiraError && <p role="alert" style={{ color: "#fda4af", fontSize: 12 }}>{kiraError}</p>}
-
-                  {/* Input */}
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input
-                      className="input-glass"
-                      placeholder="Pergunte à Kira..."
-                      aria-label="Mensagem para a Kira"
-                      maxLength={2000}
-                      value={kiraInput}
-                      onChange={e => setKiraInput(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && !e.shiftKey && enviarParaKira()}
-                      style={{ flex: 1 }}
-                      disabled={kiraLoading}
-                    />
-                    <button
-                      className="btn btn-primary"
-                      aria-label="Enviar mensagem"
-                      onClick={() => enviarParaKira()}
-                      disabled={kiraLoading || !kiraInput.trim()}
-                      style={{ padding: "0 16px", minWidth: 44 }}>→</button>
-                  </div>
-                </div>
-
-                {/* Bolsas */}
-                <p style={{ ...T.label, margin: "0 0 10px" }}>BOLSAS E FINANCIAMENTOS</p>
-                {BOLSAS.map(b => (
-                  <button key={b.id} onClick={() => setBolsaAberta(b)} style={{
-                    width: "100%", textAlign: "left",
-                    display: "flex", alignItems: "center", gap: 14,
-                    padding: "14px 16px", marginBottom: 8,
-                    background: b.corBg,
-                    border: `1px solid ${b.corBorder}`,
-                    backdropFilter: "blur(22px)",
-                    borderRadius: 18, cursor: "pointer",
-                    color: "#f4f4f5",
-                    transition: "opacity .15s ease",
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: 9, letterSpacing: ".16em", color: b.cor, fontWeight: 700, display: "block", marginBottom: 4 }}>{b.tag}</span>
-                      <strong style={{ fontSize: 15, display: "block", letterSpacing: "-.02em", color: "#f4f4f5" }}>{b.nome}</strong>
-                      <span style={{ fontSize: 12, color: "#71717a", marginTop: 2, display: "block" }}>{b.desc.split(".")[0]}.</span>
-                    </div>
-                    <span style={{ color: "#52525b", fontSize: 20, flexShrink: 0 }}>›</span>
-                  </button>
-                ))}
-              </motion.div>
-            )}
-
-          </AnimatePresence>
-        </div>
+    <main className="study-page study-enem">
+      <header className="study-enem-header">
+        <h1>Modo ENEM</h1>
+        <p>Foco, revisão e planejamento.</p>
+      </header>
+      <div className="study-enem-tabs" role="group" aria-label="Seções do modo ENEM">
+        {tabs.map(([id, label]) => (
+          <button key={id} type="button" aria-pressed={tab === id} onClick={() => setTab(id)}>{label}</button>
+        ))}
       </div>
-
+      <div hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>
+      {tab === "corte" && <section className="study-enem-pane" aria-label="Notas de corte e bolsas">
+        <NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} />
+        <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>
+        {BOLSAS.map((bolsa) => (
+          <button className="study-enem-scholarship" key={bolsa.id} type="button" onClick={() => setBolsaAberta(bolsa)}>
+            <strong>{bolsa.nome}</strong><ChevronRight size={17} aria-hidden="true" />
+          </button>
+        ))}
+      </section>}
+      {tab === "kira" && <section className="study-enem-pane" aria-label="Kira no modo ENEM">
+        <div className="study-enem-kira-title">
+          <div><h2>Kira ENEM</h2>{remaining !== null && <p>{remaining}/{KIRA_DAILY_LIMIT} mensagens hoje</p>}</div>
+          {messages.length > 0 && <button type="button" onClick={clear} disabled={loading}>Limpar</button>}
+        </div>
+        {messages.length === 0 && !loading && <div className="study-enem-prompts">
+          {QUICK_PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
+        </div>}
+        {(messages.length > 0 || loading) && <div className="study-chat-log study-enem-log" role="log" ref={log}>
+          {messages.map(({ role, content }, index) => <p key={index} className={`study-message study-message--${role}`}>{content}</p>)}
+          {loading && <p className="study-chat-status">Kira está preparando a resposta…</p>}
+        </div>}
+        <form className="study-composer" onSubmit={(event) => { event.preventDefault(); void enviar(); }}>
+          {error && <p role="alert" className="study-chat-error">{error}</p>}
+          <div className="study-composer-field">
+            <input aria-label="Mensagem para a Kira" placeholder="Mensagem para a Kira" value={kiraInput}
+              onChange={(event) => setKiraInput(event.target.value)} maxLength={2000} enterKeyHint="send" />
+            <button type="submit" aria-label="Enviar mensagem" disabled={loading || !kiraInput.trim()}>
+              <ArrowUp size={20} aria-hidden="true" />
+            </button>
+          </div>
+        </form>
+      </section>}
       <BolsasModal bolsa={bolsaAberta} onClose={() => setBolsaAberta(null)} />
-    </>
+    </main>
   );
 }

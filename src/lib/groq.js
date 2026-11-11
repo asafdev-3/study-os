@@ -25,6 +25,9 @@ async function invokeKira(body) {
     ? await response.json().catch(() => null)
     : null
   const code = details?.code ?? (response?.status === 401 ? 'UNAUTHENTICATED' : 'UNAVAILABLE')
+  if (response?.status === 429 && code === 'DAILY_LIMIT' && body.action !== 'quota') {
+    window.dispatchEvent(new Event('studyos:kira-limit'))
+  }
   throw Object.assign(new Error(errorMessages[code] ?? errorMessages.UNAVAILABLE), {
     code,
     remaining: details?.remaining,
