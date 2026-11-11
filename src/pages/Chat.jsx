@@ -1,15 +1,34 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, Sparkles } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 import { useKira } from '../lib/useKira'
 
+const prompts = [
+  ['Explique um assunto', 'Me ajude a entender um assunto do ENEM. Pergunte qual é e depois explique com um exemplo.'],
+  ['Pratique uma questão', 'Crie uma questão no estilo ENEM. Pergunte qual área eu quero praticar.'],
+]
+
 export default function Chat() {
-  const [input, setInput] = useState('')
+  const location = useLocation()
+  const [input, setInput] = useState(() => location.state?.prompt ?? '')
   const { messages, remaining, loading, error, send } = useKira()
-  const bottomRef = useRef(null)
+  const log = useRef(null)
+  const field = useRef(null)
+  const page = useRef(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const viewport = window.visualViewport
+    const element = page.current
+    if (!viewport || !element) return
+    const resize = () => element.style.setProperty('--chat-height', `${Math.round(viewport.height)}px`)
+    resize()
+    viewport.addEventListener('resize', resize)
+    return () => viewport.removeEventListener('resize', resize)
+  }, [])
+
+  useEffect(() => {
+    if (log.current) log.current.scrollTop = log.current.scrollHeight
   }, [messages, loading])
 
   async function submit(event) {
@@ -18,54 +37,46 @@ export default function Chat() {
     if (await send(input)) setInput('')
   }
 
+  function choose(prompt) {
+    setInput(prompt)
+    field.current?.focus()
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col max-w-sm mx-auto">
-      <header className="px-4 pt-12 pb-4 flex items-center gap-3 border-b border-[#16161b]">
-        <div aria-hidden="true" className="w-10 h-10 rounded-full bg-violet-500" />
-        <div>
-          <h1 className="font-medium text-sm">Kira</h1>
-          <p className="text-zinc-400 text-xs">Assistente de estudos para o ENEM</p>
-        </div>
-        {remaining !== null && (
-          <span className="ml-auto text-[10px] text-zinc-400" aria-live="polite">
-            {remaining}/{KIRA_DAILY_LIMIT} hoje
-          </span>
-        )}
+    <main className="study-chat" ref={page}>
+      <header className="study-chat-header">
+        <div className="study-kira-mark"><Sparkles size={18} aria-hidden="true" /></div>
+        <div><h1>Kira</h1><p>Assistente de estudos para o ENEM</p></div>
+        {remaining !== null && <span aria-live="polite">{remaining}/{KIRA_DAILY_LIMIT} hoje</span>}
       </header>
 
-      <div role="log" className="flex-1 px-4 py-5 flex flex-col gap-4 pb-36">
+      <div role="log" className="study-chat-log" ref={log}>
         {messages.length === 0 && (
-          <p className="text-sm text-zinc-400">Em qual assunto você quer ajuda hoje?</p>
+          <section className="study-chat-empty">
+            <h2>O que vamos estudar?</h2>
+            <p>Traga uma dúvida ou comece por uma questão.</p>
+            <div>{prompts.map(([label, prompt]) => (
+              <button type="button" key={label} onClick={() => choose(prompt)}>{label}</button>
+            ))}</div>
+          </section>
         )}
         {messages.map(({ role, content }, index) => (
-          <div key={index} className={role === 'user'
-            ? 'self-end max-w-[80%] rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3'
-            : 'max-w-[88%] pl-2 border-l border-violet-500/50'}>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{content}</p>
-          </div>
+          <p key={index} className={`study-message study-message--${role}`}>{content}</p>
         ))}
-        {loading && <p className="text-sm text-zinc-400">Kira está preparando a resposta…</p>}
-        <div ref={bottomRef} />
+        {loading && <p className="study-note">Kira está preparando a resposta…</p>}
       </div>
 
-      <form onSubmit={submit} className="fixed bottom-[80px] left-0 right-0 max-w-sm mx-auto px-5 pb-3">
-        {error && <p role="alert" className="mb-2 rounded-xl bg-zinc-900 px-3 py-2 text-sm text-rose-300">{error}</p>}
-        <div className="flex items-center bg-[#0a0a0c] border border-[#16161b] rounded-2xl px-4 py-3 gap-3">
-          <input
-            aria-label="Mensagem para a Kira"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder="Pergunte à Kira…"
-            maxLength={2000}
-            disabled={loading}
-            className="flex-1 min-w-0 bg-transparent text-base text-white outline-none placeholder-zinc-400"
-          />
-          <button type="submit" aria-label="Enviar mensagem" disabled={loading || !input.trim()}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-violet-600 disabled:opacity-40">
-            <ArrowUp size={16} />
+      <form onSubmit={submit} className="study-composer">
+        {error && <p role="alert" className="study-note">{error}</p>}
+        <div>
+          <input ref={field} aria-label="Mensagem para a Kira" value={input}
+            onChange={(event) => setInput(event.target.value)} placeholder="Pergunte à Kira…"
+            maxLength={2000} readOnly={loading} />
+          <button type="submit" aria-label="Enviar mensagem" disabled={loading || !input.trim()}>
+            <ArrowUp size={20} aria-hidden="true" />
           </button>
         </div>
       </form>
-    </div>
+    </main>
   )
 }

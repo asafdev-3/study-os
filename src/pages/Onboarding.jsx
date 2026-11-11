@@ -29,6 +29,7 @@ export default function Onboarding() {
   const [dificuldades, setDificuldades] = useState([])
   const [outroDificuldade, setOutroDificuldade] = useState('')
   const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
   const [nomeGoogle, setNomeGoogle] = useState('')
 
   useEffect(() => {
@@ -55,20 +56,22 @@ export default function Onboarding() {
       d === 'outro' ? (outroDificuldade.trim() || 'outro') : d
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
-    const { error } = await supabase.from('profiles').upsert({
-      id: user.id,
-      nome: nome.trim(),
-      curso_objetivo: curso,
-      area_dificuldade: JSON.stringify(dificuldadesFinais),
-      onboarding_completo: true,
-      criado_em: new Date().toISOString(),
-    })
-
-    if (!error) {
-      navigate('/dashboard')
-    } else {
-      console.error(error)
+    setErro('')
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) throw new Error('Sessão indisponível')
+      const { error } = await supabase.from('profiles').upsert({
+        id: user.id,
+        nome: nome.trim(),
+        curso_objetivo: curso,
+        area_dificuldade: JSON.stringify(dificuldadesFinais),
+        onboarding_completo: true,
+      })
+      if (error) throw error
+      navigate('/dashboard', { replace: true })
+    } catch {
+      setErro('Não foi possível salvar seu perfil. Tente novamente.')
+    } finally {
       setLoading(false)
     }
   }
@@ -264,6 +267,7 @@ export default function Onboarding() {
             ←
           </button>
         )}
+        {erro && <p role="alert" className="text-rose-300 text-sm mb-2">{erro}</p>}
         <button
           onClick={() => step < 2 ? setStep(s => s + 1) : finalizar()}
           disabled={!podeAvancar || loading}

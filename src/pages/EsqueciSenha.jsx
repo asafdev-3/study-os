@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Mail, CheckCircle } from 'lucide-react'
-import logo from '../assets/logo_studyos.png'
 
 function EsqueciSenha() {
   const [email, setEmail] = useState('')
@@ -39,7 +38,7 @@ function EsqueciSenha() {
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <img src={logo} alt="StudyOS" className="w-16 h-16 rounded-2xl" />
+          <img src="/icons/icon-192.png" alt="StudyOS" className="w-16 h-16 rounded-2xl" />
           <span className="text-white tracking-[0.3em] text-sm font-light">S T U D Y O S</span>
         </div>
 

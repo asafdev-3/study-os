@@ -154,6 +154,7 @@ function Perfil() {
   const [user, setUser] = useState(null)
   const [sessoes, setSessoes] = useState(null)
   const [erroSessoes, setErroSessoes] = useState(false)
+  const [erroPerfil, setErroPerfil] = useState(false)
   const [hoje] = useState(() => Date.parse(chaveDiaLocal(new Date())))
   const [tentativa, setTentativa] = useState(0)
 
@@ -168,24 +169,26 @@ function Perfil() {
       const perfilQuery = supabase.from('profiles')
         .select('nome, curso_objetivo, area_dificuldade')
         .eq('id', user.id)
-        .single()
-      const [perfilResultado, sessoesResultado] = await Promise.allSettled([
-        perfilQuery, carregarSessoes(user.id),
+        .maybeSingle()
+      await Promise.allSettled([
+        Promise.resolve(perfilQuery).then(({ data, error }) => {
+          if (!ativo) return
+          if (error) setErroPerfil(true)
+          else setPerfil(data)
+        }).catch(() => { if (ativo) setErroPerfil(true) }),
+        carregarSessoes(user.id).then((historico) => {
+          if (ativo) setSessoes(historico)
+        }).catch(() => { if (ativo) setErroSessoes(true) }),
       ])
-      if (!ativo) return
-      if (perfilResultado.status === 'fulfilled') setPerfil(perfilResultado.value.data)
-      if (sessoesResultado.status === 'fulfilled') setSessoes(sessoesResultado.value)
-      else setErroSessoes(true)
     }
     carregar().catch(() => { if (ativo) setErroSessoes(true) })
     return () => { ativo = false }
   }, [navigate, tentativa])
 
-  const nome = perfil?.nome ?? user?.user_metadata?.full_name?.split(' ')[0] ?? '...'
-  const iniciais = nome !== '...'
-    ? nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+  const nome = perfil?.nome?.trim() || user?.user_metadata?.full_name?.trim() || 'Seu perfil'
+  const iniciais = user
+    ? nome.split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase()
     : '?'
-  const username = (user?.user_metadata?.full_name ?? 'vitor').replace(' ', '').toLowerCase()
 
   const total = sessoes?.length ?? 0
   const { semanas, seguidos, recorde, noturnas } = resumirSessoes(sessoes ?? [], hoje)
@@ -199,7 +202,7 @@ function Perfil() {
   }))
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32 max-w-sm mx-auto" style={{ padding: '0 16px' }}>
+    <div className="study-page min-h-dvh max-w-lg mx-auto px-4">
 
       {/* Botão voltar — apenas desktop (mobile usa navbar) */}
       <div className="hidden md:flex items-center pt-14 pb-2">
@@ -244,10 +247,8 @@ function Perfil() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-semibold">{nome}</h1>
-        <p className="text-[#a1a1aa] text-xs tracking-widest mt-0.5">
-          @{username.toUpperCase()}
-        </p>
+        <h1 className="text-2xl font-semibold break-words text-center max-w-full">{nome}</h1>
+        {perfil?.curso_objetivo && <p className="text-zinc-400 text-sm mt-1">{perfil.curso_objetivo}</p>}
         {sessoes && <p className="text-[#a1a1aa] text-xs mt-3">
           <span style={{ fontFamily: 'Geist Mono, monospace' }} className="text-white">{xpAtual.toLocaleString('pt-BR')}</span>
           {' '}/ {xpProximo.toLocaleString('pt-BR')} XP
@@ -263,19 +264,20 @@ function Perfil() {
           { icon: '⚡', valor: sessoes ? total : '—', label: 'SESSÕES' },
           { icon: '△', valor: sessoes ? total : '—', label: 'ÁRVORES\nPLANTADAS' },
         ].map(({ icon, valor, label }) => (
-          <div key={label} className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl p-4 flex flex-col gap-1">
+          <div key={label} className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl min-w-0 p-2.5 sm:p-4 flex flex-col gap-1">
             <span className="text-[#a1a1aa] text-sm">{icon}</span>
             <span style={{ fontFamily: 'Geist Mono, monospace' }} className="text-3xl font-medium">{valor}</span>
-            <span className="text-[#a1a1aa] text-[9px] tracking-widest whitespace-pre-line">{label}</span>
+            <span className="text-[#a1a1aa] text-[9px] tracking-wide whitespace-pre-line">{label}</span>
           </div>
         ))}
       </div>
 
-      {erroSessoes && (
+      {(erroSessoes || erroPerfil) && (
         <div role="status" className="mb-5 text-sm text-zinc-400">
-          Histórico de estudo indisponível.{' '}
+          {erroSessoes ? 'Histórico de estudo indisponível.' : 'Dados do perfil indisponíveis.'}{' '}
           <button className="underline" onClick={() => {
             setErroSessoes(false)
+            setErroPerfil(false)
             setTentativa((valor) => valor + 1)
           }}>Tentar novamente</button>
         </div>
@@ -284,12 +286,12 @@ function Perfil() {
       {/* Ritmo */}
       <p className="text-[#a1a1aa] text-[10px] tracking-widest uppercase mb-3">Seu ritmo · últimas 12 semanas</p>
       <div className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl p-4 mb-6">
-        <div className="flex gap-1">
+        <div className="grid grid-cols-12 gap-1">
           {semanas.map((semana, s) => (
             <div key={s} className="flex flex-col gap-1">
               {semana.map(({ data, sessoes }) => (
                 <div key={data} title={`${data} · ${sessoes} sessão(ões)`}
-                  className={`w-4 h-4 rounded-sm ${intensidade[Math.min(4, sessoes)]}`} />
+                  className={`w-full aspect-square rounded-sm ${intensidade[Math.min(4, sessoes)]}`} />
               ))}
             </div>
           ))}

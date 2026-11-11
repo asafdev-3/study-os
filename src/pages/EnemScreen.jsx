@@ -193,67 +193,101 @@ function BolsasModal({ bolsa, onClose }) {
 }
 
 // ─── Sessão de Foco ───────────────────────────────────────────────────────────
-function SessaoFoco() {
-  const duration = 25 * 60;
-  const [seconds, setSeconds] = useState(duration);
-  const [deadline, setDeadline] = useState(null);
-  const [area, setArea] = useState(AREAS[0]);
-  const [done, setDone] = useState(false);
-  const [saveState, setSaveState] = useState("idle");
-  const completed = useRef(null);
-  const running = deadline !== null;
+const FOCUS_SECONDS = 25 * 60;
 
-  async function saveSession() {
-    setSaveState("saving");
-    try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error("Sessão de login indisponível");
-      const { error } = await supabase.from("study_sessions").upsert(
-        { ...completed.current, user_id: user.id },
-        { onConflict: "id", ignoreDuplicates: true },
-      );
-      if (error) throw error;
-      setSaveState("saved");
-    } catch {
-      setSaveState("error");
+function readFocus(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    if (value?.id && AREAS.some(({ id }) => id === value.areaId)
+        && Number.isFinite(value.seconds) && value.seconds >= 0 && value.seconds <= FOCUS_SECONDS
+        && (value.deadline === null || Number.isFinite(value.deadline))) return value;
+  } catch { /* O timer continua disponível sem armazenamento. */ }
+  return null;
+}
+
+function SessaoFoco({ userId }) {
+  const key = `studyos:focus:${userId}`;
+  const [focus, setFocus] = useState(() => readFocus(key));
+  const [areaChoice, setAreaChoice] = useState(AREAS[0]);
+  const [now, setNow] = useState(() => Date.now());
+  const [saveState, setSaveState] = useState("idle");
+  const [retry, setRetry] = useState(0);
+  const area = AREAS.find(({ id }) => id === focus?.areaId) ?? areaChoice;
+  const deadline = focus?.deadline;
+  const seconds = deadline == null ? (focus?.seconds ?? FOCUS_SECONDS) : Math.max(0, Math.ceil((deadline - now) / 1000));
+  const running = deadline != null && seconds > 0;
+  const done = deadline != null && seconds === 0;
+  const focusId = focus?.id;
+  const focusArea = focus?.areaId;
+
+  useEffect(() => {
+    function sync(event) {
+      if (event.key !== key) return;
+      setFocus(readFocus(key));
+      setNow(Date.now());
+      setSaveState("idle");
     }
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, [key]);
+
+  function updateFocus(value) {
+    setFocus(value);
+    try {
+      if (value) localStorage.setItem(key, JSON.stringify(value));
+      else localStorage.removeItem(key);
+    } catch { /* O timer continua nesta tela. */ }
   }
 
   useEffect(() => {
-    if (!deadline) return;
-    const timer = setInterval(() => {
-      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-      setSeconds(remaining);
-      if (remaining > 0) return;
+    if (deadline == null || done) return;
+    const tick = () => setNow(Date.now());
+    const timer = setInterval(tick, 1000);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
       clearInterval(timer);
-      completed.current = {
-        id: crypto.randomUUID(),
-        area: area.id,
-        duration_min: 25,
-        created_at: new Date(deadline).toISOString(),
-      };
-      setDeadline(null);
-      setDone(true);
-      void saveSession();
-    }, 250);
-    return () => clearInterval(timer);
-  }, [deadline, area]);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [deadline, done]);
+
+  useEffect(() => {
+    if (!done || !userId) return;
+    let active = true;
+    async function save() {
+      try {
+        const { error } = await supabase.from("study_sessions").upsert({
+          id: focusId, user_id: userId, area: focusArea, duration_min: 25,
+          created_at: new Date(deadline).toISOString(),
+        }, { onConflict: "id", ignoreDuplicates: true });
+        if (error) throw error;
+        if (active) setSaveState("saved");
+      } catch {
+        if (active) setSaveState("error");
+      }
+    }
+    void save();
+    return () => { active = false; };
+  }, [done, userId, focusId, focusArea, deadline, retry]);
 
   function toggleTimer() {
-    if (running) {
-      setSeconds(Math.max(1, Math.ceil((deadline - Date.now()) / 1000)));
-      setDeadline(null);
+    const timestamp = Date.now();
+    setNow(timestamp);
+    if (deadline != null) {
+      if (deadline <= timestamp) return;
+      updateFocus({ ...focus, seconds: Math.ceil((deadline - timestamp) / 1000), deadline: null });
     } else {
-      setDeadline(Date.now() + seconds * 1000);
+      updateFocus({ id: focusId ?? crypto.randomUUID(), areaId: area.id, seconds, deadline: timestamp + seconds * 1000 });
     }
   }
 
   function reset() {
-    setDeadline(null);
-    setSeconds(duration);
-    setDone(false);
     setSaveState("idle");
-    completed.current = null;
+    updateFocus(null);
+  }
+
+  function retrySave() {
+    setSaveState("idle");
+    setRetry((value) => value + 1);
   }
   const pct   = ((25 * 60 - seconds) / (25 * 60)) * 100;
   const r     = 90, circ = 2 * Math.PI * r;
@@ -264,8 +298,8 @@ function SessaoFoco() {
 
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24 }}>
         {AREAS.map(a => (
-          <button key={a.id} disabled={saveState === "saving"} onClick={() => { reset(); setArea(a); }} style={{
-            padding: "7px 13px", borderRadius: 99, fontSize: 11, fontWeight: 700,
+          <button key={a.id} disabled={Boolean(focus) && (!done || saveState === "idle")} onClick={() => { reset(); setAreaChoice(a); }} style={{
+            padding: "7px 11px", minHeight: 44, borderRadius: 99, fontSize: 11, fontWeight: 700,
             background: area.id === a.id ? a.color + "1e" : "rgba(255,255,255,.04)",
             border: `1px solid ${area.id === a.id ? a.color + "55" : "rgba(255,255,255,.07)"}`,
             color: area.id === a.id ? a.color : "#52525b",
@@ -275,8 +309,8 @@ function SessaoFoco() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
-        <div style={{ position: "relative", width: 200, height: 200 }}>
-          <svg width="200" height="200" style={{ transform: "rotate(-90deg)" }}>
+        <div style={{ position: "relative", width: "min(200px, 100%)", aspectRatio: "1" }}>
+          <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ transform: "rotate(-90deg)" }}>
             <defs>
               <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor={area.color} />
@@ -305,10 +339,10 @@ function SessaoFoco() {
               {running ? "Pausar" : "Iniciar Foco"}
             </button>
           ) : (
-            <button className="btn btn-ghost" disabled={saveState === "saving"} onClick={reset}>Reiniciar</button>
+            <button className="btn btn-ghost" disabled={(done && saveState === "idle")} onClick={reset}>Reiniciar</button>
           )}
-          {!done && seconds < 25 * 60 && (
-            <button className="btn btn-ghost" onClick={reset} style={{ padding: "0 16px" }}>✕</button>
+          {!done && focus && (
+            <button className="btn btn-ghost" aria-label="Cancelar sessão de foco" onClick={reset} style={{ padding: "0 16px" }}>✕</button>
           )}
         </div>
       </div>
@@ -319,12 +353,12 @@ function SessaoFoco() {
             className="glass-green" style={{ borderRadius: 16, padding: "13px 16px", marginTop: 20, textAlign: "center" }}
           >
             <p role="status" style={{ margin: 0, fontSize: 14, color: "#6eebd5", fontWeight: 600 }}>
-              {saveState === "saving" && "Salvando sessão…"}
+              {(done && saveState === "idle") && "Salvando sessão…"}
               {saveState === "saved" && `+30 XP · Sessão em ${area.label}`}
               {saveState === "error" && "Falha ao salvar a sessão."}
             </p>
             {saveState === "error" && (
-              <button className="btn btn-ghost" onClick={saveSession}>Tentar novamente</button>
+              <button className="btn btn-ghost" onClick={retrySave}>Tentar novamente</button>
             )}
           </motion.div>
         )}
@@ -410,7 +444,7 @@ function NotasCorte({ minhaMedia }) {
 }
 
 // ─── Tela Principal ───────────────────────────────────────────────────────────
-export default function EnemScreen() {
+export default function EnemScreen({ userId }) {
   const daysLeft = getDaysToEnem();
 
   // ── UI state ──
@@ -485,9 +519,9 @@ export default function EnemScreen() {
     <>
       <div style={{
         minHeight: "100dvh",
-        background: "#050507",
+        background: "#0b101a",
         color: "#f4f4f5",
-        padding: "0 0 110px",
+        padding: "0 0 max(32px, var(--study-nav-space))",
         position: "relative",
         fontFamily: "inherit",
       }}>
@@ -498,7 +532,7 @@ export default function EnemScreen() {
         }} />
 
         {/* ── Header ── */}
-        <div style={{ padding: "52px 20px 0", position: "relative" }}>
+        <div style={{ padding: "calc(62px + env(safe-area-inset-top, 0px)) 20px 0", position: "relative" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
               <span style={{ ...T.label }}>MODO ENEM</span>
@@ -584,7 +618,7 @@ export default function EnemScreen() {
           <motion.div hidden={tab !== "foco"} initial={false}
             animate={tab === "foco" ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
             transition={{ duration: .2 }}>
-            <SessaoFoco />
+            <SessaoFoco key={userId} userId={userId} />
           </motion.div>
           <AnimatePresence mode="wait">
 

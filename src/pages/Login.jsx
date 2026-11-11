@@ -1,7 +1,6 @@
 // Login.jsx — StudyOS
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import logo from '../assets/logo_studyos.png'
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -13,46 +12,39 @@ const GoogleIcon = () => (
 )
 
 function Login() {
-  const [visivel, setVisivel] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
-
-  useEffect(() => {
-    setTimeout(() => setVisivel(true), 50)
-  }, [])
 
   async function handleGoogle() {
     setLoading(true)
     setErro('')
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin + '/dashboard',
-      },
-    })
-    if (error) {
-      setErro(error.message)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard',
+        },
+      })
+      if (error) throw error
+    } catch {
+      setErro('O login com Google falhou. Tente novamente.')
       setLoading(false)
     }
   }
 
   return (
-    <div
-      className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 transition-opacity duration-700"
-      style={{ opacity: visivel ? 1 : 0 }}
-    >
+    <main className="study-entry">
       <div className="w-full max-w-sm flex flex-col items-center gap-10">
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <img src={logo} alt="StudyOS" className="w-16 h-16 rounded-2xl" />
-          <span className="text-white tracking-[0.3em] text-sm font-light">S T U D Y O S</span>
+          <img src="/icons/icon-192.png" alt="StudyOS" className="w-16 h-16 rounded-2xl" />
         </div>
 
         {/* Título */}
         <div className="text-center">
-          <h1 className="text-white text-2xl font-semibold">Bem-vindo.</h1>
-          <p className="text-zinc-500 text-sm mt-1">Entre com sua conta Google para continuar.</p>
+          <h1 className="text-white text-2xl font-semibold">Seu espaço de estudo.</h1>
+          <p className="text-zinc-500 text-sm mt-1">Organize sua rotina de preparação para o ENEM.</p>
         </div>
 
         {/* Botão Google */}
@@ -67,16 +59,12 @@ function Login() {
           </button>
 
           {erro && (
-            <p className="text-red-400 text-xs text-center">{erro}</p>
+            <p role="alert" className="text-red-400 text-sm text-center">{erro}</p>
           )}
         </div>
 
-        <p className="text-zinc-700 text-xs text-center">
-          Ao entrar, você concorda com os termos de uso do StudyOS.
-        </p>
-
       </div>
-    </div>
+    </main>
   )
 }
 

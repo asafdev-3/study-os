@@ -1,27 +1,34 @@
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 
 import Splash from './pages/Splash'
 import Login from './pages/Login'
 import Lock from './pages/Lock'
-import Dashboard from './pages/Dashboard'
-import Anotacoes from './pages/Anotacoes'
-import Chat from './pages/Chat'
-import Lembretes from './pages/Lembretes'
-import Perfil from './pages/Perfil'
-import Configuracoes from './pages/Configuracoes'
-import Upgrade from './pages/Upgrade'
-import Sucesso from './pages/Sucesso'
 import TopBar from './components/TopBar'
 import Navbar from './components/Navbar'
-import EsqueciSenha from './pages/EsqueciSenha'
-import NFC from './pages/NFC'
-import NovaAnotacao from './pages/NovaAnotacao'
-import EnemScreen from './pages/EnemScreen'
-import Onboarding from './pages/Onboarding'
 import './components/glass.css'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Anotacoes = lazy(() => import('./pages/Anotacoes'))
+const Chat = lazy(() => import('./pages/Chat'))
+const Lembretes = lazy(() => import('./pages/Lembretes'))
+const Perfil = lazy(() => import('./pages/Perfil'))
+const Configuracoes = lazy(() => import('./pages/Configuracoes'))
+const Upgrade = lazy(() => import('./pages/Upgrade'))
+const Sucesso = lazy(() => import('./pages/Sucesso'))
+const EsqueciSenha = lazy(() => import('./pages/EsqueciSenha'))
+const NFC = lazy(() => import('./pages/NFC'))
+const NovaAnotacao = lazy(() => import('./pages/NovaAnotacao'))
+const EnemScreen = lazy(() => import('./pages/EnemScreen'))
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+
+const oauthReturn = new URLSearchParams(window.location.search).has('code')
+  || new URLSearchParams(window.location.hash.slice(1)).has('access_token')
+
+function TelaCarregando() {
+  return <div className="study-loading" role="status">Carregando StudyOS…</div>
+}
 
 const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha']
 
@@ -29,87 +36,104 @@ const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha']
 const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock']
 
 function PageWrapper({ children }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.25, ease: 'easeInOut' }}
-    >
-      {children}
-    </motion.div>
-  )
+  return <div className="study-page-enter">{children}</div>
 }
 
-function AnimatedRoutes({ sessao }) {
+function AppRoutes({ sessao, bloqueado, desbloquear }) {
   const location = useLocation()
   const publica = ROTAS_PUBLICAS.includes(location.pathname)
+
+  if (sessao && bloqueado && location.pathname !== '/lock') {
+    return <Navigate to="/lock" replace state={{ destino: publica ? '/dashboard' : location.pathname + location.search }} />
+  }
+
+  if (sessao && ['/', '/login'].includes(location.pathname)) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   if (!sessao && !publica) {
     return <Navigate to="/login" replace />
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
-        <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-        <Route path="/lock" element={<PageWrapper><Lock /></PageWrapper>} />
-        <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
-        <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />
-        <Route path="/chat" element={<PageWrapper><Chat /></PageWrapper>} />
-        <Route path="/lembretes" element={<PageWrapper><Lembretes /></PageWrapper>} />
-        <Route path="/perfil" element={<PageWrapper><Perfil /></PageWrapper>} />
-        <Route path="/configuracoes" element={<PageWrapper><Configuracoes /></PageWrapper>} />
-        <Route path="/upgrade" element={<PageWrapper><Upgrade /></PageWrapper>} />
-        <Route path="/sucesso" element={<PageWrapper><Sucesso /></PageWrapper>} />
-        <Route path="/esqueci-senha" element={<PageWrapper><EsqueciSenha /></PageWrapper>} />
-        <Route path="/nfc" element={<PageWrapper><NFC /></PageWrapper>} />
-        <Route path="/nova-anotacao" element={<NovaAnotacao />} />
-        <Route path="/enem" element={<EnemScreen />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-      </Routes>
-    </AnimatePresence>
+    <Routes location={location} key={location.pathname}>
+      <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
+      <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+      <Route path="/lock" element={<PageWrapper><Lock onUnlock={desbloquear} /></PageWrapper>} />
+      <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+      <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />
+      <Route path="/chat" element={<PageWrapper><Chat /></PageWrapper>} />
+      <Route path="/lembretes" element={<PageWrapper><Lembretes /></PageWrapper>} />
+      <Route path="/perfil" element={<PageWrapper><Perfil /></PageWrapper>} />
+      <Route path="/configuracoes" element={<PageWrapper><Configuracoes /></PageWrapper>} />
+      <Route path="/upgrade" element={<PageWrapper><Upgrade /></PageWrapper>} />
+      <Route path="/sucesso" element={<PageWrapper><Sucesso /></PageWrapper>} />
+      <Route path="/esqueci-senha" element={<PageWrapper><EsqueciSenha /></PageWrapper>} />
+      <Route path="/nfc" element={<PageWrapper><NFC /></PageWrapper>} />
+      <Route path="/nova-anotacao" element={<NovaAnotacao />} />
+      <Route path="/enem" element={<EnemScreen userId={sessao?.user.id} />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+    </Routes>
   )
 }
 
-function AppContent({ sessao }) {
+function AppContent({ sessao, bloqueado, desbloquear }) {
   const location = useLocation()
-  const comSidebar = !SEM_SIDEBAR.includes(location.pathname)
+  const comSidebar = !!sessao && !bloqueado && !SEM_SIDEBAR.includes(location.pathname)
 
   return (
     <>
-      <TopBar />
-      <Navbar />
+      {comSidebar && <TopBar />}
+      {comSidebar && <Navbar />}
       <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={comSidebar ? 'md:pl-[88px]' : ''}>
-        <AnimatedRoutes sessao={sessao} />
+        <Suspense fallback={<TelaCarregando />}>
+          <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />
+        </Suspense>
       </div>
     </>
   )
 }
 
 function App() {
-  const [sessao, setSessao] = useState(undefined)
+  const [auth, setAuth] = useState({ session: undefined, locked: false })
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSessao(session)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setAuth((previous) => {
+        if (event === 'INITIAL_SESSION') return { session, locked: Boolean(session) && !oauthReturn }
+        if (previous.session === undefined) return previous
+        return { session, locked: Boolean(session) && previous.locked }
+      })
     })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSessao(session)
-    })
-
     return () => subscription.unsubscribe()
   }, [])
 
-  if (sessao === undefined) {
-    return <div style={{ minHeight: '100vh', background: '#0a0a0a' }} />
+  useEffect(() => {
+    if (!auth.session?.user.id) return
+    let hiddenAt = null
+    function onVisibility() {
+      if (document.hidden) {
+        hiddenAt = Date.now()
+      } else {
+        if (hiddenAt !== null && Date.now() - hiddenAt >= 60_000) {
+          setAuth((previous) => previous.session ? { ...previous, locked: true } : previous)
+        }
+        hiddenAt = null
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [auth.session?.user.id])
+
+  function desbloquear() {
+    setAuth((previous) => ({ ...previous, locked: false }))
   }
+
+  if (auth.session === undefined) return <TelaCarregando />
 
   return (
     <BrowserRouter>
-      <AppContent sessao={sessao} />
+      <AppContent key={auth.session?.user.id ?? "visitante"} sessao={auth.session} bloqueado={auth.locked} desbloquear={desbloquear} />
     </BrowserRouter>
   )
 }
