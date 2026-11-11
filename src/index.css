@@ -98,8 +98,8 @@ body {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .study-page-enter { animation: study-page-enter 160ms ease-out; }
-  @keyframes study-page-enter { from { opacity: 0; } to { opacity: 1; } }
+  .study-page-enter { animation: study-page-enter 190ms cubic-bezier(.2,.75,.3,1); }
+  @keyframes study-page-enter { from { opacity: .65; translate: 0 3px; } to { opacity: 1; translate: 0 0; } }
 }
 
 .study-notebook-form { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--study-line); border-radius: 18px; margin-bottom: 16px; background: #11131b; }
@@ -118,3 +118,37 @@ body {
 .study-notebook-item summary { cursor: pointer; overflow-wrap: anywhere; }
 .study-notebook-item small { color: var(--study-muted); display: block; padding-left: 14px; }
 .study-notebook-item p { padding: 10px 14px 0; }
+
+.study-kira-mark { overflow: hidden; }
+.study-kira-mark img { width: 100%; height: 100%; object-fit: cover; }
+
+.study-notes { width: min(100%, 500px); margin: 0 auto; padding-inline: 16px; }
+.study-notes-header { padding: calc(56px + env(safe-area-inset-top, 0px)) 0 15px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.study-notes-header h1 { font-size: clamp(25px, 8vw, 34px); font-weight: 650; letter-spacing: -.04em; }
+.study-notes-header span { color: var(--study-muted); font-size: 12px; }
+.study-note-filters { display: flex; gap: 7px; overflow-x: auto; margin-bottom: 14px; scrollbar-width: none; }
+.study-note-filters button { flex-shrink: 0; min-height: 44px; border: 1px solid #272731; border-radius: 24px; padding: 6px 12px; font-size: 13px; color: #a1a1aa; }
+.study-note-filters button[aria-pressed="true"] { background: #f4f4f5; color: #101016; }
+.study-notes-grid { columns: 2; column-gap: 10px; }
+.study-note-card { --note-area: #c4b5fd; break-inside: avoid; margin-bottom: 10px; border: 1px solid #202029; border-radius: 16px; background: #0c0c10; }
+.study-note-card[data-area="cn"] { --note-area: #82dfbb; }
+.study-note-card[data-area="ch"] { --note-area: #efc37a; }
+.study-note-card[data-area="mt"] { --note-area: #8db8ff; }
+.study-note-card[data-area="lc"] { --note-area: #dbb2f4; }
+.study-note-card summary { cursor: pointer; list-style: none; display: grid; gap: 5px; padding: 12px; overflow-wrap: anywhere; }
+.study-note-card small { color: var(--note-area); font-size: 10px; letter-spacing: .045em; }
+.study-note-card small::before { content: '• '; }
+.study-note-card strong { font-weight: 600; font-size: 14px; }
+.study-note-card summary span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--study-muted); font-size: 12px; }
+.study-note-card[open] summary span { display: none; }
+.study-note-card > p { padding: 0 12px 12px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--study-muted); font-size: 13px; }
+.study-note-fab { position: fixed; z-index: 40; right: max(18px, calc((100vw - 460px) / 2)); bottom: max(24px, var(--study-nav-space)); display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: #30235c; color: #f4efff; border: 1px solid #9a7fe888; }
+.study-note-overlay { position: fixed; z-index: 70; inset: 0; display: grid; place-items: center; background: #0009; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+.study-note-overlay section { width: min(100%, 430px); max-height: 100%; overflow: auto; border-radius: 20px; }
+.study-note-overlay form { margin: 0; }
+
+.study-settings-row { min-height: 52px; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 11px 2px; border-bottom: 1px solid var(--study-line); color: var(--study-ink); font-size: 14px; text-decoration: none; }
+.study-settings-row strong { display: block; font-weight: 600; }
+.study-settings-row small { display: block; color: var(--study-muted); font-size: 12px; margin-top: 2px; }
+.study-settings-row select { border: 1px solid var(--study-line); border-radius: 8px; padding: 6px; }
+html[data-study-motion="reduced"] .study-page-enter { animation: none; }

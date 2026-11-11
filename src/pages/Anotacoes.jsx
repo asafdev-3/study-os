@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Plus, Search, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { sendToKira } from '../lib/groq'
@@ -15,6 +15,7 @@ function NovaNota({ onSave, onCancel }) {
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const [suggestion, setSuggestion] = useState('')
+  const draftId = useRef(null)
   const hasDraft = Boolean(title.trim() || content.trim())
 
   async function suggest() {
@@ -41,7 +42,8 @@ function NovaNota({ onSave, onCancel }) {
     setBusy('save')
     setError('')
     try {
-      await onSave({ title: title.trim() || 'Sem título', content: content.trim(), area })
+      draftId.current ??= crypto.randomUUID()
+      await onSave({ id: draftId.current, title: title.trim() || 'Sem título', content: content.trim(), area })
     } catch {
       setError('Não foi possível salvar sua anotação. Tente novamente.')
       setBusy('')
@@ -80,6 +82,7 @@ export default function Anotacoes() {
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [query, setQuery] = useState('')
+  const [activeArea, setActiveArea] = useState('')
   const [writing, setWriting] = useState(false)
 
   useEffect(() => {
@@ -100,8 +103,11 @@ export default function Anotacoes() {
   async function save(note) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) throw authError ?? new Error('Sessão indisponível')
+    const { error: saveError } = await supabase.from('annotations')
+      .upsert({ ...note, user_id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+    if (saveError) throw saveError
     const { data, error: dbError } = await supabase.from('annotations')
-      .insert({ ...note, user_id: user.id }).select('id,title,content,area,created_at').single()
+      .select('id,title,content,area,created_at').eq('user_id', user.id).eq('id', note.id).single()
     if (dbError) throw dbError
     setNotes((previous) => [data, ...(previous ?? []).filter(({ id }) => id !== data.id)])
     setWriting(false)
@@ -109,32 +115,46 @@ export default function Anotacoes() {
 
   const term = query.trim().toLocaleLowerCase('pt-BR')
   const filtered = notes?.filter(({ title, content, area }) =>
-    [title, content, areas[area]].some((text) => text?.toLocaleLowerCase('pt-BR').includes(term)))
+    (!activeArea || activeArea === (area || 'geral'))
+    && [title, content, areas[area]].some((text) => text?.toLocaleLowerCase('pt-BR').includes(term)))
 
   return (
-    <main className="study-page study-dashboard">
-      <header className="study-home-header">
+    <main className="study-page study-notes">
+      <header className="study-notes-header">
         <h1>Anotações</h1>
-        <p>Seu caderno de revisão para o ENEM.</p>
+        {notes && <span>{notes.length} {notes.length === 1 ? 'nota' : 'notas'}</span>}
       </header>
-      {writing ? <NovaNota onSave={save} onCancel={() => setWriting(false)} /> :
-        <button className="study-primary mb-5" onClick={() => setWriting(true)} type="button">
-          <Plus size={18} aria-hidden="true" /> Nova anotação
-        </button>}
       <label className="study-notebook-search">
         <Search size={17} aria-hidden="true" />
-        <input aria-label="Buscar anotações" placeholder="Buscar nas suas anotações" value={query} onChange={(event) => setQuery(event.target.value)} />
+        <input aria-label="Buscar anotações" placeholder="Buscar em todas as anotações…" value={query} onChange={(event) => setQuery(event.target.value)} />
       </label>
+      <div className="study-note-filters" aria-label="Filtrar por área">
+        {[['', 'Tudo'], ...Object.entries(areas)].map(([id, label]) => (
+          <button type="button" key={id} aria-pressed={activeArea === id} onClick={() => setActiveArea(id)}>{label}</button>
+        ))}
+      </div>
       {error && <p role="alert" className="study-note">Não foi possível carregar suas anotações.{' '}
         <button onClick={() => { setError(false); setRetry((value) => value + 1) }} type="button">Tentar novamente</button></p>}
       {!notes && !error && <p role="status" className="study-note">Carregando anotações…</p>}
-      {filtered?.length === 0 && <p className="study-note">{term ? 'Nenhum resultado para esta busca.' : 'Você ainda não tem anotações.'}</p>}
-      {filtered?.map((note) => (
-        <details className="study-notebook-item" key={note.id}>
-          <summary><span>{note.title || 'Sem título'}</span><small>{areas[note.area] ?? 'Geral'}</small></summary>
-          <p className="whitespace-pre-wrap break-words">{note.content || 'Sem texto.'}</p>
-        </details>
-      ))}
+      {filtered?.length === 0 && <p className="study-note">{term || activeArea ? 'Nenhuma anotação neste filtro.' : 'Você ainda não tem anotações.'}</p>}
+      <div className="study-notes-grid">
+        {filtered?.map((note) => (
+          <details className="study-note-card" key={note.id} data-area={note.area ?? 'geral'}>
+            <summary><small>{areas[note.area] ?? 'Geral'}</small><strong>{note.title || 'Sem título'}</strong>
+              {note.content && <span>{note.content}</span>}
+            </summary>
+            <p>{note.content || 'Sem texto.'}</p>
+          </details>
+        ))}
+      </div>
+      <button className="study-note-fab" onClick={() => setWriting(true)} type="button" aria-label="Nova anotação">
+        <Plus size={24} aria-hidden="true" />
+      </button>
+      {writing && <div className="study-note-overlay">
+        <section role="dialog" aria-modal="true" aria-label="Nova anotação">
+          <NovaNota onSave={save} onCancel={() => setWriting(false)} />
+        </section>
+      </div>}
     </main>
   )
 }

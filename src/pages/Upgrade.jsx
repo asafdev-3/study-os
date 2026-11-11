@@ -2,16 +2,17 @@
 // Rota: /upgrade
 // Animação: stagger hierárquico — header → hero → recursos (cascata) → planos → CTA
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Check, Zap } from 'lucide-react'
+import { callCheckout } from '../lib/checkout'
 
 const PLANOS = [
   {
     id: 'anual',
     label: 'Anual',
-    badge: '2 MESES GRÁTIS',
+    badge: 'PLANO ANUAL',
     preco: 'R$ 15,82',
     sub: '/mês · cobrado R$ 189,90/ano',
     destaque: true,
@@ -31,7 +32,6 @@ const RECURSOS = [
   { emoji: '📷', label: 'Fotos ilimitadas todo mês' },
   { emoji: '🗒️', label: 'Post-its infinitos' },
   { emoji: '📊', label: 'Histórico completo de estudos' },
-  { emoji: '⚡', label: '7 dias grátis pra testar' },
 ]
 
 // Variantes de animação reutilizáveis
@@ -49,6 +49,26 @@ const fadeIn = (delay = 0) => ({
 
 function Upgrade() {
   const [selecionado, setSelecionado] = useState('anual')
+  const [checkoutError, setCheckoutError] = useState('')
+  const [opening, setOpening] = useState(false)
+  const checkoutAttempt = useRef(null)
+
+  async function openCheckout() {
+    if (opening) return
+    setOpening(true)
+    setCheckoutError('')
+    try {
+      if (checkoutAttempt.current?.plan !== selecionado) {
+        checkoutAttempt.current = { plan: selecionado, attempt: crypto.randomUUID() }
+      }
+      const { url } = await callCheckout(checkoutAttempt.current)
+      if (new URL(url).origin !== 'https://checkout.stripe.com') throw new Error('Checkout inválido.')
+      window.location.assign(url)
+    } catch (error) {
+      setCheckoutError(error.message)
+      setOpening(false)
+    }
+  }
   const navigate = useNavigate()
 
   return (
@@ -90,7 +110,7 @@ function Upgrade() {
             StudyOS
           </p>
           <p style={{ fontSize: 15, fontWeight: 600, fontFamily: 'Geist, sans-serif', color: '#f4f4f5' }}>
-            Plano PRO
+            StudyOS PRO
           </p>
         </div>
       </motion.div>
@@ -286,7 +306,8 @@ function Upgrade() {
         style={{ padding: '0 20px' }}
       >
         <button
-          onClick={() => navigate('/sucesso')}
+          onClick={openCheckout}
+          disabled={opening}
           style={{
             width: '100%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -303,15 +324,16 @@ function Upgrade() {
           }}
         >
           <Zap size={15} color="#ffffff" />
-          {selecionado === 'anual' ? 'Começar 7 dias grátis' : 'Assinar mensalmente'}
+          {opening ? 'Abrindo checkout…' : 'Abrir checkout de teste'}
         </button>
 
+        {checkoutError && <p role="alert" className="study-note text-rose-300">{checkoutError}</p>}
         <p style={{
           fontSize: 11, color: '#3f3f46',
           textAlign: 'center',
           fontFamily: 'Geist, sans-serif',
         }}>
-          Cancela quando quiser · sem pegadinha
+          Modo de teste · sem cobrança real
         </p>
       </motion.div>
 

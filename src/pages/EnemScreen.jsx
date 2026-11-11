@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase }   from "../lib/supabase";
+import { notifyFocus } from "../lib/preferences";
 import { KIRA_DAILY_LIMIT } from "../lib/groq";
 import { useKira } from "../lib/useKira";
 
@@ -260,7 +261,10 @@ function SessaoFoco({ userId }) {
           created_at: new Date(deadline).toISOString(),
         }, { onConflict: "id", ignoreDuplicates: true });
         if (error) throw error;
-        if (active) setSaveState("saved");
+        if (active) {
+          setSaveState("saved");
+          void notifyFocus(focusId);
+        }
       } catch {
         if (active) setSaveState("error");
       }

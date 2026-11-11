@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp, Sparkles } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
+import kiraImage from '../assets/kira-studyos.webp'
 import { useLocation } from 'react-router-dom'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 import { useKira } from '../lib/useKira'
@@ -45,7 +46,7 @@ export default function Chat() {
   return (
     <main className="study-chat" ref={page}>
       <header className="study-chat-header">
-        <div className="study-kira-mark"><Sparkles size={18} aria-hidden="true" /></div>
+        <div className="study-kira-mark"><img src={kiraImage} alt="" width="40" height="40" /></div>
         <div><h1>Kira</h1><p>Assistente de estudos para o ENEM</p></div>
         {remaining !== null && <span aria-live="polite">{remaining}/{KIRA_DAILY_LIMIT} hoje</span>}
       </header>

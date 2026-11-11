@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { readPreferences } from './preferences'
 
 export const KIRA_DAILY_LIMIT = 10
 
@@ -10,8 +11,14 @@ const errorMessages = {
 }
 
 async function invokeKira(body) {
-  const { data, error } = await supabase.functions.invoke('kira', { body })
-  if (!error) return data
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw Object.assign(new Error(errorMessages.UNAUTHENTICATED), { code: 'UNAUTHENTICATED' })
+  const { data, error } = await supabase.functions.invoke('kira', {
+    body, headers: { Authorization: `Bearer ${session.access_token}` },
+  })
+  if (!error && Number.isInteger(data?.remaining)
+      && (body.action === 'quota' || typeof data.answer === 'string' && data.answer.trim())) return data
+  if (!error) throw new Error(errorMessages.UNAVAILABLE)
 
   const response = error.context
   const details = typeof response?.json === 'function'
@@ -29,7 +36,13 @@ export function getKiraQuota() {
 }
 
 export function sendToKira(messages) {
-  return invokeKira({
-    messages: messages.slice(-10).map(({ role, content }) => ({ role, content: content.slice(0, 2000) })),
-  })
+  const tone = { formal: 'Use um tom formal e claro.', seco: 'Seja breve e direto.' }[readPreferences().kiraTone]
+  const history = messages.slice(-10).map(({ role, content }) => ({ role, content: content.slice(0, 2000) }))
+  if (tone && history.at(-1)?.role === 'user') {
+    const last = history.at(-1)
+    last.content = `${tone}
+
+${last.content.slice(0, 2000 - tone.length - 2)}`
+  }
+  return invokeKira({ messages: history })
 }

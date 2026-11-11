@@ -1,14 +1,15 @@
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { lazy, Suspense, useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
+import { readPreferences } from './lib/preferences'
 
 import Splash from './pages/Splash'
 import Login from './pages/Login'
-import Lock from './pages/Lock'
 import TopBar from './components/TopBar'
 import Navbar from './components/Navbar'
 import './components/glass.css'
 
+const Lock = lazy(() => import('./pages/Lock'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Anotacoes = lazy(() => import('./pages/Anotacoes'))
 const Chat = lazy(() => import('./pages/Chat'))
@@ -30,7 +31,7 @@ function TelaCarregando() {
   return <div className="study-loading" role="status">Carregando StudyOS…</div>
 }
 
-const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha']
+const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/esqueci-senha']
 
 // Rotas sem sidebar desktop (públicas + onboarding)
 const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock']
@@ -65,7 +66,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
       <Route path="/chat" element={<PageWrapper><Chat /></PageWrapper>} />
       <Route path="/lembretes" element={<PageWrapper><Lembretes /></PageWrapper>} />
       <Route path="/perfil" element={<PageWrapper><Perfil /></PageWrapper>} />
-      <Route path="/configuracoes" element={<PageWrapper><Configuracoes /></PageWrapper>} />
+      <Route path="/configuracoes/:secao?" element={<PageWrapper><Configuracoes /></PageWrapper>} />
       <Route path="/upgrade" element={<PageWrapper><Upgrade /></PageWrapper>} />
       <Route path="/sucesso" element={<PageWrapper><Sucesso /></PageWrapper>} />
       <Route path="/esqueci-senha" element={<PageWrapper><EsqueciSenha /></PageWrapper>} />
@@ -95,12 +96,16 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
 }
 
 function App() {
+  useEffect(() => {
+    document.documentElement.dataset.studyMotion = readPreferences().reduceMotion ? 'reduced' : 'system'
+  }, [])
+
   const [auth, setAuth] = useState({ session: undefined, locked: false })
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setAuth((previous) => {
-        if (event === 'INITIAL_SESSION') return { session, locked: Boolean(session) && !oauthReturn }
+        if (event === 'INITIAL_SESSION') return { session, locked: Boolean(session) && !oauthReturn && readPreferences().lock }
         if (previous.session === undefined) return previous
         return { session, locked: Boolean(session) && previous.locked }
       })
@@ -115,7 +120,7 @@ function App() {
       if (document.hidden) {
         hiddenAt = Date.now()
       } else {
-        if (hiddenAt !== null && Date.now() - hiddenAt >= 60_000) {
+        if (hiddenAt !== null && Date.now() - hiddenAt >= 60_000 && readPreferences().lock) {
           setAuth((previous) => previous.session ? { ...previous, locked: true } : previous)
         }
         hiddenAt = null
