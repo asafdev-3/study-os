@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>StudyOS · Sem conexão</title>
+  <style>
+    :root { color-scheme: dark; font: 16px system-ui, sans-serif; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #0a0a0a; color: #f4f4f5; }
+    main { max-width: 22rem; padding: 1.5rem; }
+    p { color: #a1a1aa; line-height: 1.5; }
+    button { padding: .7rem 1rem; border: 1px solid #41414a; border-radius: .6rem; background: #23232a; color: inherit; font: inherit; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Sem conexão</h1>
+    <p>Reconecte-se à internet para acessar sua conta e suas sessões de estudo.</p>
+    <button type="button" id="recarregar">Tentar novamente</button>
+  </main>
+  <script>
+    document.getElementById('recarregar').addEventListener('click', () => location.reload());
+  </script>
+</body>
+</html>

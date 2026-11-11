@@ -1,0 +1,372 @@
+/* =============================================
+   StudyOS — Liquid Glass Design System
+   Drop in src/ e importe no main.jsx ou App.jsx
+   ============================================= */
+
+:root {
+  /* ── Paleta base ─────────────────────────── */
+  --bg:          #050507;
+  --surface:     #0a0a0d;
+  --text:        #f6f7fb;
+  --muted:       #a7a7b2;
+  --violet:      #7c3aed;
+  --violet-2:    #8b5cf6;
+  --green:       #22d3a0;
+  --blue:        #2d7ff9;
+  --danger:      #f87171;
+  --warning:     #fbbf24;
+  --line:        rgba(255,255,255,.08);
+
+  /* ── Liquid Glass tokens ─────────────────── */
+  --gl-bg:          rgba(255,255,255,.055);
+  --gl-bg-deep:     rgba(10,10,14,.72);
+  --gl-border:      rgba(255,255,255,.13);
+  --gl-border-hi:   rgba(255,255,255,.22);
+  --gl-shine-top:   rgba(255,255,255,.18);
+  --gl-shine-bot:   rgba(255,255,255,.04);
+  --gl-blur:        blur(44px) saturate(200%);
+  --gl-blur-sm:     blur(22px) saturate(160%);
+
+  /* shadows */
+  --gl-shadow:
+    0 8px 32px  rgba(0,0,0,.45),
+    0 2px 8px   rgba(0,0,0,.30),
+    inset 0  1px 0 var(--gl-shine-top),
+    inset 0 -1px 0 var(--gl-shine-bot);
+  --gl-shadow-sm:
+    0 4px 16px  rgba(0,0,0,.35),
+    inset 0  1px 0 var(--gl-shine-top),
+    inset 0 -1px 0 var(--gl-shine-bot);
+  --gl-shadow-raised:
+    0 22px 60px rgba(0,0,0,.55),
+    0 4px  12px rgba(0,0,0,.35),
+    inset 0  1px 0 var(--gl-shine-top),
+    inset 0 -1px 0 var(--gl-shine-bot);
+
+  /* ENEM palette */
+  --enem-blue:    #1d4ed8;
+  --enem-yellow:  #f59e0b;
+  --enem-red:     #ef4444;
+  --enem-green:   #10b981;
+}
+
+/* ──────────────────────────────────────────────
+   Utility classes — use diretamente no JSX
+   ────────────────────────────────────────────── */
+
+/* Superfície glass padrão */
+.glass {
+  background: var(--gl-bg);
+  border: 1px solid var(--gl-border);
+  backdrop-filter: var(--gl-blur);
+  -webkit-backdrop-filter: var(--gl-blur);
+  box-shadow: var(--gl-shadow);
+}
+
+/* Glass mais escuro (cards sobre fundo claro) */
+.glass-deep {
+  background: var(--gl-bg-deep);
+  border: 1px solid var(--gl-border);
+  backdrop-filter: var(--gl-blur);
+  -webkit-backdrop-filter: var(--gl-blur);
+  box-shadow: var(--gl-shadow);
+}
+
+/* Glass elevado (modais, toasts) */
+.glass-raised {
+  background: var(--gl-bg-deep);
+  border: 1px solid var(--gl-border-hi);
+  backdrop-filter: var(--gl-blur);
+  -webkit-backdrop-filter: var(--gl-blur);
+  box-shadow: var(--gl-shadow-raised);
+}
+
+/* Glass pequeno (pills, tags) */
+.glass-sm {
+  background: var(--gl-bg);
+  border: 1px solid var(--gl-border);
+  backdrop-filter: var(--gl-blur-sm);
+  -webkit-backdrop-filter: var(--gl-blur-sm);
+  box-shadow: var(--gl-shadow-sm);
+}
+
+/* Glass tintado violet */
+.glass-violet {
+  background: rgba(124,58,237,.12);
+  border: 1px solid rgba(139,92,246,.28);
+  backdrop-filter: var(--gl-blur-sm);
+  -webkit-backdrop-filter: var(--gl-blur-sm);
+  box-shadow: 0 8px 28px rgba(0,0,0,.4), inset 0 1px 0 rgba(139,92,246,.30);
+}
+
+/* Glass tintado ENEM azul */
+.glass-blue {
+  background: rgba(29,78,216,.10);
+  border: 1px solid rgba(59,130,246,.28);
+  backdrop-filter: var(--gl-blur-sm);
+  -webkit-backdrop-filter: var(--gl-blur-sm);
+  box-shadow: 0 8px 28px rgba(0,0,0,.4), inset 0 1px 0 rgba(59,130,246,.22);
+}
+
+/* Glass tintado verde */
+.glass-green {
+  background: rgba(16,185,129,.08);
+  border: 1px solid rgba(34,211,160,.24);
+  backdrop-filter: var(--gl-blur-sm);
+  -webkit-backdrop-filter: var(--gl-blur-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(34,211,160,.18);
+}
+
+/* ── Shimmer (::before especular, use relative+overflow-hidden no pai) */
+.glass-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    160deg,
+    rgba(255,255,255,.12) 0%,
+    rgba(255,255,255,.02) 35%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────
+   Botões
+   ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 20px;
+  border: none; border-radius: 14px;
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(.96); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #5c52ee);
+  color: white;
+  box-shadow: 0 10px 32px rgba(124,58,237,.38), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.btn-primary:hover { box-shadow: 0 14px 42px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.28); }
+
+.btn-ghost {
+  background: var(--gl-bg);
+  border: 1px solid var(--gl-border);
+  color: white;
+  backdrop-filter: var(--gl-blur-sm);
+  -webkit-backdrop-filter: var(--gl-blur-sm);
+  box-shadow: var(--gl-shadow-sm);
+}
+.btn-ghost:hover { background: rgba(255,255,255,.09); }
+
+.btn-enem {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: white;
+  box-shadow: 0 10px 32px rgba(29,78,216,.4), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.btn-danger {
+  background: rgba(248,113,113,.14);
+  border: 1px solid rgba(248,113,113,.28);
+  color: #fca5a5;
+  backdrop-filter: var(--gl-blur-sm);
+}
+
+/* ──────────────────────────────────────────────
+   Input glass
+   ────────────────────────────────────────────── */
+.input-glass {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--gl-border);
+  border-radius: 14px;
+  color: var(--text);
+  font-family: inherit; font-size: 14px;
+  backdrop-filter: blur(16px);
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.input-glass::placeholder { color: #5a5a64; }
+.input-glass:focus {
+  border-color: rgba(139,92,246,.55);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+}
+
+/* ──────────────────────────────────────────────
+   Badge / pill
+   ────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+}
+.badge-green  { background: rgba(34,211,160,.12); border:1px solid rgba(34,211,160,.28); color: #6eebd5; }
+.badge-violet { background: rgba(124,58,237,.14); border:1px solid rgba(139,92,246,.30); color: #b8a0ff; }
+.badge-blue   { background: rgba(45,127,249,.12); border:1px solid rgba(59,130,246,.28); color: #93c5fd; }
+.badge-yellow { background: rgba(251,191,36,.10); border:1px solid rgba(245,158,11,.28); color: #fde68a; }
+.badge-red    { background: rgba(248,113,113,.10); border:1px solid rgba(239,68,68,.22); color: #fca5a5; }
+
+/* ──────────────────────────────────────────────
+   Progress bar glass
+   ────────────────────────────────────────────── */
+.progress-track {
+  width: 100%; height: 6px;
+  background: rgba(255,255,255,.07);
+  border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: inherit;
+  background: linear-gradient(90deg, var(--violet), var(--green));
+  transition: width .6s cubic-bezier(.22,1,.36,1);
+}
+.progress-fill-blue {
+  background: linear-gradient(90deg, #1d4ed8, #38bdf8);
+}
+
+/* ──────────────────────────────────────────────
+   Separador
+   ────────────────────────────────────────────── */
+.divider {
+  width: 100%; height: 1px;
+  background: var(--line);
+  border: none; margin: 0;
+}
+
+/* ──────────────────────────────────────────────
+   Animações
+   ────────────────────────────────────────────── */
+@keyframes gl-fade-up {
+  from { opacity: 0; transform: translateY(18px) scale(.98); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+@keyframes gl-pulse-glow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(124,58,237,.35); }
+  50%     { box-shadow: 0 0 0 10px rgba(124,58,237,0); }
+}
+@keyframes gl-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes gl-count-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.animate-fade-up   { animation: gl-fade-up .5s cubic-bezier(.22,1,.36,1) both; }
+.animate-pulse-glow{ animation: gl-pulse-glow 2.4s ease-in-out infinite; }
+
+/* ── Desktop offset (Tailwind não processa classes dinâmicas, força aqui) ── */
+@media (min-width: 768px) {
+  .md\:pl-\[88px\] {
+    padding-left: 88px;
+  }
+}
+
+/* ──────────────────────────────────────────────
+   Ambient background — inspirado no FOGO
+   Gradientes radiais sutis dão profundidade sem custo
+   ────────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 9% 74%,  rgba(124,58,237,.08),  transparent 31%),
+    radial-gradient(ellipse at 85% 7%,  rgba(45,127,249,.07),  transparent 38%),
+    radial-gradient(ellipse at 50% 50%, rgba(34,211,160,.04),  transparent 60%);
+}
+
+/* ── Glass sidebar (versão upgrade — igual FOGO side nav) ── */
+.glass-sidebar {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.06) 0%, transparent 52%),
+    rgba(10,10,14,.82);
+  border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(255,255,255,.06),
+    0 10px 28px rgba(0,0,0,.35);
+}
+
+/* ── Nav item ativo — micro-elevação FOGO ── */
+.glass-nav-active {
+  background: rgba(124,58,237,.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* ── Card hero (tela ENEM / reading card) ── */
+.glass-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: rgba(10,8,16,.92);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px;
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+.glass-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(135deg, rgba(124,58,237,.12) 0%, transparent 50%),
+    linear-gradient(315deg, rgba(45,127,249,.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ── Hover suave — igual filter: brightness(1.12) do FOGO ── */
+.glass:hover,
+.glass-deep:hover,
+.glass-sm:hover {
+  filter: brightness(1.08);
+  transition: filter .18s ease;
+}
+
+/* ── Toast / notificação ── */
+.glass-toast {
+  background: rgba(16,16,20,.96);
+  border: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    0 20px 48px rgba(0,0,0,.60),
+    inset 0 1px 0 rgba(255,255,255,.14);
+  border-radius: 20px;
+}
+
+/* ──────────────────────────────────────────────
+   Animações adicionais — estilo FOGO
+   ────────────────────────────────────────────── */
+@keyframes gl-slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes gl-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes gl-scale-in {
+  from { opacity: 0; transform: scale(.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-slide-up  { animation: gl-slide-up  .4s cubic-bezier(.22,1,.36,1) both; }
+.animate-fade-in   { animation: gl-fade-in   .3s ease both; }
+.animate-scale-in  { animation: gl-scale-in  .35s cubic-bezier(.22,1,.36,1) both; }
+
+/* Delay helpers */
+.delay-100 { animation-delay: .10s; }
+.delay-150 { animation-delay: .15s; }
+.delay-200 { animation-delay: .20s; }
+.delay-300 { animation-delay: .30s; }

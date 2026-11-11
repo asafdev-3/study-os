@@ -1,10 +1,24 @@
-// Dashboard.jsx — redesign estilo Pierre
-
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { supabase } from '../lib/supabase'
 
-const plano = [
+const DIFIC_LABEL = {
+  matematica: 'Matemática',
+  natureza:   'Ciências da Natureza',
+  humanas:    'Humanas',
+  linguagens: 'Linguagens',
+  redacao:    'Redação',
+}
+
+function saudacao() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Bom dia'
+  if (h < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
+
+const TAREFAS_BASE = [
   { id: 1, tarefa: 'Ler resumo de História',       tempo: '20 min', feito: true  },
   { id: 2, tarefa: 'Refazer exercícios de Física',  tempo: '35 min', feito: true  },
   { id: 3, tarefa: 'Revisar flashcards de Inglês',  tempo: '15 min', feito: true  },
@@ -15,10 +29,57 @@ const plano = [
 function Dashboard() {
   const navigate = useNavigate()
   const scrollRef = useRef(null)
-  const feitos = plano.filter(t => t.feito).length
+  const [perfil, setPerfil] = useState(null)
+  const [tarefas, setTarefas] = useState(TAREFAS_BASE)
+
+  const HOJE_KEY = `kira_${new Date().toDateString()}`
+  const [kiraOculto, setKiraOculto] = useState(() => {
+    try { return localStorage.getItem(HOJE_KEY) === '1' } catch { return false }
+  })
+
+  function ocultarKira() {
+    setKiraOculto(true)
+    try { localStorage.setItem(HOJE_KEY, '1') } catch {}
+  }
+
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('nome, curso_objetivo, area_dificuldade, onboarding_completo')
+        .eq('id', user.id)
+        .single()
+      if (!data || !data.onboarding_completo) {
+        navigate('/onboarding')
+      } else {
+        setPerfil(data)
+      }
+    })
+  }, [navigate])
+
+  const hoje = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'short', day: '2-digit', month: 'short',
+  })
+
+  function kiraMateria() {
+    if (!perfil?.area_dificuldade) return 'seus conteúdos'
+    try {
+      const arr = JSON.parse(perfil.area_dificuldade)
+      if (Array.isArray(arr) && arr.length > 0) {
+        return DIFIC_LABEL[arr[0]] ?? arr[0]
+      }
+    } catch {}
+    return DIFIC_LABEL[perfil.area_dificuldade] ?? 'seus conteúdos'
+  }
+
+  function toggleTarefa(id) {
+    setTarefas(prev => prev.map(t => t.id === id ? { ...t, feito: !t.feito } : t))
+  }
+
+  const feitosAtual = tarefas.filter(t => t.feito).length
 
   const { scrollY } = useScroll({ container: scrollRef })
-
   const heroHeight = useTransform(scrollY, [0, 180], [260, 100])
   const heroOpacity = useTransform(scrollY, [0, 140], [1, 0])
   const heroScale  = useTransform(scrollY, [0, 180], [1, 1.06])
@@ -30,7 +91,6 @@ function Dashboard() {
       className="h-screen overflow-y-auto bg-black text-white max-w-sm mx-auto relative"
       style={{ scrollbarWidth: 'none' }}
     >
-
       {/* ── HERO ── */}
       <motion.div
         style={{ height: heroHeight }}
@@ -78,74 +138,87 @@ function Dashboard() {
           style={{ background: 'linear-gradient(to bottom, transparent, #000)' }}
         />
 
-        {/* Avatar esquerda */}
         <motion.button
-          style={{ opacity: heroOpacity }}
           onClick={() => navigate('/perfil')}
           className="absolute top-14 left-5 w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold"
           style={{
             background: 'linear-gradient(135deg, #8B5CF6, #22D3A0)',
             opacity: heroOpacity,
+            border: 'none',
+            cursor: 'pointer',
           }}
         >
-          AV
+          {perfil?.nome?.[0]?.toUpperCase() ?? '?'}
         </motion.button>
 
-        {/* Texto hero */}
         <motion.div
           style={{ opacity: heroOpacity }}
           className="absolute bottom-8 left-5 right-5"
         >
           <p className="text-[#a1a1aa] text-[10px] tracking-[0.2em] uppercase mb-1">
-            Seg · 08 set
+            {hoje}
           </p>
           <h1 className="text-[32px] font-semibold leading-tight">
-            Boa noite,{' '}
+            {saudacao()},{' '}
             <em style={{ fontFamily: 'Instrument Serif, serif', fontWeight: 400 }}>
-              Asaf
+              {perfil?.nome ?? '...'}
             </em>
           </h1>
         </motion.div>
       </motion.div>
 
       {/* ── CONTEÚDO ── */}
-      <motion.div
-        style={{ y: cardY }}
-        className="relative z-10 px-4 pb-32"
-      >
+      <motion.div style={{ y: cardY }} className="relative z-10 px-4 pb-32">
 
         {/* Card Kira */}
-        <div
-          className="relative rounded-2xl p-[1px] mb-5"
-          style={{ background: 'linear-gradient(135deg, #8B5CF6, #6366F1, #22D3A0)' }}
-        >
-          <div className="bg-[#0a0a0c] rounded-2xl p-5">
-            <p className="text-[10px] tracking-[0.2em] text-[#a1a1aa] uppercase mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#22D3A0] inline-block" />
-              KIRA OBSERVOU ALGO
-            </p>
-            <p className="text-[17px] font-medium leading-snug mb-2">
-              Você revisou{' '}
-              <em style={{ fontFamily: 'Instrument Serif, serif' }}>Química</em>
-              {' '}três vezes esta semana. Amanhã tem prova.
-            </p>
-            <p className="text-[#a1a1aa] text-sm mb-5">
-              Que tal 20 min de flashcards antes de dormir?
-            </p>
-            <div className="flex gap-3">
-              <button className="flex items-center gap-2 bg-[#f4f4f5] text-black text-sm font-medium px-4 py-2 rounded-xl">
-                ⚡ Começar agora
-              </button>
-              <button className="text-sm text-[#a1a1aa] border border-[#26262e] px-4 py-2 rounded-xl">
-                Depois
-              </button>
+        {!kiraOculto && (
+          <div
+            className="relative rounded-2xl p-[1px] mb-5"
+            style={{ background: 'linear-gradient(135deg, #8B5CF6, #6366F1, #22D3A0)' }}
+          >
+            <div className="bg-[#0a0a0c] rounded-2xl p-5">
+              <p className="text-[10px] tracking-[0.2em] text-[#a1a1aa] uppercase mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#22D3A0] inline-block" />
+                KIRA OBSERVOU ALGO
+              </p>
+              <p className="text-[17px] font-medium leading-snug mb-2">
+                {perfil?.nome?.split(' ')[0] ?? 'Ei'}, você marcou{' '}
+                <em style={{ fontFamily: 'Instrument Serif, serif' }}>
+                  {kiraMateria()}
+                </em>{' '}
+                como sua maior dificuldade. Vamos atacar isso?
+              </p>
+              <p className="text-[#a1a1aa] text-sm mb-5">
+                20 min focados valem mais do que 2h dispersas.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => navigate('/chat')}
+                  className="flex items-center gap-2 bg-[#f4f4f5] text-black text-sm font-medium px-4 py-2 rounded-xl"
+                  style={{ cursor: 'pointer', border: 'none' }}
+                >
+                  ⚡ Falar com Kira
+                </button>
+                <button
+                  onClick={ocultarKira}
+                  className="text-sm text-[#a1a1aa] border border-[#26262e] px-4 py-2 rounded-xl"
+                  style={{ cursor: 'pointer', background: 'transparent' }}
+                >
+                  Depois
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Continue de onde parou */}
         <p className="text-[#a1a1aa] text-[10px] tracking-widest uppercase mb-3">Continue de onde parou</p>
-        <div className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl p-4 flex items-center justify-between mb-5">
+        <motion.div
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/chat')}
+          className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl p-4 flex items-center justify-between mb-5"
+          style={{ cursor: 'pointer' }}
+        >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-[#16161b] rounded-xl flex items-center justify-center text-base">📄</div>
             <div>
@@ -154,18 +227,21 @@ function Dashboard() {
             </div>
           </div>
           <span className="text-[#a1a1aa] text-lg">›</span>
-        </div>
+        </motion.div>
 
-        {/* Plano da noite */}
+        {/* Plano do dia */}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[#a1a1aa] text-[10px] tracking-widest uppercase">Plano da noite</p>
-          <p className="text-[#a1a1aa] text-xs">{feitos} de {plano.length}</p>
+          <p className="text-[#a1a1aa] text-[10px] tracking-widest uppercase">Plano do dia</p>
+          <p className="text-[#a1a1aa] text-xs">{feitosAtual} de {tarefas.length}</p>
         </div>
         <div className="flex flex-col gap-2 mb-6">
-          {plano.map(({ id, tarefa, tempo, feito }) => (
-            <div
+          {tarefas.map(({ id, tarefa, tempo, feito }) => (
+            <motion.div
               key={id}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => toggleTarefa(id)}
               className="flex items-center justify-between bg-[#0a0a0c] border border-[#16161b] rounded-xl px-4 py-3"
+              style={{ cursor: 'pointer' }}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0
@@ -177,7 +253,7 @@ function Dashboard() {
                 </span>
               </div>
               <span className="text-[#a1a1aa] text-xs ml-3 flex-shrink-0">{tempo}</span>
-            </div>
+            </motion.div>
           ))}
         </div>
 

@@ -64,7 +64,7 @@ const postits = [
   },
 ]
 
-function ModalNovoPostit({ onClose }) {
+function ModalNovoPostit({ onClose, onSalvar }) {
   const [texto, setTexto] = useState('')
   const [materia, setMateria] = useState(null)
   const [prazo, setPrazo] = useState('')
@@ -92,6 +92,7 @@ function ModalNovoPostit({ onClose }) {
 
   function handleSalvar() {
     if (!texto.trim()) return
+    onSalvar({ texto, materia, prazo })
     fechar()
   }
 
@@ -231,7 +232,7 @@ function ModalNovoPostit({ onClose }) {
 
             {prazo && (
               <p className="text-[10px] text-zinc-500 mt-4">
-                {prazo}
+                {formatarPrazo(prazo)}
               </p>
             )}
           </div>
@@ -321,10 +322,9 @@ function ModalNovoPostit({ onClose }) {
         {/* PRAZO */}
         <div className="px-5 pt-2">
           <input
-            type="text"
+            type="datetime-local"
             value={prazo}
             onChange={e => setPrazo(e.target.value)}
-            placeholder="hoje · 23h"
             className="
               w-full
               rounded-2xl
@@ -334,10 +334,11 @@ function ModalNovoPostit({ onClose }) {
               text-[16px]
               text-zinc-300
               outline-none
-              placeholder:text-zinc-700
               focus:border-violet-500/40
+              transition
             "
             style={{
+              colorScheme: 'dark',
               WebkitAppearance: 'none',
               touchAction: 'manipulation',
             }}
@@ -388,10 +389,50 @@ function ModalNovoPostit({ onClose }) {
   )
 }
 
+const PRAZO_HOJE = ['hoje', 'agora', 'tonight']
+const PRAZO_SEMANA = ['amanhã', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'sáb', 'semana', 'noite']
+
+function formatarPrazo(prazo) {
+  if (!prazo?.trim()) return 'sem prazo'
+  // Se é datetime-local (ex: 2026-10-10T23:00)
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(prazo)) {
+    const d = new Date(prazo)
+    const hoje = new Date()
+    const amanha = new Date(hoje); amanha.setDate(hoje.getDate() + 1)
+    const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    if (d.toDateString() === hoje.toDateString()) return `hoje · ${hora}`
+    if (d.toDateString() === amanha.toDateString()) return `amanhã · ${hora}`
+    return d.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' }) + ` · ${hora}`
+  }
+  return prazo
+}
+
+function matchFiltro(prazo, filtro) {
+  if (filtro === 'Todos') return true
+  const p = (prazo || '').toLowerCase()
+
+  // datetime-local ISO
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(prazo)) {
+    const d = new Date(prazo)
+    const hoje = new Date()
+    const fimSemana = new Date(hoje); fimSemana.setDate(hoje.getDate() + 7)
+    if (filtro === 'Hoje') return d.toDateString() === hoje.toDateString()
+    if (filtro === 'Semana') return d >= hoje && d <= fimSemana
+    if (filtro === 'Sem prazo') return false
+  }
+
+  if (filtro === 'Hoje') return PRAZO_HOJE.some(k => p.includes(k))
+  if (filtro === 'Semana') return PRAZO_SEMANA.some(k => p.includes(k))
+  if (filtro === 'Sem prazo') return !p || p === 'quando der' || p === '-' || p === 'sem prazo'
+  return true
+}
+
 function Lembretes() {
   const [ativo, setAtivo] = useState('Todos')
   const [itens, setItens] = useState(postits)
   const [sheetAberto, setSheetAberto] = useState(false)
+
+  const itensFiltrados = itens.filter(i => matchFiltro(i.prazo, ativo))
 
   function toggleFeito(id) {
     setItens(prev =>
@@ -401,6 +442,21 @@ function Lembretes() {
           : p
       )
     )
+  }
+
+  function adicionarPostit({ texto, materia, prazo }) {
+    const cor = materia ? coresMaterias[materia] : '#C5B8E8'
+    setItens(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        materia: (materia || 'GERAL').toUpperCase(),
+        cor,
+        texto,
+        prazo: prazo?.trim() || 'sem prazo',
+        feito: false,
+      },
+    ])
   }
 
   return (
@@ -447,18 +503,24 @@ function Lembretes() {
         ))}
       </div>
 
+      {itensFiltrados.length === 0 && (
+        <p className="text-center text-zinc-700 text-sm mt-16">
+          Nenhum post-it aqui.
+        </p>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
-        {itens.map(
-          ({ id, materia, cor, texto, prazo, feito }) => (
+        {itensFiltrados.map(
+          ({ id, materia, cor, texto, prazo, feito }, idx) => (
             <div
               key={id}
               className="relative rounded-2xl p-4 flex flex-col justify-between min-h-[160px]"
               style={{
                 backgroundColor: cor,
                 transform: `rotate(${
-                  id % 2 === 0
-                    ? id * 0.8
-                    : -(id * 0.7)
+                  idx % 2 === 0
+                    ? (idx % 3) * 0.8
+                    : -((idx % 3) * 0.7)
                 }deg)`,
               }}
             >
@@ -488,7 +550,7 @@ function Lembretes() {
 
               <div className="flex items-center justify-between mt-4">
                 <p className="text-[10px] text-black/50">
-                  {prazo}
+                  {formatarPrazo(prazo)}
                 </p>
 
                 <button
@@ -551,6 +613,7 @@ function Lembretes() {
       {sheetAberto && (
         <ModalNovoPostit
           onClose={() => setSheetAberto(false)}
+          onSalvar={adicionarPostit}
         />
       )}
     </div>
