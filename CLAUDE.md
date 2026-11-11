@@ -63,7 +63,7 @@ Vitor relata falta de fluidez no Safari do iPhone XR, iOS 18. Deseja animações
 4. Revisão visual consistente das demais telas: perfil, ENEM, configurações e caderno sem novo redesign indiscriminado.
 5. Stripe sandbox completo, webhook/entitlement antes de produção; OCR e demais funcionalidades ainda incompletas.
 6. Verificar cadastro/onboarding/login OAuth reais, logout/troca de conta, notas persistidas e paywall real.
-7. Bundle inicial ainda tem aviso >500 kB minificado; avaliar separação de dependências sem aumentar bloqueios de navegação.
+7. ~~Bundle~~ ✅ Resolvido em b27c891: manualChunks split react/router/supabase/motion — main chunk 22 kB (era 521 kB).
 8. Offline integral e notificações agendadas não implementados.
 
 ## Evidência e continuidade
