@@ -1,16 +1,22 @@
 import { m as motion } from 'framer-motion'
-import { useStudyReducedMotion, softTransition } from '../lib/motion'
+import { useStudyReducedMotion } from '../lib/motion'
 import { useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUp, BookOpen, ChevronRight, PencilLine } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import kiraImage from '../assets/kira-studyos.webp'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 import { useKira } from '../lib/useKira'
 
 const prompts = [
-  { label: 'Explique um assunto', icon: BookOpen, text: 'Me ajude a entender um assunto do ENEM. Pergunte qual é e explique com um exemplo.' },
-  { label: 'Pratique uma questão', icon: PencilLine, text: 'Crie uma questão no estilo ENEM. Pergunte qual área eu quero praticar.' },
+  { emoji: '📖', label: 'Explique um assunto', text: 'Me ajude a entender um assunto do ENEM. Pergunte qual é e explique com um exemplo.' },
+  { emoji: '✏️', label: 'Pratique uma questão', text: 'Crie uma questão no estilo ENEM. Pergunte qual área eu quero praticar.' },
 ]
+
+const fadeUp = (delay = 0, reduced = false) => ({
+  initial: reduced ? false : { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  transition: reduced ? { duration: 0 } : { duration: 0.32, ease: [0.25, 0.1, 0.25, 1], delay },
+})
 
 export default function Chat() {
   const location = useLocation()
@@ -22,6 +28,7 @@ export default function Chat() {
   const page = useRef(null)
   const follow = useRef(true)
 
+  // Viewport e teclado — Safari-aware
   useLayoutEffect(() => {
     const viewport = window.visualViewport
     const element = page.current
@@ -88,48 +95,184 @@ export default function Chat() {
     if (await send(draft)) setInput((current) => current === draft ? '' : current)
   }
 
-  function choose(prompt) {
-    setInput(prompt)
+  function choose(text) {
+    setInput(text)
     field.current?.focus({ preventScroll: true })
   }
 
   return (
-    <motion.main className="study-chat study-page-enter" ref={page} initial={reduced ? false : { opacity: .88 }} animate={{ opacity: 1 }} transition={reduced ? { duration: 0 } : softTransition}>
-      <header className="study-chat-header">
-        <div className="study-kira-mark"><img src={kiraImage} alt="" width="42" height="42" /></div>
-        <div><h1>Kira</h1><p>Tutora do StudyOS</p></div>
-        {remaining !== null && <span aria-live="polite">{remaining}/{KIRA_DAILY_LIMIT} hoje</span>}
+    <motion.main
+      className="study-chat"
+      ref={page}
+      {...fadeUp(0, reduced)}
+    >
+      {/* Header — Upgrade-style: label small-caps + ponto verde + imagem */}
+      <header className="study-chat-header" style={{ gap: 12 }}>
+        <div className="study-kira-mark">
+          <img src={kiraImage} alt="" width="42" height="42" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{
+            fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: '#a1a1aa', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22D3A0', flexShrink: 0 }} />
+            Kira
+          </p>
+          <h1 style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            Tutora do StudyOS
+          </h1>
+        </div>
+        {remaining !== null && (
+          <span aria-live="polite" style={{
+            fontSize: 11, color: '#a1a1aa', flexShrink: 0,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {remaining}/{KIRA_DAILY_LIMIT}
+          </span>
+        )}
       </header>
 
-      <div role="log" className="study-chat-log" ref={log} onScroll={(event) => {
-        const element = event.currentTarget
-        follow.current = element.scrollHeight - element.clientHeight - element.scrollTop < 56
-      }}>
+      {/* Log de mensagens */}
+      <div
+        role="log"
+        className="study-chat-log"
+        ref={log}
+        onScroll={(e) => {
+          const el = e.currentTarget
+          follow.current = el.scrollHeight - el.clientHeight - el.scrollTop < 56
+        }}
+      >
+        {/* Estado vazio — stagger igual ao Upgrade */}
         {messages.length === 0 && (
           <section className="study-chat-empty">
-            <h2>O que vamos estudar?</h2>
-            <p>Traga uma dúvida ou pratique para o ENEM.</p>
-            <div className="study-chat-prompts">{prompts.map(({ label, icon: Icon, text }) => (
-              <button type="button" key={label} onClick={() => choose(text)}>
-                <Icon size={18} aria-hidden="true" />{label}<ChevronRight size={15} aria-hidden="true" />
-              </button>
-            ))}</div>
+            <motion.h2 {...fadeUp(0.04, reduced)} style={{ lineHeight: 1.08 }}>
+              O que vamos estudar?
+            </motion.h2>
+            <motion.p {...fadeUp(0.1, reduced)} style={{ color: '#a1a1aa', fontSize: 15, margin: '8px 0 20px' }}>
+              Traga uma dúvida ou pratique para o ENEM.
+            </motion.p>
+
+            {/* Prompt cards — estilo recursos do Upgrade */}
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              {prompts.map(({ emoji, label, text }, i) => (
+                <motion.button
+                  key={label}
+                  type="button"
+                  onClick={() => choose(text)}
+                  {...fadeUp(0.14 + i * 0.07, reduced)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 0', background: 'transparent', border: 'none',
+                    borderBottom: i < prompts.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                    cursor: 'pointer', textAlign: 'left',
+                  }}
+                >
+                  <div style={{
+                    width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                    background: '#0d0d10', border: '1px solid #16161b',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 17,
+                  }}>
+                    {emoji}
+                  </div>
+                  <span style={{ flex: 1, fontSize: 14, color: '#e4e4e7' }}>{label}</span>
+                  <span style={{ color: '#3f3f46', fontSize: 14 }}>›</span>
+                </motion.button>
+              ))}
+            </div>
           </section>
         )}
+
+        {/* Mensagens */}
         {messages.map(({ role, content }, index) => (
-          <motion.p key={index} initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0 : .18 }} className={`study-message study-message--${role}`}>{content}</motion.p>
+          <motion.div
+            key={index}
+            initial={reduced ? false : { opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduced ? 0 : 0.18 }}
+            style={{
+              display: 'flex',
+              justifyContent: role === 'user' ? 'flex-end' : 'flex-start',
+              marginBottom: 8,
+            }}
+          >
+            <p style={{
+              maxWidth: '84%',
+              padding: '10px 14px',
+              borderRadius: role === 'user' ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
+              fontSize: 14,
+              lineHeight: 1.55,
+              color: role === 'user' ? '#f4f4f5' : '#e4e4e7',
+              background: role === 'user'
+                ? 'rgba(139,92,246,0.18)'
+                : '#0a0a0c',
+              border: role === 'user'
+                ? '1px solid rgba(139,92,246,0.3)'
+                : '1px solid #16161b',
+              margin: 0,
+            }}>
+              {content}
+            </p>
+          </motion.div>
         ))}
-        {loading && <p className="study-chat-status">Kira está preparando a resposta…</p>}
+
+        {loading && (
+          <p style={{ color: '#a1a1aa', fontSize: 13, padding: '4px 2px' }}>
+            Kira está preparando a resposta…
+          </p>
+        )}
       </div>
 
+      {/* Compositor */}
       <form onSubmit={submit} className="study-composer">
-        {error && <p role="alert" className="study-chat-error">{error}</p>}
-        <div className="study-composer-field">
-          <input ref={field} aria-label="Mensagem para a Kira" value={input}
-            onChange={(event) => setInput(event.target.value)} placeholder="Mensagem para a Kira"
-            enterKeyHint="send" maxLength={2000} />
-          <button type="submit" aria-label="Enviar mensagem" disabled={loading || !input.trim()}>
-            <ArrowUp size={21} aria-hidden="true" />
+        {error && (
+          <p role="alert" style={{ color: '#fda4af', fontSize: 13, padding: '0 2px 6px', overflowWrap: 'anywhere' }}>
+            {error}
+          </p>
+        )}
+        <div style={{
+          display: 'flex', alignItems: 'flex-end', gap: 8,
+          background: '#0a0a0c',
+          border: '1px solid #16161b',
+          borderRadius: 20,
+          padding: '10px 10px 10px 16px',
+          transition: 'border-color 0.15s',
+        }}
+          onFocusCapture={(e) => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)'}
+          onBlurCapture={(e) => e.currentTarget.style.borderColor = '#16161b'}
+        >
+          <input
+            ref={field}
+            aria-label="Mensagem para a Kira"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Pergunte à Kira…"
+            enterKeyHint="send"
+            maxLength={2000}
+            style={{
+              flex: 1, background: 'transparent', border: 'none', outline: 'none',
+              color: '#f4f4f5', fontSize: 15, lineHeight: 1.5,
+              caretColor: '#8B5CF6',
+            }}
+          />
+          <button
+            type="submit"
+            aria-label="Enviar mensagem"
+            disabled={loading || !input.trim()}
+            style={{
+              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: input.trim() && !loading
+                ? 'linear-gradient(135deg, #8B5CF6, #6366F1)'
+                : '#16161b',
+              border: 'none', cursor: 'pointer',
+              color: '#fff',
+              transition: 'background 0.2s, opacity 0.2s',
+              opacity: loading || !input.trim() ? 0.4 : 1,
+            }}
+          >
+            <ArrowUp size={18} aria-hidden="true" />
           </button>
         </div>
       </form>
