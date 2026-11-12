@@ -3,7 +3,7 @@ import { useStudyReducedMotion, cardSpring } from '../lib/motion'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ArrowUp, BookmarkPlus, Check, Copy } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import kiraImage from '../assets/kira-studyos.webp'
+import { KiraAvatar } from '../components/KiraAvatar'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 import { useKira } from '../lib/useKira'
 
@@ -13,7 +13,7 @@ const prompts = [
 ]
 
 const fadeUp = (delay = 0, reduced = false) => ({
-  initial: reduced ? false : { opacity: 0, y: 8 },
+  initial: reduced ? false : { opacity: 0.94, y: 6 },
   animate: { opacity: 1, y: 0 },
   transition: reduced ? { duration: 0 } : { ...cardSpring, delay },
 })
@@ -25,6 +25,7 @@ export default function Chat({ userId }) {
   const reduced = useStudyReducedMotion()
   const [input, setInput] = useState(() => location.state?.prompt ?? '')
   const { messages, remaining, loading, error, send } = useKira(true, userId ? `studyos:chat:${userId}` : null)
+  const [restoredCount] = useState(messages.length)
   const log = useRef(null)
   const field = useRef(null)
   const page = useRef(null)
@@ -131,9 +132,7 @@ export default function Chat({ userId }) {
     >
       {/* Header — Upgrade-style: label small-caps + ponto verde + imagem */}
       <header className="study-chat-header" style={{ gap: 12 }}>
-        <div className="study-kira-mark">
-          <img src={kiraImage} alt="" width="42" height="42" />
-        </div>
+        <KiraAvatar />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
@@ -169,6 +168,7 @@ export default function Chat({ userId }) {
         {/* Estado vazio — stagger igual ao Upgrade */}
         {messages.length === 0 && (
           <section className="study-chat-empty">
+            <KiraAvatar size={150} hero />
             <motion.h2 {...fadeUp(0.04, reduced)} style={{ lineHeight: 1.08 }}>
               O que vamos estudar?
             </motion.h2>
@@ -211,7 +211,7 @@ export default function Chat({ userId }) {
         {messages.map(({ role, content }, index) => (
           <motion.div
             key={index}
-            initial={reduced ? false : { opacity: 0, y: 6 }}
+            initial={reduced || index < restoredCount ? false : { opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 36, mass: 0.7 }}
             style={{

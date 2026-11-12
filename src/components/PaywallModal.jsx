@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { ArrowRight, X } from 'lucide-react'
 import { StudyLink } from './StudyLink'
-import kiraImage from '../assets/kira-studyos.webp'
+import { KiraAvatar } from './KiraAvatar'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 
 export default function PaywallModal() {
@@ -27,7 +27,7 @@ export default function PaywallModal() {
         <button type="button" onClick={close} className="study-paywall-close" aria-label="Fechar">
           <X size={21} aria-hidden="true" />
         </button>
-        <img src={kiraImage} alt="" width="48" height="48" loading="lazy" />
+        <KiraAvatar size={90} />
         <h2 id="study-paywall-title">Limite diário da Kira</h2>
         <p>Você usou as {KIRA_DAILY_LIMIT} mensagens de hoje. O limite renova à meia-noite, no horário de Brasília.</p>
         <StudyLink to="/upgrade" className="study-primary" onClick={close}>

@@ -18,7 +18,7 @@ try {
   browser = await chromium.launch({ executablePath: process.env.STUDYOS_BROWSER_PATH || undefined, args: ['--no-sandbox'], headless: true })
   await mkdir('qa.local', { recursive: true })
   for (const [width, height] of [[320, 568], [414, 736], [1024, 768]]) {
-    const page = await browser.newPage({ viewport: { width, height }, serviceWorkers: 'block' })
+    const page = await browser.newPage({ viewport: { width, height }, hasTouch: width < 768, serviceWorkers: 'block' })
     page.setDefaultTimeout(7000)
     const notes = []
     const errors = []
@@ -65,6 +65,10 @@ try {
     await page.getByRole('heading', { name: 'Olá, Vitor.' }).waitFor()
     await nav('Kira').click()
     const input = page.getByRole('textbox', { name: 'Mensagem para a Kira' })
+    const character = page.locator('.study-chat-header .study-kira-character img')
+    assert.equal(await character.evaluate(el => getComputedStyle(el).objectFit), 'contain')
+    assert.equal(await character.evaluate(el => getComputedStyle(el).borderRadius), '0px')
+    if (width === 414) { await page.waitForTimeout(450); await page.screenshot({ path: 'qa.local/kira-character.png' }) }
     await input.fill('Explique fotossíntese')
     assert.equal(await input.evaluate(el => getComputedStyle(el).fontSize), '16px')
     await page.getByRole('button', { name: 'Enviar mensagem' }).click()

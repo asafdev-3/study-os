@@ -241,7 +241,7 @@
    Animações
    ────────────────────────────────────────────── */
 @keyframes gl-fade-up {
-  from { opacity: 0; transform: translateY(18px) scale(.98); filter: blur(6px); }
+  from { opacity: 0; transform: translateY(12px) scale(.99); }
   to   { opacity: 1; transform: none; filter: none; }
 }
 @keyframes gl-pulse-glow {

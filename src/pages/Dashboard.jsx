@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
 import { readFocus } from '../lib/focus'
-import kira from '../assets/kira-studyos.webp'
+import { KiraAvatar } from '../components/KiraAvatar'
 
 const subjects = {
   matematica: ['mt', 'Matemática'], natureza: ['cn', 'Ciências da Natureza'],
@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [userId, setUserId] = useState(null)
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
-  const [now, setNow] = useState(Date.now)
+  const [now] = useState(Date.now)
 
   useEffect(() => {
     let active = true
@@ -47,18 +47,6 @@ export default function Dashboard() {
     return () => { active = false }
   }, [navigate, retry])
 
-  const focus = userId ? readFocus(`studyos:focus:${userId}`) : null
-  const deadline = focus?.deadline
-  useEffect(() => {
-    if (!deadline) return
-    const tick = () => setNow(Date.now())
-    const interval = setInterval(tick, 1000)
-    window.addEventListener('focus', tick)
-    return () => { clearInterval(interval); window.removeEventListener('focus', tick) }
-  }, [deadline])
-
-  const seconds = deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : focus?.seconds ?? 1500
-  const clock = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
   const [area, subject] = mainSubject(profile?.area_dificuldade) ?? ['mt', 'Matemática']
   const prompt = `Me ajude a revisar ${subject} para o ENEM. Comece com uma questão simples.`
   const firstName = profile?.nome?.trim().split(/\s+/)[0]
@@ -93,18 +81,49 @@ export default function Dashboard() {
         </section>
 
         <footer className="study-room-dock">
-          <section className="study-room-focus" aria-label="Sessão de foco">
-            <div className="study-room-clock"><Timer size={16} aria-hidden="true" /><span>{clock}</span></div>
-            <div className="study-room-focus-copy"><strong>{deadline ? (seconds > 0 ? 'Seu foco continua.' : 'Sessão concluída.') : focus ? 'No seu ritmo.' : 'Uma coisa por vez.'}</strong><small>{focus ? 'Sua sessão de estudo' : '25 minutos para o próximo passo'}</small></div>
-            <StudyLink className="study-primary" to={focus ? '/enem' : '/nfc?acao=foco&area=' + area}>{focus ? (seconds === 0 ? 'Ver sessão' : 'Retomar') : 'Entrar em foco'}<ArrowRight size={16} aria-hidden="true" /></StudyLink>
-          </section>
+          <FocusSummary userId={userId} area={area} />
           <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>
-            <img src={kira} alt="" width="40" height="40" />
+            <KiraAvatar size={66} />
             <span><strong>Kira sugere</strong><small>Vamos revisar {subject}?</small></span>
             <ArrowRight size={18} aria-hidden="true" />
           </StudyLink>
         </footer>
       </div>
     </main>
+  )
+}
+
+function FocusSummary({ userId, area }) {
+  const [now, setNow] = useState(Date.now)
+  const focus = userId ? readFocus(`studyos:focus:${userId}`) : null
+  const deadline = focus?.deadline
+  useEffect(() => {
+    if (!deadline) return
+    let timeout
+    function tick() {
+      clearTimeout(timeout)
+      if (document.hidden) return
+      const current = Date.now()
+      setNow(current)
+      if (deadline > current) timeout = setTimeout(tick, 1000)
+    }
+    tick()
+    window.addEventListener('focus', tick)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      clearTimeout(timeout)
+      window.removeEventListener('focus', tick)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [deadline])
+
+  const seconds = deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : focus?.seconds ?? 1500
+  const clock = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+  return (
+          <section className="study-room-focus" aria-label="Sessão de foco">
+            <div className="study-room-clock"><Timer size={16} aria-hidden="true" /><span>{clock}</span></div>
+            <div className="study-room-focus-copy"><strong>{deadline ? (seconds > 0 ? 'Seu foco continua.' : 'Sessão concluída.') : focus ? 'No seu ritmo.' : 'Uma coisa por vez.'}</strong><small>{focus ? 'Sua sessão de estudo' : '25 minutos para o próximo passo'}</small></div>
+            <StudyLink className="study-primary" to={focus ? '/enem' : '/nfc?acao=foco&area=' + area}>{focus ? (seconds === 0 ? 'Ver sessão' : 'Retomar') : 'Entrar em foco'}<ArrowRight size={16} aria-hidden="true" /></StudyLink>
+          </section>
   )
 }

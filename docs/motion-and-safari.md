@@ -61,3 +61,9 @@ Digital preservada; pressão contínua de 2000 ms via Pointer Events, progresso 
 
 ## Atualização 12/11: Lock e direção de produto
 Lock agora exige 800 ms, substituindo os 2000 ms anteriores. Seleção/callout Safari bloqueados em toda a área e descendentes, inclusive status. Ver docs/product-direction.md: necessidades, prioridades e recursos propostos (não implementados).
+
+
+## Kira livre e otimização — 12/11/2026
+KiraAvatar reutiliza a arte RGBA original 420x280, inteira/object-fit contain, sem círculo ou fundo. Sombra de apoio e inclinação CSS apenas em hover com ponteiro fino, respeitando movimento reduzido. Presente no chat (cabeçalho e estado vazio), home e paywall. É apresentação com profundidade da arte existente, não modelo WebGL. Nenhuma imagem regenerada ou dependência adicionada.
+Performance: FocusSummary isola ticks da home e suspende timer visual quando documento está oculto ou sessão concluída; deadline continua absoluto. Mensagens restauradas do chat não repetem animação. Entrada do chat começa quase opaca para evitar flash. Glass pesado fica opaco em telas touch; pulso decorativo de sombra desativado no touch; blur de 6px removido da entrada legada. Blur leve dos cabeçalhos e springs preservados. Prefetch ocioso limitado a Notas/Chat/ENEM, demais rotas continuam por intenção; pausa em background.
+Validação: lint e build aprovados; motion 320/414/430 reduzido/1024 e fluxo de estudo 320/414 touch +1024 aprovados. Captura qa.local/kira-character.png inspecionada. Sem medição em XR/WebKit físico; NÃO prometer 120 FPS universal ou ganho percentual. PWA não passa a app nativo por essas mudanças.

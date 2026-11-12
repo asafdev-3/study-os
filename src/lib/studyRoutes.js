@@ -21,15 +21,15 @@ export function warmStudyRoutes() {
   if (navigator.connection?.saveData) return () => {}
   let stopped = false
   const schedule = window.requestIdleCallback
-    ? callback => window.requestIdleCallback(callback, { timeout: 1800 })
-    : callback => window.setTimeout(callback, 400)
+    ? callback => window.requestIdleCallback(callback, { timeout: 3000 })
+    : callback => window.setTimeout(callback, 1200)
   const cancel = window.requestIdleCallback ? window.cancelIdleCallback.bind(window) : window.clearTimeout.bind(window)
   let task
-  const paths = ['/dashboard', '/anotacoes', '/chat', '/enem', '/perfil', '/configuracoes', '/nfc']
+  const paths = ['/anotacoes', '/chat', '/enem']
   function next() {
     if (stopped || !paths.length) return
     task = schedule(async () => {
-      if (stopped) return
+      if (stopped || document.hidden) return
       try { await preloadStudyRoute(paths.shift()) } catch { /* A tap retries a failed preload. */ }
       next()
     })
