@@ -93,3 +93,8 @@ Validação: lint e build aprovados; motion 320/414/430 reduzido/1024 e fluxo de
 
 
 12/11: modo Resolver atividade no chat. O cliente orienta Kira a explicar exercícios automaticamente com passos breves; a Edge Function e a cota continuam as mesmas. Entrada do chat limitada a 1600 caracteres para caber a instrução. Post-its do Lembretes restaurados na home e na aba padrão ENEM, persistidos por usuário neste navegador. Foco segue por NFC em /enem?modo=foco. Anotações com índice e papel pautado inspirados no notebook do FÔGO. FoldableTransition sobre a troca de rotas autenticadas: duas metades CSS 3D, mola 260/28, quatro máscaras de blur no vinco, reduzido desativa; superfície Liquid Glass adicional apenas com ponteiro fino. Sem medição em iPhone físico.
+
+
+## Caderno confortável — 12/11/2026
+Substitui a tentativa anterior de cartões sobre papel. Anotacoes agora exibe uma página por vez, índice com busca/área e paginação anterior/próxima. Desktop: livro aberto; mobile até 700px: uma folha e índice recolhível. Edição no próprio papel, sem modal; controles do índice ficam bloqueados durante edição. Cancelar descarta o rascunho; salvar mantém CRUD com ownership, UUID estável e recuperação de erro. Respostas guardadas da Kira abrem o editor inline. Papel quente, lombada azul StudyOS e marcador violeta; sem novas imagens/dependências/chamadas de IA.
+Build e lint aprovados. Teste study-flow aprovado em 320/414 touch/1024: criar/erro/repetir, editar/erro/repetir, duas páginas/paginação/busca, revisão Kira e persistência do chat; screenshots mobile/desktop inspecionados. Backend real de edição e Safari XR físico ainda não verificados. Não prometer FPS. Referência: src/notebook.tsx do FÔGO v0.7.1 fornecido.

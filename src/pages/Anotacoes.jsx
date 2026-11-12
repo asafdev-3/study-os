@@ -1,8 +1,7 @@
-import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
-import { Pencil, Plus, Search, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { sendToKira } from '../lib/groq'
 
@@ -58,13 +57,13 @@ function NovaNota({ initial = {}, onSave, onCancel }) {
   }
 
   return (
-    <form className="study-notebook-form" onSubmit={save}>
+    <form className="study-notebook-form" aria-labelledby="note-editor-title" onSubmit={save}>
       <h2 id="note-editor-title">{initial.id ? 'Editar anotação' : 'Nova anotação'}</h2>
       <label><span id="note-area-label">Área</span><select aria-labelledby="note-area-label" value={area} onChange={(event) => setArea(event.target.value)}>
         {Object.entries(areas).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
       </select></label>
       <label><span id="note-title-label">Título</span><input aria-labelledby="note-title-label" value={title} maxLength={120} onChange={(event) => setTitle(event.target.value)} /></label>
-      <label><span id="note-text-label">Texto</span><textarea aria-labelledby="note-text-label" rows={5} value={content} maxLength={10000} onChange={(event) => setContent(event.target.value)} /></label>
+      <label><span id="note-text-label">Texto</span><textarea aria-labelledby="note-text-label" rows={12} value={content} maxLength={10000} onChange={(event) => setContent(event.target.value)} /></label>
 
       {content.length > 10000 && <p role="alert" className="study-note">Encurte o texto para até 10.000 caracteres antes de salvar.</p>}
       {suggestion && <aside className="study-suggestion">
@@ -85,40 +84,13 @@ function NovaNota({ initial = {}, onSave, onCancel }) {
   )
 }
 
-function NoteDialog({ children }) {
-  const panel = useRef(null)
-  useEffect(() => {
-    const previous = document.activeElement
-    const element = panel.current
-    element.querySelector('input')?.focus({ preventScroll: true })
-    const overflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = overflow
-      if (previous?.isConnected) previous.focus({ preventScroll: true })
-    }
-  }, [])
-  function trapFocus(event) {
-    if (event.key !== 'Tab') return
-    const controls = [...panel.current.querySelectorAll('button:not(:disabled), input, textarea, select, [tabindex="0"]')]
-    const first = controls[0], last = controls.at(-1)
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
-    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
-  }
-  return createPortal(<div className="study-note-overlay">
-    <section ref={panel} role="dialog" aria-modal="true" aria-labelledby="note-editor-title" onKeyDown={trapFocus}>
-      {children}
-    </section>
-  </div>, document.body)
-}
-
 export default function Anotacoes() {
   const [params, setParams] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
   const linkedNote = params.get('nota')
   const activeArea = Object.hasOwn(areas, params.get('area')) ? params.get('area') : ''
-  const noteTarget = useRef(null)
+  const [indexOpen, setIndexOpen] = useState(false)
   const [notes, setNotes] = useState(null)
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
@@ -152,10 +124,6 @@ export default function Anotacoes() {
     load().catch(() => { if (active) setError(true) })
     return () => { active = false }
   }, [retry])
-
-  useEffect(() => {
-    if (notes && linkedNote) noteTarget.current?.scrollIntoView({ block: 'center' })
-  }, [notes, linkedNote])
 
   async function save(note) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -194,50 +162,74 @@ export default function Anotacoes() {
     (!activeArea || activeArea === (area || 'geral'))
     && [title, content, areas[area]].some((text) => text?.toLocaleLowerCase('pt-BR').includes(term)))
 
+  const selectedIndex = Math.max(0, filtered?.findIndex(note => note.id === linkedNote) ?? 0)
+  const selected = filtered?.[selectedIndex]
+  function selectNote(id) {
+    if (editor) return
+    setParams({ ...(activeArea ? { area: activeArea } : {}), nota: id }, { replace: true })
+    setIndexOpen(false)
+    setNotice('')
+  }
+
   return (
-    <main className="study-page study-notes">
+    <main className="study-page study-notes study-notes-book">
       <header className="study-notes-header">
-        <h1>Anotações</h1>
-        {notes && <span>{notes.length} {notes.length === 1 ? 'nota' : 'notas'}</span>}
+        <div><span className="study-eyebrow">STUDYOS / CADERNO</span><h1>Anotações</h1></div>
+        <button className="study-book-new" type="button" aria-label="Nova anotação" disabled={Boolean(editor)} onClick={() => { setEditor({ area: activeArea || 'geral' }); setIndexOpen(false); setNotice('') }}>
+          <Plus size={18} aria-hidden="true" /><span>Nova página</span>
+        </button>
       </header>
-      <label className="study-notebook-search">
-        <Search size={17} aria-hidden="true" />
-        <input aria-label="Buscar anotações" placeholder="Buscar em todas as anotações…" value={query} onChange={(event) => setQuery(event.target.value)} />
-      </label>
-      <div className="study-note-filters" aria-label="Filtrar por área">
-        {[['', 'Tudo'], ...Object.entries(areas)].map(([id, label]) => (
-          <button type="button" key={id} aria-pressed={activeArea === id} onClick={() => setParams(id ? { area: id } : {})}>{label}</button>
-        ))}
-      </div>
       {notice && <p role="status" className="study-note">{notice}</p>}
       {error && <p role="alert" className="study-note">Não foi possível carregar suas anotações.{' '}
-        <button onClick={() => { setError(false); setRetry((value) => value + 1) }} type="button">Tentar novamente</button></p>}
+        <button onClick={() => { setError(false); setRetry(value => value + 1) }} type="button">Tentar novamente</button></p>}
       {!notes && !error && <p role="status" className="study-note">Carregando anotações…</p>}
-      {filtered?.length === 0 && <p className="study-note">{term || activeArea ? 'Nenhuma anotação neste filtro.' : 'Você ainda não tem anotações.'}</p>}
       {linkedNote && notes && !notes.some(note => note.id === linkedNote) && <p role="status" className="study-note">Esta anotação não está disponível nesta conta. <StudyLink to="/anotacoes">Ver meu caderno</StudyLink></p>}
-      <div className="study-book-cover">
-        <div className="study-book-index"><h2>Índice</h2>{filtered?.map((note, index) => <StudyLink key={note.id} to={'/anotacoes?nota=' + encodeURIComponent(note.id)} aria-current={linkedNote === note.id ? 'page' : undefined}><span>{note.title || 'Sem título'}</span><small>{index + 1}</small></StudyLink>)}</div>
-      <div className="study-notes-grid study-book-leaves">
-        {filtered?.map((note) => (
-          <details className={'study-note-card' + (note.id === linkedNote ? ' study-note-target' : '')} ref={note.id === linkedNote ? noteTarget : undefined} open={note.id === linkedNote ? true : undefined} key={note.id} data-area={note.area ?? 'geral'}>
-            <summary><small>{areas[note.area] ?? 'Geral'}</small><strong>{note.title || 'Sem título'}</strong>
-              {note.content && <span>{note.content}</span>}
-            </summary>
-            <p>{note.content || 'Sem texto.'}</p>
-            <div className="study-note-tools">
-              <button type="button" onClick={() => setEditor(note)}><Pencil size={15} aria-hidden="true" /> Editar</button>
-              <button type="button" onClick={() => review(note)}><Sparkles size={15} aria-hidden="true" /> Revisar com Kira</button>
-            </div>
-          </details>
-        ))}
+      <button className="study-book-toggle" type="button" aria-expanded={indexOpen} aria-controls="notebook-index" disabled={Boolean(editor)} onClick={() => setIndexOpen(open => !open)}>
+        <List size={17} aria-hidden="true" />{indexOpen ? 'Fechar índice' : 'Índice e busca'}<span>{notes?.length ?? 0} páginas</span>
+      </button>
+      <div className="study-book-cover" data-index-open={indexOpen}>
+        <section className="study-book-index" id="notebook-index" aria-label="Índice de páginas">
+          <span className="study-book-imprint">SEU ESPAÇO DE ESTUDO</span>
+          <h2>Índice</h2>
+          <p className="study-book-caption">Ideias que vale a pena guardar.</p>
+          <label className="study-notebook-search">
+            <Search size={16} aria-hidden="true" />
+            <input type="search" disabled={Boolean(editor)} aria-label="Buscar anotações" placeholder="Buscar no caderno" value={query} onChange={event => setQuery(event.target.value)} />
+          </label>
+          <label className="study-book-area">Área
+            <select disabled={Boolean(editor)} aria-label="Filtrar por área" value={activeArea} onChange={event => setParams(event.target.value ? { area: event.target.value } : {})}>
+              <option value="">Todas as áreas</option>
+              {Object.entries(areas).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+            </select>
+          </label>
+          <ol>{filtered?.map((note, index) => <li key={note.id}>
+            <button disabled={Boolean(editor)} type="button" onClick={() => selectNote(note.id)} aria-current={selected?.id === note.id ? 'page' : undefined}>
+              <span>{note.title || 'Sem título'}</span><i aria-hidden="true" /><small>{String(index + 1).padStart(2, '0')}</small>
+            </button>
+          </li>)}</ol>
+          {!filtered?.length && <p className="study-book-caption">{term || activeArea ? 'Nenhuma página neste filtro.' : 'Suas páginas aparecerão aqui.'}</p>}
+        </section>
+        <section className="study-book-leaf" aria-label="Página do caderno">
+          <span className="study-book-ribbon" aria-hidden="true" />
+          <div className="study-book-top"><span>Caderno de estudos</span><span>{editor ? 'Escrevendo' : selected ? String(selectedIndex + 1).padStart(2, '0') : '01'}</span></div>
+          {editor ? <NovaNota key={editor.id || 'new'} initial={editor} onSave={save} onCancel={() => setEditor(null)} /> : <>
+            <article className="study-book-writing">
+              <small>{selected ? areas[selected.area] ?? 'Geral' : 'Página em branco'}</small>
+              <h2>{selected?.title || (term || activeArea ? 'Nenhuma página encontrada' : 'Sua primeira página')}</h2>
+              <div className="study-book-lines"><p>{selected ? selected.content || 'Sem texto.' : term || activeArea ? 'Tente outra palavra ou escolha outra área no índice.' : 'Guarde uma ideia, organize o que aprendeu ou traga uma explicação da Kira para cá.'}</p></div>
+              {selected ? <div className="study-note-tools">
+                <button type="button" onClick={() => setEditor(selected)}><Pencil size={15} aria-hidden="true" /> Editar</button>
+                <button type="button" onClick={() => review(selected)}><Sparkles size={15} aria-hidden="true" /> Revisar com Kira</button>
+              </div> : !term && !activeArea && <button type="button" className="study-book-start" onClick={() => setEditor({ area: 'geral' })}><Pencil size={16} aria-hidden="true" /> Escrever primeira página</button>}
+            </article>
+            <nav className="study-book-pager" aria-label="Navegar no caderno">
+              <button type="button" aria-label="Página anterior" disabled={!selected || selectedIndex === 0} onClick={() => selectNote(filtered[selectedIndex - 1].id)}><ArrowLeft size={18} /></button>
+              <span aria-live="polite">{selected ? `Página ${selectedIndex + 1} de ${filtered.length}` : 'Seu caderno, no seu ritmo.'}</span>
+              <button type="button" aria-label="Próxima página" disabled={!selected || selectedIndex >= filtered.length - 1} onClick={() => selectNote(filtered[selectedIndex + 1].id)}><ArrowRight size={18} /></button>
+            </nav>
+          </>}
+        </section>
       </div>
-      </div>
-      {createPortal(<button className="study-note-fab" onClick={() => setEditor({ area: activeArea || 'geral' })} type="button" aria-label="Nova anotação">
-        <Plus size={24} aria-hidden="true" />
-      </button>, document.body)}
-      {editor && <NoteDialog>
-        <NovaNota initial={editor} onSave={save} onCancel={() => setEditor(null)} />
-      </NoteDialog>}
     </main>
   )
 }
