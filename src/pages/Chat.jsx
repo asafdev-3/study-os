@@ -1,5 +1,5 @@
 import { m as motion } from 'framer-motion'
-import { useStudyReducedMotion } from '../lib/motion'
+import { useStudyReducedMotion, cardSpring } from '../lib/motion'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { ArrowUp } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
@@ -13,9 +13,9 @@ const prompts = [
 ]
 
 const fadeUp = (delay = 0, reduced = false) => ({
-  initial: reduced ? false : { opacity: 0, y: 10 },
+  initial: reduced ? false : { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
-  transition: reduced ? { duration: 0 } : { duration: 0.32, ease: [0.25, 0.1, 0.25, 1], delay },
+  transition: reduced ? { duration: 0 } : { ...cardSpring, delay },
 })
 
 export default function Chat() {
@@ -188,9 +188,9 @@ export default function Chat() {
         {messages.map(({ role, content }, index) => (
           <motion.div
             key={index}
-            initial={reduced ? false : { opacity: 0, y: 4 }}
+            initial={reduced ? false : { opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduced ? 0 : 0.18 }}
+            transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 36, mass: 0.7 }}
             style={{
               display: 'flex',
               justifyContent: role === 'user' ? 'flex-end' : 'flex-start',
