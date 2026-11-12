@@ -1,5 +1,5 @@
 import { m as motion } from 'framer-motion'
-import { useStudyReducedMotion, cardSpring } from '../lib/motion'
+import { useStudyReducedMotion, cardSpring, pageSpring, softTransition } from '../lib/motion'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ArrowUp, BookmarkPlus, Check, Copy } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -128,7 +128,9 @@ export default function Chat({ userId }) {
     <motion.main
       className="study-chat"
       ref={page}
-      {...fadeUp(0, reduced)}
+      initial={reduced ? false : { opacity: 0.96, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={reduced ? { duration: 0 } : { y: pageSpring, opacity: softTransition }}
     >
       {/* Header — Upgrade-style: label small-caps + ponto verde + imagem */}
       <header className="study-chat-header" style={{ gap: 12 }}>

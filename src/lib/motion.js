@@ -23,7 +23,7 @@ export function useStudyReducedMotion() {
 // Regra: apenas transform + opacity. Sem width/height/border-radius animados.
 
 /** Transição de página — suave, física de iOS ProMotion */
-export const pageSpring = { type: 'spring', stiffness: 260, damping: 28, mass: 0.9 }
+export const pageSpring = { type: 'spring', stiffness: 350, damping: 34, mass: 0.75 }
 
 /** Cards e modais — levemente mais rígido */
 export const cardSpring = { type: 'spring', stiffness: 320, damping: 32, mass: 0.8 }

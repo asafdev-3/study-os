@@ -342,9 +342,9 @@ html[data-study-chat], html[data-study-chat] body {
 .study-lock[data-phase="confirmed"] button { color: #9ce9d9; background: #182e35; }
 
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-study-motion="reduced"]) .study-page-enter :is(.study-room-welcome, .study-notes-header, .study-enem-header, .study-home-header),
+  html:not([data-study-motion="reduced"]) .study-page-enter :is(.study-room-welcome, .study-notes-header, .study-enem-header, .study-home-header, .study-profile-header, .study-page > header),
   html:not([data-study-motion="reduced"]) .study-chat-header {
-    animation: study-soft-focus 200ms cubic-bezier(.22,1,.36,1);
+    animation: study-soft-focus 260ms cubic-bezier(.22,1,.36,1);
   }
   html:not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
     animation: study-pane-fade 200ms cubic-bezier(.22,1,.36,1);
@@ -361,7 +361,8 @@ html[data-study-chat], html[data-study-chat] body {
     animation: study-lock-pulse 440ms ease-out;
   }
   @keyframes study-soft-focus {
-    from { opacity: .9; filter: blur(1.5px); }
+    0% { opacity: .86; filter: blur(3px); }
+    55% { opacity: .98; filter: blur(.65px); }
     to { opacity: 1; filter: none; }
   }
   @keyframes study-lock-pulse {

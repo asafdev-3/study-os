@@ -23,7 +23,7 @@ export function StudyMotion({ children }) {
 }
 
 /**
- * Wrapper de página — spring de entrada com y:10→0 + opacity:0.9→1.
+ * Wrapper de página — spring de entrada com y:6→0 + opacity:0.96→1.
  * Transform e opacity evitam animar o layout. A fluidez precisa ser medida no aparelho.
  * Sem will-change permanente: libera a camada e não prende filhos position:fixed.
  */
@@ -32,9 +32,9 @@ export function PageMotion({ children }) {
   return (
     <motion.div
       className="study-page-enter"
-      initial={reduced ? false : { opacity: 0.9, y: 10 }}
+      initial={reduced ? false : { opacity: 0.96, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={reduced ? { duration: 0 } : pageSpring}
+      transition={reduced ? { duration: 0 } : { y: pageSpring, opacity: softTransition }}
     >
       {children}
     </motion.div>
