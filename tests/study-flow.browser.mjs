@@ -61,7 +61,7 @@ try {
     }, { project, user, exp, token })
     const nav = name => page.getByRole('navigation').getByRole('link', { name, exact: true })
     await page.goto(base + '/dashboard')
-    await page.getByRole('button', { name: 'Entrar no StudyOS' }).click()
+    await holdLock(page)
     await page.getByRole('heading', { name: 'Olá, Vitor.' }).waitFor()
     await nav('Kira').click()
     const input = page.getByRole('textbox', { name: 'Mensagem para a Kira' })
@@ -125,10 +125,18 @@ try {
     await page.waitForFunction(() => getComputedStyle(document.querySelector('.study-chat')).opacity === '1' && [...document.querySelectorAll('.study-chat-log > div')].every(el => getComputedStyle(el).opacity === '1'))
     if (width === 414) await page.screenshot({ path: 'qa.local/study-flow-chat.png' })
     await page.reload()
-    await page.getByRole('button', { name: 'Entrar no StudyOS' }).click()
+    await holdLock(page)
     await page.waitForFunction(() => document.querySelectorAll('.study-message--assistant').length === 2)
     assert.equal(errors.length, 0, errors.join('\n'))
     console.log(width + 'px: copiar/fallback, criar/repetir, editar/erro, revisão sem chamada extra, conversa entre abas/em voo/reload, sem overflow.')
     await page.close()
   }
 } finally { await browser?.close(); server.kill() }
+
+async function holdLock(page) {
+  const button = page.getByRole('button', { name: 'Entrar no StudyOS' })
+  await button.focus()
+  await page.keyboard.down('Space')
+  await page.waitForTimeout(2050)
+  await page.keyboard.up('Space')
+}

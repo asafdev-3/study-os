@@ -535,3 +535,12 @@ html[data-study-chat], html[data-study-chat] body {
 .study-note-card[open] > p { color: #d1d1db; font-size: 15px; line-height: 1.65; }
 .study-note-overlay { overscroll-behavior: contain; }
 .study-note-overlay section { overscroll-behavior: contain; }
+
+/* Hold-to-scan: elapsed time controls progress; only cancellation eases back. */
+.study-lock .study-lock-ring-progress { animation: none; transition: none; }
+.study-lock[data-phase="cancelled"] .study-lock-ring-progress { transition: stroke-dashoffset 160ms ease-out; }
+.study-lock-action > p { max-width: 280px; min-height: 2.8em; padding-inline: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  .study-lock[data-phase="cancelled"] .study-lock-ring-progress { transition: none; }
+}
+html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; }

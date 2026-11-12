@@ -76,3 +76,7 @@ Atualização posterior: ler docs/continuacao-gpt.md (12/11/2026).
 
 ## Rodada de utilidade — 12/11/2026
 Chat legível, copiar/guardar resposta, editar/revisar anotações, conversa por usuário entre abas e reload. Springs existentes preservados; will-change permanente removido; FAB/modal em portal. Build, lint, motion, NFC e novo teste study-flow aprovados. Backend real da edição e Safari XR pendentes; não afirmar ganho percentual ou FPS. Detalhes em docs/study-flow.md.
+
+
+## Lock Hold-to-Scan — 12/11/2026
+Digital preservada; pressão contínua de 2000 ms via Pointer Events, progresso por performance.now/rAF; toque curto, saída da área (inclusive captura touch), cancelamento, blur e background abortam. Teclado Espaço/Enter também exige 2 s. Movimento reduzido mantém requisito; confirmação visual 180 ms antes do onUnlock. user-select:none, touch-action:none e menu de contexto bloqueado. Testes de fluxo e lock adaptados; Safari físico pendente.

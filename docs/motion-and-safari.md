@@ -53,3 +53,7 @@ Referências de implementação:
 https://motion.dev/docs/performance
 https://motion.dev/docs/react-motion-component
 https://react.dev/reference/react/Suspense
+
+
+## Lock Hold-to-Scan — 12/11/2026
+Digital preservada; pressão contínua de 2000 ms via Pointer Events, progresso por performance.now/rAF; toque curto, saída da área (inclusive captura touch), cancelamento, blur e background abortam. Teclado Espaço/Enter também exige 2 s. Movimento reduzido mantém requisito; confirmação visual 180 ms antes do onUnlock. user-select:none, touch-action:none e menu de contexto bloqueado. Testes de fluxo e lock adaptados; Safari físico pendente.
