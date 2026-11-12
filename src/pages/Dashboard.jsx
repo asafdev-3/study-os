@@ -96,7 +96,7 @@ export default function Dashboard() {
           <section className="study-room-focus" aria-label="Sessão de foco">
             <div className="study-room-clock"><Timer size={16} aria-hidden="true" /><span>{clock}</span></div>
             <div className="study-room-focus-copy"><strong>{deadline ? (seconds > 0 ? 'Seu foco continua.' : 'Sessão concluída.') : focus ? 'No seu ritmo.' : 'Uma coisa por vez.'}</strong><small>{focus ? 'Sua sessão de estudo' : '25 minutos para o próximo passo'}</small></div>
-            <StudyLink className="study-primary" to={focus ? '/enem' : '/nfc?acao=foco&area=' + area}>{focus ? 'Retomar' : 'Entrar em foco'}<ArrowRight size={16} aria-hidden="true" /></StudyLink>
+            <StudyLink className="study-primary" to={focus ? '/enem' : '/nfc?acao=foco&area=' + area}>{focus ? (seconds === 0 ? 'Ver sessão' : 'Retomar') : 'Entrar em foco'}<ArrowRight size={16} aria-hidden="true" /></StudyLink>
           </section>
           <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>
             <img src={kira} alt="" width="40" height="40" />

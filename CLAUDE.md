@@ -4,7 +4,8 @@
 1. Este arquivo: estado atual e decisões que não devem ser perdidas.
 2. `docs/motion-and-safari.md`: rodada atual de movimento e limite dos testes.
 3. `docs/design-and-nfc.md`: identidade, NFC e destinos.
-4. Histórico completo local: `/home/vortex/Documentos/AI-BRAIN/02-PROJECTS/STUDYOS/STUDYOS__MASTER.md`.
+4. `docs/study-flow.md`: fluxo Kira → caderno → revisão, testes e limites.
+5. Histórico completo local: `/home/vortex/Documentos/AI-BRAIN/02-PROJECTS/STUDYOS/STUDYOS__MASTER.md`.
 
 ## Projeto e execução
 - Checkout: `/home/vortex/study-os`.
@@ -39,7 +40,7 @@ Vitor relata falta de fluidez no Safari do iPhone XR, iOS 18. Deseja animações
 - `Navbar.jsx`: indicador compartilhado com layoutId/spring; barra permanece estável.
 - `Chat.jsx`: viewport visual fixa para Safari/teclado, rolagem apenas nas mensagens, entrada Motion de mensagens.
 - `src/lib/focus.js` + `EnemScreen.jsx`: timer com deadline absoluto e persistência por usuário; não usar contagem que para ao sair da aba.
-- `Anotacoes.jsx`: caderno, filtros, criação real no Supabase, Kira sugere e deep link para nota.
+- `Anotacoes.jsx`: caderno, filtros, criação/edição no Supabase, guardar resposta da Kira, revisão por pergunta e deep link. Ver limites em docs/study-flow.md.
 - `NFC.jsx` + `src/lib/nfc.js`: URLs de foco/matéria/nota. A simulação aleatória foi removida.
 - `src/lib/groq.js`, `useKira.js`, `PaywallModal.jsx`: envio autenticado, cota e modal global.
 
@@ -72,3 +73,6 @@ Leia `tests/motion.browser.mjs` e `tests/nfc.test.mjs`. Relatório da rodada em 
 O MASTER é histórico: instruções novas deste arquivo prevalecem sobre decisões antigas incompatíveis (NFC adiado, dobra 3D, desfoque na página inteira).
 
 Atualização posterior: ler docs/continuacao-gpt.md (12/11/2026).
+
+## Rodada de utilidade — 12/11/2026
+Chat legível, copiar/guardar resposta, editar/revisar anotações, conversa por usuário entre abas e reload. Springs existentes preservados; will-change permanente removido; FAB/modal em portal. Build, lint, motion, NFC e novo teste study-flow aprovados. Backend real da edição e Safari XR pendentes; não afirmar ganho percentual ou FPS. Detalhes em docs/study-flow.md.

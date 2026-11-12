@@ -24,8 +24,8 @@ export function StudyMotion({ children }) {
 
 /**
  * Wrapper de página — spring de entrada com y:10→0 + opacity:0.9→1.
- * Apenas transform + opacity: zero layout recalc, composited pelo GPU.
- * 120Hz ProMotion sente a física da spring em cada frame.
+ * Transform e opacity evitam animar o layout. A fluidez precisa ser medida no aparelho.
+ * Sem will-change permanente: libera a camada e não prende filhos position:fixed.
  */
 export function PageMotion({ children }) {
   const reduced = useStudyReducedMotion()
@@ -35,7 +35,6 @@ export function PageMotion({ children }) {
       initial={reduced ? false : { opacity: 0.9, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={reduced ? { duration: 0 } : pageSpring}
-      style={{ willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>

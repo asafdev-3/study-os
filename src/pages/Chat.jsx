@@ -1,8 +1,8 @@
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion, cardSpring } from '../lib/motion'
-import { useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUp } from 'lucide-react'
-import { useLocation } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { ArrowUp, BookmarkPlus, Check, Copy } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import kiraImage from '../assets/kira-studyos.webp'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 import { useKira } from '../lib/useKira'
@@ -18,15 +18,21 @@ const fadeUp = (delay = 0, reduced = false) => ({
   transition: reduced ? { duration: 0 } : { ...cardSpring, delay },
 })
 
-export default function Chat() {
+export default function Chat({ userId }) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [copyStatus, setCopyStatus] = useState(null)
   const reduced = useStudyReducedMotion()
   const [input, setInput] = useState(() => location.state?.prompt ?? '')
-  const { messages, remaining, loading, error, send } = useKira()
+  const { messages, remaining, loading, error, send } = useKira(true, userId ? `studyos:chat:${userId}` : null)
   const log = useRef(null)
   const field = useRef(null)
   const page = useRef(null)
   const follow = useRef(true)
+
+  useEffect(() => {
+    if (location.state?.prompt) navigate(location.pathname + location.search, { replace: true, state: null })
+  }, [location.state, location.pathname, location.search, navigate])
 
   // Viewport e teclado — Safari-aware
   useLayoutEffect(() => {
@@ -95,6 +101,23 @@ export default function Chat() {
     if (await send(draft)) setInput((current) => current === draft ? '' : current)
   }
 
+  async function copyReply(content, index) {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopyStatus({ index, ok: true })
+    } catch {
+      setCopyStatus({ index, ok: false })
+    }
+  }
+
+  function saveReply(content, index) {
+    const question = messages.slice(0, index).findLast(message => message.role === 'user')?.content
+    navigate('/anotacoes', { state: { draft: {
+      title: (question || 'Revisão com a Kira').slice(0, 120),
+      content, area: 'geral',
+    } } })
+  }
+
   function choose(text) {
     setInput(text)
     field.current?.focus({ preventScroll: true })
@@ -124,11 +147,11 @@ export default function Chat() {
           </h1>
         </div>
         {remaining !== null && (
-          <span aria-live="polite" style={{
+          <span aria-live="polite" aria-label={`${remaining} mensagens restantes hoje`} style={{
             fontSize: 11, color: '#a1a1aa', flexShrink: 0,
             fontVariantNumeric: 'tabular-nums',
           }}>
-            {remaining}/{KIRA_DAILY_LIMIT}
+            {remaining}/{KIRA_DAILY_LIMIT} hoje
           </span>
         )}
       </header>
@@ -195,25 +218,22 @@ export default function Chat() {
               display: 'flex',
               justifyContent: role === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: 8,
+              flexShrink: 0, minWidth: 0,
             }}
           >
-            <p style={{
-              maxWidth: '84%',
-              padding: '10px 14px',
-              borderRadius: role === 'user' ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
-              fontSize: 14,
-              lineHeight: 1.55,
-              color: role === 'user' ? '#f4f4f5' : '#e4e4e7',
-              background: role === 'user'
-                ? 'rgba(139,92,246,0.18)'
-                : '#0a0a0c',
-              border: role === 'user'
-                ? '1px solid rgba(139,92,246,0.3)'
-                : '1px solid #16161b',
-              margin: 0,
-            }}>
-              {content}
-            </p>
+            <div className={`study-reply study-reply--${role}`}>
+              <p className={`study-message study-message--${role}`}>{content}</p>
+              {role === 'assistant' && <div className="study-reply-actions">
+                <button type="button" onClick={() => copyReply(content, index)} aria-label="Copiar resposta">
+                  {copyStatus?.index === index && copyStatus.ok ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+                  {copyStatus?.index === index && copyStatus.ok ? 'Copiada' : 'Copiar'}
+                </button>
+                <button type="button" onClick={() => saveReply(content, index)}>
+                  <BookmarkPlus size={15} aria-hidden="true" /> Guardar no caderno
+                </button>
+                {copyStatus?.index === index && !copyStatus.ok && <span role="status">Selecione o texto para copiar.</span>}
+              </div>}
+            </div>
           </motion.div>
         ))}
 
@@ -252,7 +272,7 @@ export default function Chat() {
             maxLength={2000}
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              color: '#f4f4f5', fontSize: 15, lineHeight: 1.5,
+              color: '#f4f4f5', fontSize: 16, lineHeight: 1.5,
               caretColor: '#8B5CF6',
             }}
           />
@@ -261,7 +281,7 @@ export default function Chat() {
             aria-label="Enviar mensagem"
             disabled={loading || !input.trim()}
             style={{
-              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+              width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: input.trim() && !loading
                 ? 'linear-gradient(135deg, #8B5CF6, #6366F1)'

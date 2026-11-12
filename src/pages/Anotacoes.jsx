@@ -1,7 +1,8 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
-import { Plus, Search, Sparkles } from 'lucide-react'
+import { Pencil, Plus, Search, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { sendToKira } from '../lib/groq'
 
@@ -10,15 +11,16 @@ const areas = {
   cn: 'Ciências da Natureza', mt: 'Matemática', red: 'Redação',
 }
 
-function NovaNota({ onSave, onCancel }) {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [area, setArea] = useState('geral')
+function NovaNota({ initial = {}, onSave, onCancel }) {
+  const [title, setTitle] = useState(initial.title ?? '')
+  const [content, setContent] = useState(initial.content ?? '')
+  const [area, setArea] = useState(initial.area ?? 'geral')
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const [suggestion, setSuggestion] = useState('')
-  const draftId = useRef(null)
-  const hasDraft = Boolean(title.trim() || content.trim())
+  const draftId = useRef(initial.id ?? null)
+  const saving = useRef(false)
+  const hasDraft = Boolean(title.trim() || content.trim()) && content.length <= 10000
 
   async function suggest() {
     if (!hasDraft || busy) return
@@ -40,7 +42,8 @@ function NovaNota({ onSave, onCancel }) {
 
   async function save(event) {
     event.preventDefault()
-    if (!hasDraft || busy) return
+    if (!hasDraft || busy || saving.current) return
+    saving.current = true
     setBusy('save')
     setError('')
     try {
@@ -49,18 +52,21 @@ function NovaNota({ onSave, onCancel }) {
     } catch {
       setError('Não foi possível salvar sua anotação. Tente novamente.')
       setBusy('')
+    } finally {
+      saving.current = false
     }
   }
 
   return (
     <form className="study-notebook-form" onSubmit={save}>
-      <h2>Nova anotação</h2>
-      <label>Área <select value={area} onChange={(event) => setArea(event.target.value)}>
+      <h2 id="note-editor-title">{initial.id ? 'Editar anotação' : 'Nova anotação'}</h2>
+      <label><span id="note-area-label">Área</span><select aria-labelledby="note-area-label" value={area} onChange={(event) => setArea(event.target.value)}>
         {Object.entries(areas).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
       </select></label>
-      <label>Título <input value={title} maxLength={120} onChange={(event) => setTitle(event.target.value)} /></label>
-      <label>Texto <textarea rows={5} value={content} maxLength={10000} onChange={(event) => setContent(event.target.value)} /></label>
+      <label><span id="note-title-label">Título</span><input aria-labelledby="note-title-label" value={title} maxLength={120} onChange={(event) => setTitle(event.target.value)} /></label>
+      <label><span id="note-text-label">Texto</span><textarea aria-labelledby="note-text-label" rows={5} value={content} maxLength={10000} onChange={(event) => setContent(event.target.value)} /></label>
 
+      {content.length > 10000 && <p role="alert" className="study-note">Encurte o texto para até 10.000 caracteres antes de salvar.</p>}
       {suggestion && <aside className="study-suggestion">
         <span className="study-eyebrow"><Sparkles size={14} aria-hidden="true" /> Sugestão da Kira</span>
         <p className="whitespace-pre-wrap break-words">{suggestion}</p>
@@ -79,8 +85,37 @@ function NovaNota({ onSave, onCancel }) {
   )
 }
 
+function NoteDialog({ children }) {
+  const panel = useRef(null)
+  useEffect(() => {
+    const previous = document.activeElement
+    const element = panel.current
+    element.querySelector('input')?.focus({ preventScroll: true })
+    const overflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = overflow
+      if (previous?.isConnected) previous.focus({ preventScroll: true })
+    }
+  }, [])
+  function trapFocus(event) {
+    if (event.key !== 'Tab') return
+    const controls = [...panel.current.querySelectorAll('button:not(:disabled), input, textarea, select, [tabindex="0"]')]
+    const first = controls[0], last = controls.at(-1)
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+  }
+  return createPortal(<div className="study-note-overlay">
+    <section ref={panel} role="dialog" aria-modal="true" aria-labelledby="note-editor-title" onKeyDown={trapFocus}>
+      {children}
+    </section>
+  </div>, document.body)
+}
+
 export default function Anotacoes() {
   const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
   const linkedNote = params.get('nota')
   const activeArea = Object.hasOwn(areas, params.get('area')) ? params.get('area') : ''
   const noteTarget = useRef(null)
@@ -88,7 +123,20 @@ export default function Anotacoes() {
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [query, setQuery] = useState('')
-  const [writing, setWriting] = useState(false)
+  const [editor, setEditor] = useState(() => {
+    const draft = location.state?.draft
+    return draft && typeof draft.content === 'string' ? {
+      title: typeof draft.title === 'string' ? draft.title.slice(0, 120) : 'Revisão com a Kira',
+      content: draft.content, area: Object.hasOwn(areas, draft.area) ? draft.area : 'geral',
+    } : null
+  })
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    if (location.state?.draft) {
+      navigate(location.pathname + location.search, { replace: true, state: null })
+    }
+  }, [location.state, location.pathname, location.search, navigate])
 
   useEffect(() => {
     let active = true
@@ -112,14 +160,33 @@ export default function Anotacoes() {
   async function save(note) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) throw authError ?? new Error('Sessão indisponível')
-    const { error: saveError } = await supabase.from('annotations')
-      .upsert({ ...note, user_id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
-    if (saveError) throw saveError
-    const { data, error: dbError } = await supabase.from('annotations')
-      .select('id,title,content,area,created_at').eq('user_id', user.id).eq('id', note.id).single()
-    if (dbError) throw dbError
-    setNotes((previous) => [data, ...(previous ?? []).filter(({ id }) => id !== data.id)])
-    setWriting(false)
+    const columns = 'id,title,content,area,created_at'
+    let saved
+    if (editor?.id) {
+      const { data, error: updateError } = await supabase.from('annotations')
+        .update({ title: note.title, content: note.content, area: note.area })
+        .eq('user_id', user.id).eq('id', editor.id).select(columns).single()
+      if (updateError || !data) throw updateError ?? new Error('Anotação indisponível')
+      saved = data
+    } else {
+      const { error: saveError } = await supabase.from('annotations')
+        .upsert({ ...note, user_id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+      if (saveError) throw saveError
+      const { data, error: dbError } = await supabase.from('annotations')
+        .select(columns).eq('user_id', user.id).eq('id', note.id).single()
+      if (dbError || !data) throw dbError ?? new Error('Anotação indisponível')
+      saved = data
+    }
+    setNotes((previous) => [saved, ...(previous ?? []).filter(({ id }) => id !== saved.id)])
+    setQuery('')
+    setParams({ nota: saved.id }, { replace: true })
+    setNotice(editor?.id ? 'Anotação atualizada.' : 'Anotação guardada no seu caderno.')
+    setEditor(null)
+  }
+
+  function review(note) {
+    const source = [note.title, note.content].filter(Boolean).join('\n').slice(0, 1500)
+    navigate('/chat', { state: { prompt: `Me ajude a revisar esta anotação de ${areas[note.area] ?? 'Geral'}. Faça uma pergunta por vez e espere minha resposta antes de explicar. Material de estudo:\n\n${source}` } })
   }
 
   const term = query.trim().toLocaleLowerCase('pt-BR')
@@ -142,6 +209,7 @@ export default function Anotacoes() {
           <button type="button" key={id} aria-pressed={activeArea === id} onClick={() => setParams(id ? { area: id } : {})}>{label}</button>
         ))}
       </div>
+      {notice && <p role="status" className="study-note">{notice}</p>}
       {error && <p role="alert" className="study-note">Não foi possível carregar suas anotações.{' '}
         <button onClick={() => { setError(false); setRetry((value) => value + 1) }} type="button">Tentar novamente</button></p>}
       {!notes && !error && <p role="status" className="study-note">Carregando anotações…</p>}
@@ -154,17 +222,19 @@ export default function Anotacoes() {
               {note.content && <span>{note.content}</span>}
             </summary>
             <p>{note.content || 'Sem texto.'}</p>
+            <div className="study-note-tools">
+              <button type="button" onClick={() => setEditor(note)}><Pencil size={15} aria-hidden="true" /> Editar</button>
+              <button type="button" onClick={() => review(note)}><Sparkles size={15} aria-hidden="true" /> Revisar com Kira</button>
+            </div>
           </details>
         ))}
       </div>
-      <button className="study-note-fab" onClick={() => setWriting(true)} type="button" aria-label="Nova anotação">
+      {createPortal(<button className="study-note-fab" onClick={() => setEditor({ area: activeArea || 'geral' })} type="button" aria-label="Nova anotação">
         <Plus size={24} aria-hidden="true" />
-      </button>
-      {writing && <div className="study-note-overlay">
-        <section role="dialog" aria-modal="true" aria-label="Nova anotação">
-          <NovaNota onSave={save} onCancel={() => setWriting(false)} />
-        </section>
-      </div>}
+      </button>, document.body)}
+      {editor && <NoteDialog>
+        <NovaNota initial={editor} onSave={save} onCancel={() => setEditor(null)} />
+      </NoteDialog>}
     </main>
   )
 }

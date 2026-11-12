@@ -518,3 +518,20 @@ html[data-study-chat], html[data-study-chat] body {
   @keyframes study-scan-frame { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
   @keyframes study-scan-line { 0% { opacity: 0; transform: translateY(0); } 25%,75% { opacity: .8; } 100% { opacity: 0; transform: translateY(64px); } }
 }
+
+
+/* Reading and reuse: quiet actions, comfortable text, existing StudyOS palette. */
+.study-reply { max-width: min(94%, 580px); min-width: 0; }
+.study-reply--user { max-width: min(84%, 580px); }
+.study-reply .study-message { max-width: 100%; margin: 0; line-height: 1.65; }
+.study-reply .study-message--assistant { border: 1px solid #202029; background: #0c0c10; border-radius: 4px 18px 18px 18px; }
+.study-reply .study-message--user { border: 1px solid #8b5cf64d; background: #8b5cf62e; }
+.study-reply-actions, .study-note-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; padding: 2px 4px 0; }
+.study-reply-actions button, .study-note-tools button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #b3b3c2; font-size: 12px; text-align: left; }
+.study-reply-actions button:focus-visible, .study-note-tools button:focus-visible { outline: 2px solid var(--study-accent); outline-offset: 2px; border-radius: 6px; }
+.study-reply-actions span { width: 100%; color: #fda4af; font-size: 12px; }
+.study-note-tools { padding: 0 12px 8px; border-top: 1px solid #202029; }
+.study-note-card[open] { column-span: all; }
+.study-note-card[open] > p { color: #d1d1db; font-size: 15px; line-height: 1.65; }
+.study-note-overlay { overscroll-behavior: contain; }
+.study-note-overlay section { overscroll-behavior: contain; }
