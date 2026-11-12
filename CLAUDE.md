@@ -70,3 +70,5 @@ Vitor relata falta de fluidez no Safari do iPhone XR, iOS 18. Deseja animações
 Os testes de navegador usam conta, respostas Supabase e NFC simulados. Não alteram dados reais.
 Leia `tests/motion.browser.mjs` e `tests/nfc.test.mjs`. Relatório da rodada em `docs/motion-and-safari.md`.
 O MASTER é histórico: instruções novas deste arquivo prevalecem sobre decisões antigas incompatíveis (NFC adiado, dobra 3D, desfoque na página inteira).
+
+Atualização posterior: ler docs/continuacao-gpt.md (12/11/2026).

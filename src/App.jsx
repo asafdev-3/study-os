@@ -69,7 +69,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
   return (
     <Routes location={location} key={location.pathname}>
       <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
-      <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+      <Route path="/login" element={<Login />} />
       <Route path="/lock" element={<Lock onUnlock={desbloquear} />} />
       <Route path="/dashboard" element={<PageWrapper><DashboardEntry /></PageWrapper>} />
       <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />

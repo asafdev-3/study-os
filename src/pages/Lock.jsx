@@ -58,6 +58,7 @@ export default function Lock({ onUnlock }) {
       </div>
       <div className="study-lock-action">
         <button type="button" aria-label="Entrar no StudyOS" onClick={enter} disabled={phase !== 'idle'}>
+          <span className="study-lock-scan-frame" aria-hidden="true"><i /><i /><i /><i /><span /></span>
           <svg className="study-lock-ring" viewBox="0 0 88 88" aria-hidden="true">
             <defs><linearGradient id="study-lock-accent"><stop stopColor="#8b7cff" /><stop offset="1" stopColor="#5ce1c2" /></linearGradient></defs>
             <circle cx="44" cy="44" r="41" className="study-lock-ring-track" />
