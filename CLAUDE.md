@@ -80,3 +80,7 @@ Chat legível, copiar/guardar resposta, editar/revisar anotações, conversa por
 
 ## Lock Hold-to-Scan — 12/11/2026
 Digital preservada; pressão contínua de 2000 ms via Pointer Events, progresso por performance.now/rAF; toque curto, saída da área (inclusive captura touch), cancelamento, blur e background abortam. Teclado Espaço/Enter também exige 2 s. Movimento reduzido mantém requisito; confirmação visual 180 ms antes do onUnlock. user-select:none, touch-action:none e menu de contexto bloqueado. Testes de fluxo e lock adaptados; Safari físico pendente.
+
+
+## Atualização 12/11: Lock e direção de produto
+Lock agora exige 800 ms, substituindo os 2000 ms anteriores. Seleção/callout Safari bloqueados em toda a área e descendentes, inclusive status. Ver docs/product-direction.md: necessidades, prioridades e recursos propostos (não implementados).

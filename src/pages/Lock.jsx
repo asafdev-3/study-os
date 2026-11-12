@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Fingerprint, Moon, Sun } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+const HOLD_DURATION = 800
+
 const timeFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' })
 const dateFormat = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', day: 'numeric', month: 'long' })
 
@@ -63,8 +65,8 @@ export default function Lock({ onUnlock }) {
     function finish() {
       if (!active.current || completed.current) return
       const elapsed = performance.now() - active.current.start
-      if (elapsed < 2000) {
-        timer.current = setTimeout(finish, 2000 - elapsed)
+      if (elapsed < HOLD_DURATION) {
+        timer.current = setTimeout(finish, HOLD_DURATION - elapsed)
         return
       }
       completed.current = true
@@ -79,17 +81,18 @@ export default function Lock({ onUnlock }) {
     }
     function paint() {
       if (!active.current) return
-      const progress = Math.min(1, (performance.now() - active.current.start) / 2000)
+      const progress = Math.min(1, (performance.now() - active.current.start) / HOLD_DURATION)
       ring.current?.style.setProperty('stroke-dashoffset', String(100 * (1 - progress)))
       frame.current = requestAnimationFrame(paint)
     }
     frame.current = requestAnimationFrame(paint)
-    timer.current = setTimeout(finish, 2000)
+    timer.current = setTimeout(finish, HOLD_DURATION)
   }
 
   function pointerDown(event) {
     if (!event.isPrimary || event.button !== 0) return
     event.preventDefault()
+    window.getSelection()?.removeAllRanges()
     event.currentTarget.focus({ preventScroll: true })
     event.currentTarget.setPointerCapture(event.pointerId)
     start(event.pointerId)
@@ -112,7 +115,7 @@ export default function Lock({ onUnlock }) {
         <p><DayIcon size={15} aria-hidden="true" />{dateFormat.format(now)}</p>
         <time dateTime={now.toISOString()}>{timeFormat.format(now)}</time>
       </div>
-      <div className="study-lock-action">
+      <div className="study-lock-action" onContextMenu={(event) => event.preventDefault()}>
         <button type="button" aria-label="Entrar no StudyOS" onPointerDown={pointerDown}
           onPointerUp={pointerEnd} onPointerLeave={pointerEnd} onPointerCancel={pointerEnd}
           onLostPointerCapture={pointerEnd} onPointerMove={pointerMove} onBlur={cancel}
@@ -128,7 +131,7 @@ export default function Lock({ onUnlock }) {
             if (active.current?.source === 'keyboard') cancel()
           }}
           aria-describedby="study-lock-status"
-          style={{ userSelect: 'none', touchAction: 'none', WebkitTouchCallout: 'none' }}>
+          style={{ WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'none', WebkitTouchCallout: 'none' }}>
           <span className="study-lock-scan-frame" aria-hidden="true"><i /><i /><i /><i /><span /></span>
           <svg className="study-lock-ring" viewBox="0 0 88 88" aria-hidden="true">
             <defs><linearGradient id="study-lock-accent"><stop stopColor="#8b7cff" /><stop offset="1" stopColor="#5ce1c2" /></linearGradient></defs>
@@ -137,7 +140,7 @@ export default function Lock({ onUnlock }) {
           </svg>
           {phase === 'confirmed' ? <Check size={28} strokeWidth={1.7} aria-hidden="true" /> : <Fingerprint size={32} strokeWidth={1.5} aria-hidden="true" />}
         </button>
-        <p id="study-lock-status" role="status">{phase === 'confirmed' ? 'Leitura concluída!' : phase === 'scan' ? 'Escaneando... Mantenha pressionado' : phase === 'cancelled' ? 'Cancelado! Segure até o fim para concluir' : 'Segure por 2 segundos para entrar'}</p>
+        <p id="study-lock-status" role="status">{phase === 'confirmed' ? 'Leitura concluída!' : phase === 'scan' ? 'Escaneando... Mantenha pressionado' : phase === 'cancelled' ? 'Cancelado! Segure até o fim para concluir' : 'Segure um instante para entrar'}</p>
       </div>
     </main>
   )

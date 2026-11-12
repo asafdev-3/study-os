@@ -544,3 +544,13 @@ html[data-study-chat], html[data-study-chat] body {
   .study-lock[data-phase="cancelled"] .study-lock-ring-progress { transition: none; }
 }
 html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; }
+
+/* Safari: prevent text selection/callout on the entire scanner, including status. */
+.study-lock-action, .study-lock-action * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+.study-lock-action button > * { pointer-events: none; }

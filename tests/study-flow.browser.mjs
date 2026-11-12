@@ -137,6 +137,6 @@ async function holdLock(page) {
   const button = page.getByRole('button', { name: 'Entrar no StudyOS' })
   await button.focus()
   await page.keyboard.down('Space')
-  await page.waitForTimeout(2050)
+  await page.waitForTimeout(850)
   await page.keyboard.up('Space')
 }

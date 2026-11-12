@@ -100,14 +100,15 @@ try{
 
 async function holdLock(page) {
   const button = page.getByRole('button', { name: 'Entrar no StudyOS' })
+  assert.equal(await page.locator('#study-lock-status').evaluate(el => getComputedStyle(el).userSelect), 'none')
   await button.click()
   await page.getByText('Cancelado! Segure até o fim para concluir').waitFor()
-  await page.waitForTimeout(2100)
+  await page.waitForTimeout(950)
   assert.equal(await button.count(), 1, 'Quick tap must never unlock')
   const box = await button.boundingBox()
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   await page.mouse.down()
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(200)
   const progress = await page.locator('.study-lock-ring-progress').evaluate(el => parseFloat(el.style.strokeDashoffset))
   assert(progress > 50 && progress < 95)
   await page.mouse.move(box.x - 20, box.y)
@@ -117,8 +118,8 @@ async function holdLock(page) {
   await page.evaluate(() => { window.phases = [] })
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   await page.mouse.down()
-  await page.waitForTimeout(1700)
+  await page.waitForTimeout(500)
   assert.equal(await page.locator('.study-lock[data-phase="scan"]').count(), 1)
-  await page.waitForTimeout(400)
+  await page.waitForTimeout(350)
   await page.mouse.up()
 }
