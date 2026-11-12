@@ -21,6 +21,7 @@ const fadeUp = (delay = 0, reduced = false) => ({
 export default function Chat({ userId }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const [activity, setActivity] = useState(false)
   const [copyStatus, setCopyStatus] = useState(null)
   const reduced = useStudyReducedMotion()
   const [input, setInput] = useState(() => location.state?.prompt ?? '')
@@ -99,7 +100,7 @@ export default function Chat({ userId }) {
     if (!input.trim() || loading) return
     follow.current = true
     const draft = input
-    if (await send(draft)) setInput((current) => current === draft ? '' : current)
+    if (await send(draft, activity)) setInput((current) => current === draft ? '' : current)
   }
 
   async function copyReply(content, index) {
@@ -248,6 +249,7 @@ export default function Chat({ userId }) {
 
       {/* Compositor */}
       <form onSubmit={submit} className="study-composer">
+        <button type="button" className="study-activity-toggle" aria-pressed={activity} onClick={() => setActivity(value => !value)}>Resolver atividade</button>
         {error && (
           <p role="alert" style={{ color: '#fda4af', fontSize: 13, padding: '0 2px 6px', overflowWrap: 'anywhere' }}>
             {error}
@@ -269,9 +271,9 @@ export default function Chat({ userId }) {
             aria-label="Mensagem para a Kira"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pergunte à Kira…"
+            placeholder={activity ? "Cole o enunciado…" : "Pergunte à Kira…"}
             enterKeyHint="send"
-            maxLength={2000}
+            maxLength={1600}
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
               color: '#f4f4f5', fontSize: 16, lineHeight: 1.5,

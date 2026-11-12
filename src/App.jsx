@@ -1,3 +1,4 @@
+import { FoldableTransition } from './components/FoldableTransition'
 import { createBrowserRouter, RouterProvider, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { lazy, Suspense, useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
@@ -74,7 +75,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
       <Route path="/dashboard" element={<PageWrapper><DashboardEntry /></PageWrapper>} />
       <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />
       <Route path="/chat" element={<Chat key={sessao?.user.id} userId={sessao?.user.id} />} />
-      <Route path="/lembretes" element={<PageWrapper><Lembretes /></PageWrapper>} />
+      <Route path="/lembretes" element={<PageWrapper><Lembretes key={sessao?.user.id} userId={sessao?.user.id} /></PageWrapper>} />
       <Route path="/perfil" element={<PageWrapper><Perfil /></PageWrapper>} />
       <Route path="/configuracoes/:secao?" element={<PageWrapper><Configuracoes /></PageWrapper>} />
       <Route path="/upgrade" element={<PageWrapper><Upgrade /></PageWrapper>} />
@@ -82,7 +83,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
       <Route path="/esqueci-senha" element={<PageWrapper><EsqueciSenha /></PageWrapper>} />
       <Route path="/nfc" element={<PageWrapper><NFC /></PageWrapper>} />
       <Route path="/nova-anotacao" element={<NovaAnotacao />} />
-      <Route path="/enem" element={<PageWrapper><EnemScreen userId={sessao?.user.id} /></PageWrapper>} />
+      <Route path="/enem" element={<PageWrapper><EnemScreen key={location.search} userId={sessao?.user.id} /></PageWrapper>} />
       <Route path="/onboarding" element={<Onboarding />} />
     </Routes>
   )
@@ -101,6 +102,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
     <>
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
+      {comSidebar && <FoldableTransition screen={location.pathname} />}
       {comSidebar && <PaywallModal />}
       <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={comSidebar && location.pathname !== '/dashboard' ? 'md:pl-[88px]' : ''}>
         <Suspense fallback={<TelaCarregando />}>

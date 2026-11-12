@@ -53,7 +53,7 @@ export function useKira(enabled = true, storageKey = null) {
     return () => { active = false }
   }, [enabled, store])
 
-  async function send(text) {
+  async function send(text, activity = false) {
     const content = text.trim()
     const previous = store.getSnapshot()
     if (!content || previous.loading) return false
@@ -61,7 +61,7 @@ export function useKira(enabled = true, storageKey = null) {
     const next = [...previous.messages, { role: 'user', content }]
     store.update({ messages: next, loading: true, error: '' })
     try {
-      const result = await sendToKira(next)
+      const result = await sendToKira(next, activity)
       store.update({
         messages: [...next, { role: 'assistant', content: result.answer }].slice(-30),
         remaining: result.remaining, loading: false,

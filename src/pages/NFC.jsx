@@ -73,7 +73,7 @@ export default function NFC() {
       if (!existing) localStorage.setItem(key, JSON.stringify({
         id: crypto.randomUUID(), areaId: targetArea, seconds: FOCUS_SECONDS, deadline: Date.now() + FOCUS_SECONDS * 1000,
       }))
-      navigate('/enem', { replace: true })
+      navigate('/enem?modo=foco', { replace: true })
     } catch { setStatus('Não foi possível preparar a sessão. Tente novamente.'); setBusy(false) }
   }
 

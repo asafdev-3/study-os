@@ -1,3 +1,5 @@
+import { useSearchParams } from "react-router-dom";
+import Lembretes from "./Lembretes";
 // EnemScreen.jsx — StudyOS
 // Modo ENEM: Sessão de Foco + Notas de Corte + Kira ENEM + BolsasModal
 
@@ -389,7 +391,9 @@ function NotasCorte({ minhaMedia, simulada }) {
 
 // ─── Tela Principal ───────────────────────────────────────────────────────────
 export default function EnemScreen({ userId }) {
-  const [tab, setTab] = useState("foco");
+  const [params] = useSearchParams();
+  const fromNfc = params.get("modo") === "foco";
+  const [tab, setTab] = useState(fromNfc ? "foco" : "postits");
   const [switched, setSwitched] = useState(false);
   const [bolsaAberta, setBolsaAberta] = useState(null);
   const [scores, setScores] = useState(null);
@@ -422,7 +426,7 @@ export default function EnemScreen({ userId }) {
   }
 
   const tabs = [
-    ["foco", "Foco"], ["corte", "Notas de corte"], ["kira", "Kira"],
+    [fromNfc ? "foco" : "postits", fromNfc ? "Foco" : "Post-its"], ["corte", "Notas de corte"], ["kira", "Kira"],
   ];
 
   return (
@@ -436,7 +440,8 @@ export default function EnemScreen({ userId }) {
           <button key={id} type="button" aria-pressed={tab === id} onClick={() => { if (id !== tab) { setSwitched(true); setTab(id); } }}>{label}</button>
         ))}
       </div>
-      <div className="study-enem-pane" hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>
+      {fromNfc && <div className="study-enem-pane" hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>}
+      {tab === "postits" && <div className="study-enem-pane"><Lembretes key={userId} userId={userId} /></div>}
       {tab === "corte" && <section className="study-enem-pane" aria-label="Notas de corte e bolsas">
         <NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} />
         <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>

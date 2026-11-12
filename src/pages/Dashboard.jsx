@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, Radio, Timer } from 'lucide-react'
+import { ArrowRight, BookOpen, Radio, StickyNote } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
-import { readFocus } from '../lib/focus'
 import { KiraAvatar } from '../components/KiraAvatar'
 
 const subjects = {
@@ -21,7 +20,6 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(null)
   const [note, setNote] = useState(null)
   const [noteError, setNoteError] = useState(false)
-  const [userId, setUserId] = useState(null)
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [now] = useState(Date.now)
@@ -39,7 +37,6 @@ export default function Dashboard() {
       if (profileResult.error) throw profileResult.error
       if (!profileResult.data?.onboarding_completo) { navigate('/onboarding', { replace: true }); return }
       setProfile(profileResult.data)
-      setUserId(user.id)
       setNote(noteResult.data?.[0] ?? null)
       setNoteError(Boolean(noteResult.error))
     }
@@ -81,7 +78,7 @@ export default function Dashboard() {
         </section>
 
         <footer className="study-room-dock">
-          <FocusSummary userId={userId} area={area} />
+          <StudyLink className="study-room-kira" to="/lembretes"><StickyNote size={24} /><span><strong>Meus post-its</strong><small>Tarefas e lembretes de estudo</small></span><ArrowRight size={18} /></StudyLink>
           <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>
             <KiraAvatar size={66} />
             <span><strong>Kira sugere</strong><small>Vamos revisar {subject}?</small></span>
@@ -90,40 +87,5 @@ export default function Dashboard() {
         </footer>
       </div>
     </main>
-  )
-}
-
-function FocusSummary({ userId, area }) {
-  const [now, setNow] = useState(Date.now)
-  const focus = userId ? readFocus(`studyos:focus:${userId}`) : null
-  const deadline = focus?.deadline
-  useEffect(() => {
-    if (!deadline) return
-    let timeout
-    function tick() {
-      clearTimeout(timeout)
-      if (document.hidden) return
-      const current = Date.now()
-      setNow(current)
-      if (deadline > current) timeout = setTimeout(tick, 1000)
-    }
-    tick()
-    window.addEventListener('focus', tick)
-    document.addEventListener('visibilitychange', tick)
-    return () => {
-      clearTimeout(timeout)
-      window.removeEventListener('focus', tick)
-      document.removeEventListener('visibilitychange', tick)
-    }
-  }, [deadline])
-
-  const seconds = deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : focus?.seconds ?? 1500
-  const clock = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
-  return (
-          <section className="study-room-focus" aria-label="Sessão de foco">
-            <div className="study-room-clock"><Timer size={16} aria-hidden="true" /><span>{clock}</span></div>
-            <div className="study-room-focus-copy"><strong>{deadline ? (seconds > 0 ? 'Seu foco continua.' : 'Sessão concluída.') : focus ? 'No seu ritmo.' : 'Uma coisa por vez.'}</strong><small>{focus ? 'Sua sessão de estudo' : '25 minutos para o próximo passo'}</small></div>
-            <StudyLink className="study-primary" to={focus ? '/enem' : '/nfc?acao=foco&area=' + area}>{focus ? (seconds === 0 ? 'Ver sessão' : 'Retomar') : 'Entrar em foco'}<ArrowRight size={16} aria-hidden="true" /></StudyLink>
-          </section>
   )
 }

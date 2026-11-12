@@ -575,3 +575,27 @@ html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; 
   }
   .animate-pulse-glow { animation: none; }
 }
+
+.study-fold { position: fixed; inset: 0; z-index: 35; pointer-events: none; perspective: 1200px; transform-style: preserve-3d; }
+.study-fold-half { position: absolute; inset-inline: 0; height: 50%; background: #141a2c; border: 1px solid #ffffff33; backface-visibility: hidden; }
+.study-fold-top { top: 0; transform-origin: bottom; background: linear-gradient(#18203380, #111624); }
+.study-fold-bottom { bottom: 0; transform-origin: top; background: linear-gradient(#111624, #18203380); }
+.study-fold-crease { position: absolute; inset: calc(50% - 22px) 0 auto; height: 44px; background: linear-gradient(transparent, #06081265, transparent); }
+.study-fold-blur-layer { position: absolute; inset: 0; }
+.study-activity-toggle { width: auto !important; padding: 0 12px; border-radius: 12px !important; margin-bottom: 6px; }
+.study-activity-toggle[aria-pressed="true"] { outline: 2px solid #aa92ff; }
+.study-book-cover { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 1px; padding: 6px; border-radius: 12px; background: #654832; color: #39291e; }
+.study-book-index, .study-book-leaves { min-width: 0; padding: 16px; background: #eee1c8; border-radius: 5px; }
+.study-book-index { background-image: linear-gradient(270deg, #50301828, transparent 20px); }
+.study-book-index h2 { font: 24px Georgia, serif; margin-bottom: 12px; }
+.study-book-index a { display: flex; justify-content: space-between; gap: 6px; padding: 9px 0; border-bottom: 1px solid #65483245; overflow-wrap: anywhere; font-size: 13px; }
+.study-book-index a[aria-current] { font-weight: 700; }
+.study-book-leaves { columns: auto; background-image: linear-gradient(90deg, #50301830, transparent 24px), repeating-linear-gradient(transparent 0 27px, #65483225 27px 28px); }
+.study-book-leaves .study-note-card { background: #f6eddbcc; border-color: #65483235; }
+.study-book-leaves .study-note-card :is(p, small, summary span, button) { color: #513b2d; }
+.study-book-leaves .study-note-card strong { font-family: Georgia, serif; font-size: 17px; }
+@media(max-width: 530px) { .study-book-cover { grid-template-columns: 1fr; } }
+
+@media (hover: hover) and (pointer: fine) {
+  .study-fold-crease::after { content: ''; position: absolute; inset: 18px 12% auto; height: 8px; border: 1px solid #ffffff33; border-radius: 8px; background: #acbfff12; backdrop-filter: blur(16px) saturate(180%); }
+}

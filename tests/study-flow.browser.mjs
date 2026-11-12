@@ -49,6 +49,9 @@ try {
       }
       if (url.pathname === '/functions/v1/kira') {
         if (request.postDataJSON()?.action === 'quota') return route.fulfill({ json: { remaining: 10 - calls } })
+        const last = request.postDataJSON()?.messages?.at(-1)?.content
+        assert.match(last, /ensine automaticamente/)
+        if (calls === 0) assert.match(last, /Modo atividade/)
         calls++
         if (hold) await new Promise(resolve => { release = resolve })
         return route.fulfill({ json: { answer, remaining: 10 - calls } })
@@ -69,6 +72,7 @@ try {
     assert.equal(await character.evaluate(el => getComputedStyle(el).objectFit), 'contain')
     assert.equal(await character.evaluate(el => getComputedStyle(el).borderRadius), '0px')
     if (width === 414) { await page.waitForTimeout(450); await page.screenshot({ path: 'qa.local/kira-character.png' }) }
+    await page.getByRole('button', { name: 'Resolver atividade' }).click()
     await input.fill('Explique fotossíntese')
     assert.equal(await input.evaluate(el => getComputedStyle(el).fontSize), '16px')
     await page.getByRole('button', { name: 'Enviar mensagem' }).click()

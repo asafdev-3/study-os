@@ -38,14 +38,12 @@ export function getKiraQuota() {
   return invokeKira({ action: 'quota' })
 }
 
-export function sendToKira(messages) {
+export function sendToKira(messages, activity = false) {
   const tone = { formal: 'Use um tom formal e claro.', seco: 'Seja breve e direto.' }[readPreferences().kiraTone]
   const history = messages.slice(-10).map(({ role, content }) => ({ role, content: content.slice(0, 2000) }))
-  if (tone && history.at(-1)?.role === 'user') {
-    const last = history.at(-1)
-    last.content = `${tone}
-
-${last.content.slice(0, 2000 - tone.length - 2)}`
-  }
+  const guidance = 'Se for um exercício, ensine automaticamente: diga o que a questão pede, explique os passos e por que funcionam, e confira o resultado. Use linguagem simples e breve. Se faltarem dados, pergunte. Não entregue só o gabarito.'
+  const instruction = [tone, guidance, activity && 'Modo atividade: guie a resolução com uma ideia-chave e passos curtos.'].filter(Boolean).join(' ') + '\n\n'
+  const last = history.at(-1)
+  if (last?.role === 'user') last.content = instruction + last.content.slice(0, 2000 - instruction.length)
   return invokeKira({ messages: history })
 }

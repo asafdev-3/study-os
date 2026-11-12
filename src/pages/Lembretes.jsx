@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Check, X, StickyNote, Clock3 } from 'lucide-react'
+import { Plus, Check, X } from 'lucide-react'
 
 const filtros = ['Todos', 'Hoje', 'Semana', 'Sem prazo']
 const materiasForm = ['Química', 'Cálculo', 'História', 'Inglês', 'Física', 'Vida']
@@ -13,56 +13,7 @@ const coresMaterias = {
   Física: '#F4A8A8',
 }
 
-const postits = [
-  {
-    id: 1,
-    materia: 'QUÍMICA',
-    cor: '#A8D8D8',
-    texto: 'Refazer exercícios pág. 118',
-    prazo: 'amanhã · 08:00',
-    feito: false,
-  },
-  {
-    id: 2,
-    materia: 'HISTÓRIA',
-    cor: '#F5D08A',
-    texto: 'Ler capítulo Guerra Fria',
-    prazo: 'quinta · noite',
-    feito: false,
-  },
-  {
-    id: 3,
-    materia: 'INGLÊS',
-    cor: '#C5B8E8',
-    texto: '20 flashcards phrasal verbs',
-    prazo: 'hoje · 23:00',
-    feito: false,
-  },
-  {
-    id: 4,
-    materia: 'CÁLCULO',
-    cor: '#C8E6A0',
-    texto: 'Lista 4 — derivadas',
-    prazo: 'sexta',
-    feito: false,
-  },
-  {
-    id: 5,
-    materia: 'VIDA',
-    cor: '#F4A8A8',
-    texto: 'Levar caderno pra mostra',
-    prazo: 'sáb · 14h',
-    feito: false,
-  },
-  {
-    id: 6,
-    materia: 'FÍSICA',
-    cor: '#F4A8A8',
-    texto: 'Ver vídeo do MHS',
-    prazo: 'quando der',
-    feito: true,
-  },
-]
+
 
 function ModalNovoPostit({ onClose, onSalvar }) {
   const [texto, setTexto] = useState('')
@@ -95,10 +46,6 @@ function ModalNovoPostit({ onClose, onSalvar }) {
     onSalvar({ texto, materia, prazo })
     fechar()
   }
-
-  const corAtual = materia
-    ? coresMaterias[materia]
-    : '#8B5CF6'
 
   const habilitado = texto.trim().length > 0
 
@@ -427,9 +374,18 @@ function matchFiltro(prazo, filtro) {
   return true
 }
 
-function Lembretes() {
+function Lembretes({ userId }) {
+  const storageKey = `studyos:postits:${userId}`
   const [ativo, setAtivo] = useState('Todos')
-  const [itens, setItens] = useState(postits)
+  const [itens, setItens] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey))
+      return Array.isArray(saved) ? saved : []
+    } catch { return [] }
+  })
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify(itens)) } catch { /* Storage unavailable. */ }
+  }, [storageKey, itens])
   const [sheetAberto, setSheetAberto] = useState(false)
 
   const itensFiltrados = itens.filter(i => matchFiltro(i.prazo, ativo))
@@ -449,7 +405,7 @@ function Lembretes() {
     setItens(prev => [
       ...prev,
       {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         materia: (materia || 'GERAL').toUpperCase(),
         cor,
         texto,
@@ -583,12 +539,8 @@ function Lembretes() {
         )}
       </div>
 
-      <p className="text-[#a1a1aa] text-[10px] text-center mt-5">
-        — aproxime o celular do NFC pra colar um
-        post-it rapidinho
-      </p>
-
       <button
+        aria-label="Novo post-it"
         onClick={() => setSheetAberto(true)}
         className="
           fixed

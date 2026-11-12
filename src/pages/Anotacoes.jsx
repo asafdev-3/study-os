@@ -215,7 +215,9 @@ export default function Anotacoes() {
       {!notes && !error && <p role="status" className="study-note">Carregando anotações…</p>}
       {filtered?.length === 0 && <p className="study-note">{term || activeArea ? 'Nenhuma anotação neste filtro.' : 'Você ainda não tem anotações.'}</p>}
       {linkedNote && notes && !notes.some(note => note.id === linkedNote) && <p role="status" className="study-note">Esta anotação não está disponível nesta conta. <StudyLink to="/anotacoes">Ver meu caderno</StudyLink></p>}
-      <div className="study-notes-grid">
+      <div className="study-book-cover">
+        <div className="study-book-index"><h2>Índice</h2>{filtered?.map((note, index) => <StudyLink key={note.id} to={'/anotacoes?nota=' + encodeURIComponent(note.id)} aria-current={linkedNote === note.id ? 'page' : undefined}><span>{note.title || 'Sem título'}</span><small>{index + 1}</small></StudyLink>)}</div>
+      <div className="study-notes-grid study-book-leaves">
         {filtered?.map((note) => (
           <details className={'study-note-card' + (note.id === linkedNote ? ' study-note-target' : '')} ref={note.id === linkedNote ? noteTarget : undefined} open={note.id === linkedNote ? true : undefined} key={note.id} data-area={note.area ?? 'geral'}>
             <summary><small>{areas[note.area] ?? 'Geral'}</small><strong>{note.title || 'Sem título'}</strong>
@@ -228,6 +230,7 @@ export default function Anotacoes() {
             </div>
           </details>
         ))}
+      </div>
       </div>
       {createPortal(<button className="study-note-fab" onClick={() => setEditor({ area: activeArea || 'geral' })} type="button" aria-label="Nova anotação">
         <Plus size={24} aria-hidden="true" />
