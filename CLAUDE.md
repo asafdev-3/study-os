@@ -140,3 +140,9 @@ Próximo passo: substituir demonstração de ingresso por dados verificáveis de
 ## Post-its e comparação — 13/11/2026
 Ajuste visual restrito: papel com iluminação sutil, sombra curta, ponto de fixação, canto dobrado, rodapé e alvo de conclusão 44px com rótulo acessível. Cores/estrutura e persistência existentes preservadas. Comparar notas agora é disclosure amplo com subtítulo explícito de exemplo ilustrativo.
 REGRA DO USUÁRIO: aguardar confirmação antes de iniciar backend, segurança, pagamentos ou políticas. Nenhuma mudança nessas frentes nesta rodada.
+
+
+## Contraste e referências visuais — 13/11/2026
+Analisados prints e quadros do vídeo enviado. Link Figma Community não acessível via ferramenta de leitura; não afirmar importação ou reprodução oficial de iOS 27.
+Frontend: dock com maior contraste e ícone de papel; ambiente mobile reutiliza study-room.webp com overlay escuro estático; ENEM com títulos sans e controles destacados; chat com balões azul/cinza, campo arredondado e sugestões compactas. Sem animação contínua de fundo, sem dependências/novos assets. Reduzir movimento respeitado nas novas pressões CSS. Backend permanece aguardando confirmação.
+Build/lint aprovados; validação física Safari não realizada.

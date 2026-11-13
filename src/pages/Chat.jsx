@@ -175,12 +175,12 @@ export default function Chat({ userId }) {
             <motion.h2 {...fadeUp(0.04, reduced)} style={{ lineHeight: 1.08 }}>
               O que vamos estudar?
             </motion.h2>
-            <motion.p {...fadeUp(0.1, reduced)} style={{ color: '#a1a1aa', fontSize: 15, margin: '8px 0 20px' }}>
+            <motion.p {...fadeUp(0.1, reduced)} style={{ color: '#c5cbd6', fontSize: 15, margin: '8px 0 20px' }}>
               Traga uma dúvida ou pratique para o ENEM.
             </motion.p>
 
             {/* Prompt cards — estilo recursos do Upgrade */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="study-chat-starters" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               {prompts.map(({ emoji, label, text }, i) => (
                 <motion.button
                   key={label}
@@ -255,16 +255,16 @@ export default function Chat({ userId }) {
             {error}
           </p>
         )}
-        <div style={{
+        <div className="study-composer-field" style={{
           display: 'flex', alignItems: 'flex-end', gap: 8,
-          background: '#0a0a0c',
-          border: '1px solid #16161b',
-          borderRadius: 20,
+          background: '#222c3bed',
+          border: '1px solid #bbc9e33d',
+          borderRadius: 26,
           padding: '10px 10px 10px 16px',
           transition: 'border-color 0.15s',
         }}
           onFocusCapture={(e) => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)'}
-          onBlurCapture={(e) => e.currentTarget.style.borderColor = '#16161b'}
+          onBlurCapture={(e) => e.currentTarget.style.borderColor = '#bbc9e33d'}
         >
           <input
             ref={field}
@@ -288,7 +288,7 @@ export default function Chat({ userId }) {
               width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: input.trim() && !loading
-                ? 'linear-gradient(135deg, #8B5CF6, #6366F1)'
+                ? '#155eb8'
                 : '#16161b',
               border: 'none', cursor: 'pointer',
               color: '#fff',

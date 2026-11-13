@@ -83,7 +83,7 @@ export default function Dashboard() {
         </section>
 
         <footer className="study-room-dock">
-          <StudyLink className="study-room-kira" to="/lembretes"><StickyNote size={24} /><span><strong>Meus post-its</strong><small>Tarefas e lembretes de estudo</small></span><ArrowRight size={18} /></StudyLink>
+          <StudyLink className="study-room-kira study-room-postits" to="/lembretes"><StickyNote size={24} /><span><strong>Meus post-its</strong><small>Tarefas e lembretes de estudo</small></span><ArrowRight size={18} /></StudyLink>
           <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>
             <KiraAvatar size={66} />
             <span><strong>Kira sugere</strong><small>Vamos revisar {subject}?</small></span>

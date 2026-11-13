@@ -809,3 +809,57 @@ html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; 
  html:not([data-study-motion="reduced"]) .study-score-disclosure > summary { transition: background-color 180ms ease,transform 180ms ease; }
  html:not([data-study-motion="reduced"]) .study-score-disclosure > summary:active { transform: scale(.985); }
 }
+
+/* Contrast and restrained glass, shared by the study room and conversation. */
+:root { --study-muted: #bec5d3; --study-line: #ffffff29; }
+.study-room-dock { background: #111b29ed; border-color: #bccbec42; box-shadow: 0 8px 24px #0004,inset 0 1px #ffffff0c; padding: 5px 14px; }
+.study-room-kira strong { color: #f5f7fc; font-size: 14px; }
+.study-room-kira small { color: #c2ccde; }
+.study-room-postits > svg:first-child { background: #f0d28e; color: #493b20; padding: 7px; border-radius: 5px 8px 12px 5px; width: 34px; height: 34px; flex-basis: 34px; box-shadow: 1px 2px #a18b59; }
+.study-room-postits { gap: 14px; }
+.study-room-dock .study-room-kira:last-child .study-kira-character { width: 44px; }
+.study-chat { background: #0a1019f5; }
+.study-chat-header { border-bottom-color: #ffffff22; }
+.study-chat-empty { text-align: center; max-width: 400px; }
+.study-chat-empty h2 { color: #f8faff; letter-spacing: -.035em; }
+.study-chat-starters { display: grid; gap: 10px; border: 0 !important; }
+.study-chat-starters button { padding: 10px 14px !important; background: #202b3be8 !important; border: 1px solid #b3c6ec32 !important; border-radius: 18px; min-height: 56px; }
+.study-chat-starters button > span:last-child { color: #c2d2ef !important; }
+.study-chat-starters button > div { background: #354259 !important; border-color: #ffffff20 !important; }
+.study-reply { max-width: min(88%,580px); }
+.study-reply .study-message--assistant { background: #29313e; border: 1px solid #ffffff10; color: #f6f7fb; border-radius: 22px 22px 22px 6px; }
+.study-reply .study-message--user { background: #155eb8; color: #ffffff; border: 1px solid #519af54d; border-radius: 22px 22px 6px 22px; }
+.study-reply-actions button { color: #c5d4ed; }
+.study-composer-field { background: #222c3bed; border: 1px solid #bbc9e33d; border-radius: 26px; box-shadow: inset 0 1px #ffffff0c; }
+.study-composer-field textarea,.study-composer-field input { color: #f8faff; }
+.study-composer-field :is(input,textarea)::placeholder { color: #bdc7d7; }
+.study-composer-field button:not(:disabled) { background: #9dc3ff; color: #11233e; }
+.study-activity-toggle { border: 1px solid #a8bde34d; background: #26364b; color: #e8f0ff; border-radius: 20px !important; }
+.study-activity-toggle[aria-pressed="true"] { background: #d2e2ff; color: #14223d; outline: none; }
+.enem-practice-hero { background: linear-gradient(135deg,#263c58f5,#101b2aee); border-color: #a9c7ef4d; box-shadow: 0 12px 32px #0003,inset 0 1px #ffffff10; }
+.enem-practice-hero h2 { font-family: -apple-system,BlinkMacSystemFont,'Geist',sans-serif; font-size: clamp(26px,5.5vw,36px); font-weight: 600; color: #f7f9ff; letter-spacing: -.035em; }
+.enem-practice-hero .study-eyebrow { color: #b2d1ff; }
+.enem-practice p { color: #cbd3e0; }
+.enem-practice-section { background: #172334ef; border-color: #bac9df30; }
+.enem-practice-section summary { color: #f3f7ff; }
+.enem-practice .study-primary { background: #d9e8ff; color: #132642; border-radius: 18px; }
+@media(max-width:767px) {
+ body:has(.study-navigation):not(:has(.study-room)) { background: #0b1422; }
+ body:has(.study-navigation):not(:has(.study-room))::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1; background: linear-gradient(180deg,#08111bd9,#091321bd 52%,#080e18ed),url('/images/study-room.webp') 72% center / cover; }
+ body:has(.study-navigation) { isolation: isolate; }
+ .study-chat { background: linear-gradient(180deg,#09101bf2,#0b1423e8),url('/images/study-room.webp') 72% center / cover; }
+ .study-chat-header { margin-inline: -14px; padding-inline: 14px; background: #142031e6; }
+ .study-chat-empty { padding-inline: 8px; }
+ .study-chat-empty .study-kira-character { width: 90px; }
+ .study-chat-empty h2 { font-size: 27px; }
+ .study-chat-starters button { min-height: 52px; }
+ .study-navigation-inner { background: #1a2639e0; border-color: #bccae144; box-shadow: 0 4px 24px #0006,inset 0 1px #ffffff12; }
+ .study-tab { color: #c3ccdd; }
+ .study-tab[aria-current="page"] { color: #f2f6ff; }
+ .study-room-kira strong { font-size: 13px; }
+ .study-room-kira small { font-size: 11px; }
+}
+@media (prefers-reduced-motion:no-preference) {
+ html:not([data-study-motion="reduced"]) .study-chat-starters button { transition: transform 180ms cubic-bezier(.22,1,.36,1),background-color 180ms ease; }
+ html:not([data-study-motion="reduced"]) .study-chat-starters button:active { transform: scale(.975); }
+}
