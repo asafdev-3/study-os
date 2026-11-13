@@ -470,7 +470,7 @@ function Lembretes({ userId }) {
           ({ id, materia, cor, texto, prazo, feito }, idx) => (
             <div
               key={id}
-              className="relative rounded-2xl p-4 flex flex-col justify-between min-h-[160px]"
+              className="study-paper-postit relative p-4 flex flex-col justify-between min-h-[160px]"
               style={{
                 backgroundColor: cor,
                 transform: `rotate(${
@@ -480,7 +480,7 @@ function Lembretes({ userId }) {
                 }deg)`,
               }}
             >
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-4 bg-black/20 rounded-sm" />
+              <span className="study-postit-pin" aria-hidden="true" />
 
               <div>
                 <p className="text-[10px] tracking-widest text-black/50 uppercase mb-2">
@@ -504,13 +504,15 @@ function Lembretes({ userId }) {
                 </p>
               </div>
 
-              <div className="flex items-center justify-between mt-4">
+              <div className="study-postit-footer flex items-center justify-between mt-4">
                 <p className="text-[10px] text-black/50">
                   {formatarPrazo(prazo)}
                 </p>
 
                 <button
                   onClick={() => toggleFeito(id)}
+                  aria-label={feito ? "Marcar como pendente: " + texto : "Concluir: " + texto}
+                  aria-pressed={feito}
                   className={`
                     w-6 h-6
                     rounded-full

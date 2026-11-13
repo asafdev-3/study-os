@@ -789,3 +789,23 @@ html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; 
 .enem-error-entry { padding:18px 0; border-bottom:1px solid #ffffff18; overflow-wrap:anywhere; }
 .study-enem-tabs { grid-template-columns:repeat(4,minmax(0,1fr)); }
 .study-enem-tabs button { padding-inline:6px; }
+
+/* Paper material only: preserve board, colors and task behavior. */
+.study-paper-postit { border: 1px solid #00000018; border-radius: 5px 12px 22px 5px; background-image: linear-gradient(175deg,#ffffff25,transparent 45%,#00000006); box-shadow: 1px 3px 5px #0003,0 12px 18px -12px #0008,inset 0 1px #ffffff55; padding-top: 30px; overflow-wrap: anywhere; }
+.study-paper-postit::after { content: ''; position: absolute; bottom: 0; right: 0; width: 19px; height: 19px; border-radius: 3px 0 20px 0; background: linear-gradient(135deg,#00000012 48%,#ffffff55 50%); pointer-events: none; }
+.study-postit-pin { position: absolute; top: 13px; left: 16px; width: 6px; height: 6px; background: #55432188; border-radius: 50%; box-shadow: 0 1px 1px #ffffff60; }
+.study-postit-footer { border-top: 1px solid #00000013; padding-top: 8px; gap: 8px; }
+.study-postit-footer button { width: 44px; height: 44px; flex: 0 0 44px; border-width: 1px; }
+.study-score-disclosure { margin: 18px 0 24px; }
+.study-score-disclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; padding: 16px 18px; border: 1px solid #b5c4e733; border-radius: 18px; background: linear-gradient(120deg,#a9bfff13,#ffffff05); cursor: pointer; list-style: none; }
+.study-score-disclosure > summary::-webkit-details-marker { display: none; }
+.study-score-disclosure strong { display: block; font-size: 15px; font-weight: 550; }
+.study-score-disclosure small { display: block; margin-top: 5px; color: #adb9cc; font-size: 12px; }
+.study-score-disclosure > summary svg { flex-shrink: 0; color: #c4d1fa; }
+.study-score-disclosure[open] > summary { margin-bottom: 16px; }
+.study-score-disclosure[open] > summary svg { transform: rotate(90deg); }
+.study-score-disclosure > summary:focus-visible { outline: 2px solid #a9bcff; outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+ html:not([data-study-motion="reduced"]) .study-score-disclosure > summary { transition: background-color 180ms ease,transform 180ms ease; }
+ html:not([data-study-motion="reduced"]) .study-score-disclosure > summary:active { transform: scale(.985); }
+}

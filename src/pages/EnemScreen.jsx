@@ -446,7 +446,7 @@ export default function EnemScreen({ userId }) {
       {tab === "postits" && <div className="study-enem-pane"><Lembretes key={userId} userId={userId} /></div>}
       {tab === "corte" && <section className="study-enem-pane" aria-label="Notas de corte e bolsas">
         <p className="study-note">Os valores abaixo são fictícios e não indicam aprovação nem bolsas disponíveis. Compare apenas como demonstração.</p>
-        <details><summary>Ver demonstração de comparação de notas</summary><NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} /></details>
+        <details className="study-score-disclosure"><summary><span><strong>Comparar notas</strong><small>Explorar exemplo ilustrativo</small></span><ChevronRight size={19} aria-hidden="true" /></summary><NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} /></details>
         <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>
         {BOLSAS.map((bolsa) => (
           <button className="study-enem-scholarship" key={bolsa.id} type="button" onClick={() => setBolsaAberta(bolsa)}>

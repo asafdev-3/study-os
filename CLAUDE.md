@@ -135,3 +135,8 @@ Implementado:
 - Cortes mock relegados a demonstração recolhida com aviso explícito; não usar para orientação real de ingresso.
 Não implementados: banco de questões autenticado/licenciado, OCR de redação, correção calibrada, TRI, sincronização do diário, integração Gov.br/MEC.
 Próximo passo: substituir demonstração de ingresso por dados verificáveis de edição, campus, modalidade e fonte; revisar também conteúdo legado de bolsas.
+
+
+## Post-its e comparação — 13/11/2026
+Ajuste visual restrito: papel com iluminação sutil, sombra curta, ponto de fixação, canto dobrado, rodapé e alvo de conclusão 44px com rótulo acessível. Cores/estrutura e persistência existentes preservadas. Comparar notas agora é disclosure amplo com subtítulo explícito de exemplo ilustrativo.
+REGRA DO USUÁRIO: aguardar confirmação antes de iniciar backend, segurança, pagamentos ou políticas. Nenhuma mudança nessas frentes nesta rodada.
