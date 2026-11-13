@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, Radio, StickyNote } from 'lucide-react'
+import { ArrowRight, BookOpen, Radio, Settings, StickyNote } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
@@ -61,7 +61,7 @@ export default function Dashboard() {
       <div className="study-room-content">
         <header className="study-room-header">
           <div className="study-room-brand"><img src="/icons/icon-192.png" alt="" width="38" height="38" /><span>Study<span>OS</span><small>SUA SALA DE ESTUDO</small></span></div>
-          <StudyLink to="/nfc" className="study-room-nfc"><Radio size={17} aria-hidden="true" /><span>NFC</span></StudyLink>
+          <div className="study-room-header-actions"><StudyLink to="/nfc" className="study-room-nfc"><Radio size={17} aria-hidden="true" /><span>NFC</span></StudyLink><StudyLink to="/configuracoes" className="study-room-nfc" aria-label="Configurações"><Settings size={17} /></StudyLink></div>
         </header>
 
         <section className="study-room-welcome">

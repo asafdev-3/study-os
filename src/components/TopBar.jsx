@@ -7,7 +7,7 @@ const semTopBar = ['/', '/login', '/lock', '/upgrade', '/sucesso', '/esqueci-sen
 function TopBar() {
   const location = useLocation()
 
-  if (semTopBar.includes(location.pathname)) return null
+  if (location.pathname === '/dashboard' || location.pathname.startsWith('/configuracoes') || semTopBar.includes(location.pathname)) return null
 
   return (
     <div className="study-topbar fixed top-0 right-0 z-50 p-4 max-w-sm w-full mx-auto flex justify-end pointer-events-none">

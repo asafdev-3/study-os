@@ -121,7 +121,14 @@ export default function Configuracoes() {
       </>}
       {secao === 'dados' && <button type="button" className="study-settings-row" disabled={pending} onClick={exportNotes}>Baixar anotações em Markdown</button>}
       {secao === 'assinatura' && <Link className="study-settings-row" to="/upgrade">Ver planos</Link>}
-      {secao === 'sobre' && <p className="study-note">StudyOS · VZP Solutions</p>}
+      {secao === 'sobre' && <section className="study-about">
+        <h2>Um espaço para aprender, no seu ritmo.</h2>
+        <p>O StudyOS reúne caderno, tarefas, sessões de estudo e a Kira para ajudar você a organizar ideias e compreender o que está aprendendo.</p>
+        <h2>Quem constrói o StudyOS</h2>
+        <ul>{['Vitor', 'Ketlin', 'Maria Sara', 'Ana Marcela', 'Júlia', 'Pablo'].map(name => <li key={name}>{name}</li>)}</ul>
+        <p>Desenvolvido pela equipe StudyOS · VZP Solutions.</p>
+        <p>A Kira usa inteligência artificial e pode errar. Confira informações importantes e use as explicações para construir seu próprio raciocínio.</p>
+      </section>}
       {notice && <p role="status" className="study-note">{notice}</p>}
     </main>
   )

@@ -106,3 +106,9 @@ Pedido explícito: sem dobra. FoldableTransition mantém nome por compatibilidad
 
 ## Mobile e controles — 13/11/2026
 Dashboard mobile fixo em 100dvh, overflow bloqueado somente enquanto montado, limpo ao sair; layout compacto mantém atalhos acima da navbar em 320x568 e 414x736. Exceção <=480px de altura permite rolagem para acessibilidade/landscape. Caderno: seletor Área via details/radios com Escape e retorno de foco, menu arredondado translúcido; campos com foco suave visível e botões com pressão scale .97 respeitando reduced motion. Identidade preservada. Build/lint e study-flow 320/414/1024 aprovados, captura 320 inspecionada. Safari físico não verificado.
+
+
+## Correções dos prints — 13/11/2026
+Notas: detecção visualViewport enquanto editor montado oculta navbar/topbar com teclado, textarea compacta; sugestão Kira com contraste escuro no papel. Dashboard: configurações junto a NFC, dock compacto alinhado. Chat: hierarquia menor e navbar vidro leve. Post-its: removido fundo preto/min-height de tela duplicada, vazio legível e adicionar sticky acima da navbar. Sobre inclui Vitor, Ketlin, Maria Sara, Ana Marcela, Júlia e Pablo, propósito e limites da IA. Upgrade com superfície do app; promessa incorreta de trial removida.
+Stripe NÃO ATIVADO: Vercel env ls mostrou ausência de STRIPE_SECRET_KEY/STRIPE_PRICE_MENSAL/STRIPE_PRICE_ANUAL. API aceita apenas sandbox; falta webhook de confirmação e liberação de assinatura. Não remover bloqueio live antes desse fluxo. Nenhuma chave exposta ou cobrança feita.
+Build/lint e study-flow 320/414/1024 aprovados; Safari físico pendente.

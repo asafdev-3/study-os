@@ -19,6 +19,23 @@ function NovaNota({ initial = {}, onSave, onCancel }) {
   const [suggestion, setSuggestion] = useState('')
   const draftId = useRef(initial.id ?? null)
   const saving = useRef(false)
+  useEffect(() => {
+    const viewport = window.visualViewport
+    const root = document.documentElement
+    function update() {
+      const focused = document.activeElement?.matches('.study-notebook-form input, .study-notebook-form textarea')
+      root.toggleAttribute('data-note-keyboard', Boolean(focused && viewport && window.innerHeight - viewport.height > 120))
+    }
+    viewport?.addEventListener('resize', update)
+    document.addEventListener('focusin', update)
+    document.addEventListener('focusout', update)
+    return () => {
+      viewport?.removeEventListener('resize', update)
+      document.removeEventListener('focusin', update)
+      document.removeEventListener('focusout', update)
+      root.removeAttribute('data-note-keyboard')
+    }
+  }, [])
   const hasDraft = Boolean(title.trim() || content.trim()) && content.length <= 10000
 
   async function suggest() {

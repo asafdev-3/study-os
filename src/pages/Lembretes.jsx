@@ -416,7 +416,7 @@ function Lembretes({ userId }) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32 px-4 max-w-sm mx-auto">
+    <div className="study-postits text-white">
       <div className="flex items-end justify-between pt-12 pb-1">
         <div>
           <h1 className="text-3xl font-semibold">
@@ -427,7 +427,7 @@ function Lembretes({ userId }) {
             style={{ fontFamily: 'Instrument Serif, serif' }}
             className="text-[#a1a1aa] text-sm italic mt-0.5"
           >
-            cole na parede da sua noite
+            Uma ideia por vez.
           </p>
         </div>
 
@@ -460,8 +460,8 @@ function Lembretes({ userId }) {
       </div>
 
       {itensFiltrados.length === 0 && (
-        <p className="text-center text-zinc-700 text-sm mt-16">
-          Nenhum post-it aqui.
+        <p className="study-postits-empty">
+          Sua mesa está livre. Use + para guardar uma tarefa.
         </p>
       )}
 
@@ -544,7 +544,7 @@ function Lembretes({ userId }) {
         onClick={() => setSheetAberto(true)}
         className="
           fixed
-          bottom-24 right-6
+          study-postits-add
           w-12 h-12
           rounded-full
           flex

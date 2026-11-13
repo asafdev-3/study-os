@@ -28,8 +28,8 @@ const PLANOS = [
 ]
 
 const RECURSOS = [
-  { emoji: '🧠', label: 'Kira sem limite de respostas' },
-  { emoji: '📷', label: 'Fotos ilimitadas todo mês' },
+  { emoji: '🧠', label: 'Mais espaço para aprender com Kira' },
+  { emoji: '📷', label: 'Recursos de estudo em evolução' },
   { emoji: '🗒️', label: 'Post-its infinitos' },
   { emoji: '📊', label: 'Histórico completo de estudos' },
 ]
@@ -72,12 +72,12 @@ function Upgrade() {
   const navigate = useNavigate()
 
   return (
-    <div style={{
+    <div className="study-upgrade" style={{
       minHeight: '100vh',
-      background: '#000000',
+      background: 'transparent',
       color: '#f4f4f5',
       paddingBottom: 48,
-      maxWidth: 390,
+      maxWidth: 560,
       margin: '0 auto',
       overflowX: 'hidden',
     }}>
@@ -150,7 +150,7 @@ function Upgrade() {
               </em>
             </p>
             <p style={{ fontSize: 13, color: '#a1a1aa', fontFamily: 'Geist, sans-serif' }}>
-              7 dias grátis — cancela antes e não cobra nada.
+              Checkout em preparação. Nenhuma cobrança real está ativa.
             </p>
           </div>
         </div>
