@@ -22,7 +22,7 @@ try {
     page.setDefaultTimeout(7000)
     const notes = []
     const errors = []
-    let calls = 0, failSave = true, failEdit = true, release = null, hold = false
+    let calls = 0, failSave = true, failEdit = true, failDelete = true, release = null, hold = false
     page.on('pageerror', error => errors.push(error.message))
     await page.route('**/*', async route => {
       const request = route.request()
@@ -37,6 +37,14 @@ try {
           if (failSave) { failSave = false; return route.fulfill({ status: 503, json: { message: 'Temporary error' } }) }
           if (!notes.some(item => item.id === note.id)) notes.push({ ...note, created_at: new Date().toISOString() })
           return route.fulfill({ status: 201, body: '' })
+        }
+        if (request.method() === 'DELETE') {
+          assert.equal(url.searchParams.get('user_id'), 'eq.' + user.id)
+          const id = url.searchParams.get('id')?.slice(3)
+          assert(notes.some(note => note.id === id))
+          if (failDelete) { failDelete = false; return route.fulfill({ status: 406, json: { code: 'PGRST116', message: 'No row returned' } }) }
+          notes.splice(notes.findIndex(note => note.id === id), 1)
+          return route.fulfill({ json: { id } })
         }
         if (request.method() === 'PATCH') {
           assert.equal(url.searchParams.get('user_id'), 'eq.' + user.id)
@@ -70,7 +78,7 @@ try {
       await page.waitForTimeout(400)
       const dock = await page.locator('.study-room-dock').boundingBox()
       const bar = await page.locator('.study-navigation').boundingBox()
-      assert(dock.y + dock.height <= bar.y + 4, 'Home actions must clear navbar')
+      assert(dock.y + dock.height <= bar.y + 4, 'Home actions must clear navbar: ' + JSON.stringify({dock,bar}))
       await page.screenshot({ path: 'qa.local/home-static-' + width + '.png' })
     }
     await nav('ENEM').click()
@@ -81,6 +89,57 @@ try {
     await page.getByRole('status').filter({ hasText: 'Guardado' }).waitFor()
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     await page.screenshot({ path: 'qa.local/enem-practice-' + width + '.png' })
+    await page.getByRole('group', { name:'Seções do modo ENEM' }).getByRole('button', { name:'Post-its', exact:true }).click()
+    await page.getByRole('button', { name:'Novo post-it' }).click()
+    await page.getByPlaceholder('O que precisa lembrar?').fill('Revisar porcentagem e resolver duas questões.')
+    await page.getByRole('button', { name:'Colar post-it' }).click()
+    await page.locator('.study-paper-postit').waitFor()
+    const complete = page.getByRole('button', { name:'Concluir: Revisar porcentagem e resolver duas questões.' })
+    await complete.click()
+    assert.equal(await page.getByRole('button', { name:'Marcar como pendente: Revisar porcentagem e resolver duas questões.' }).getAttribute('aria-pressed'), 'true')
+    if (width === 414) await page.screenshot({ path:'qa.local/postits-paper.png' })
+    await page.getByRole('button', { name: 'Ingresso', exact: true }).click()
+    await page.getByRole('heading', { name: 'Onde sua nota pode chegar?' }).waitFor()
+    for (const area of ['Linguagens','Humanas','Natureza','Matemática','Redação']) await page.getByLabel('Nota de ' + area, { exact: true }).fill('900')
+    await page.getByLabel('Estado onde moro').selectOption('MG')
+    await page.getByLabel('Cidade onde moro').fill('Belo Horizonte')
+    await page.getByRole('button', { name: 'Comparar minha nota' }).click()
+    await page.locator('.study-admission-card').first().waitFor()
+    assert((await page.locator('.study-admission-card > span').allTextContents()).every(text => text.includes('Belo Horizonte/MG')))
+    await page.getByLabel('Cidade onde moro').fill('Cidade inexistente')
+    await page.getByRole('button', { name: 'Comparar minha nota' }).click()
+    await page.getByRole('heading', { name: 'Nenhum curso neste filtro' }).waitFor()
+    await page.getByRole('button', { name: 'Buscar em todo o Brasil' }).click()
+    await page.locator('.study-admission-card').first().waitFor()
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    if (width === 414) await page.screenshot({ path:'qa.local/admissions.png' })
+    await page.getByRole('group', { name:'Seções do modo ENEM' }).getByRole('button', { name:'Kira', exact:true }).click()
+    await page.waitForTimeout(400)
+    const composer = await page.locator('.study-enem-chat .study-composer').boundingBox()
+    assert(composer.y > height * .65, 'ENEM composer belongs at the bottom')
+    if (width < 768) {
+      const bar = await page.locator('.study-navigation').boundingBox()
+      assert(composer.y + composer.height <= bar.y + 2, 'ENEM composer must clear navigation')
+      assert(bar.y - composer.y - composer.height < 55, 'ENEM composer must sit near navigation')
+    }
+    if (width === 414) await page.screenshot({ path:'qa.local/enem-chat-fixed.png' })
+    if (width === 414) {
+      await page.getByLabel('Mensagem para a Kira').focus()
+      await page.evaluate(() => {
+        Object.defineProperty(visualViewport, 'height', { configurable:true, value:400 })
+        visualViewport.dispatchEvent(new Event('resize'))
+      })
+      await page.waitForFunction(() => document.documentElement.hasAttribute('data-study-keyboard'))
+      const keyboardComposer = await page.locator('.study-enem-chat .study-composer').boundingBox()
+      assert(keyboardComposer.y + keyboardComposer.height <= 400, 'Composer must clear simulated keyboard')
+      assert(!(await page.locator('.study-navigation').isVisible()))
+      await page.evaluate(() => {
+        delete visualViewport.height
+        visualViewport.dispatchEvent(new Event('resize'))
+      })
+      await page.waitForFunction(() => !document.documentElement.hasAttribute('data-study-keyboard'))
+    }
+
     await nav('Kira').click()
     const input = page.getByRole('textbox', { name: 'Mensagem para a Kira' })
     const character = page.locator('.study-chat-header .study-kira-character img')
@@ -170,6 +229,19 @@ try {
     await page.reload()
     await holdLock(page)
     await page.waitForFunction(() => document.querySelectorAll('.study-message--assistant').length === 2)
+    await nav('Notas').click()
+    await page.getByRole('button', { name:'Apagar anotação', exact:true }).waitFor()
+    page.once('dialog', dialog => dialog.dismiss())
+    await page.getByRole('button', { name:'Apagar anotação', exact:true }).click()
+    assert.equal(notes.length, 2)
+    page.once('dialog', dialog => dialog.accept())
+    await page.getByRole('button', { name:'Apagar anotação', exact:true }).click()
+    await page.getByRole('status').filter({ hasText:'Sua anotação foi mantida' }).waitFor()
+    assert.equal(notes.length, 2)
+    page.once('dialog', dialog => dialog.accept())
+    await page.getByRole('button', { name:'Apagar anotação', exact:true }).click()
+    await page.getByRole('status').filter({ hasText:'Anotação apagada' }).waitFor()
+    assert.equal(notes.length, 1)
     assert.equal(errors.length, 0, errors.join('\n'))
     console.log(width + 'px: copiar/fallback, criar/repetir, editar/erro, revisão sem chamada extra, conversa entre abas/em voo/reload, sem overflow.')
     await page.close()

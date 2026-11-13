@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
-import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { sendToKira } from '../lib/groq'
 
@@ -128,6 +128,8 @@ export default function Anotacoes() {
     } : null
   })
   const [notice, setNotice] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const deleteLock = useRef(false)
 
   useEffect(() => {
     if (location.state?.draft) {
@@ -175,6 +177,27 @@ export default function Anotacoes() {
     setParams({ nota: saved.id }, { replace: true })
     setNotice(editor?.id ? 'Anotação atualizada.' : 'Anotação guardada no seu caderno.')
     setEditor(null)
+  }
+
+  async function removeNote(note) {
+    if (deleteLock.current || !window.confirm(`Apagar “${note.title || 'Sem título'}”? Esta ação não pode ser desfeita.`)) return
+    deleteLock.current = true
+    setDeleting(true)
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) throw new Error('Sessão indisponível')
+      const { data, error: deleteError } = await supabase.from('annotations')
+        .delete().eq('user_id', user.id).eq('id', note.id).select('id').single()
+      if (deleteError || data?.id !== note.id) throw new Error('Exclusão não confirmada')
+      setNotes(previous => previous.filter(item => item.id !== note.id))
+      setParams(activeArea ? { area: activeArea } : {}, { replace: true })
+      setNotice('Anotação apagada.')
+    } catch {
+      setNotice('Não foi possível apagar. Sua anotação foi mantida. Tente novamente.')
+    } finally {
+      deleteLock.current = false
+      setDeleting(false)
+    }
   }
 
   function review(note) {
@@ -243,8 +266,9 @@ export default function Anotacoes() {
               <h2>{selected?.title || (term || activeArea ? 'Nenhuma página encontrada' : 'Sua primeira página')}</h2>
               <div className="study-book-lines"><p>{selected ? selected.content || 'Sem texto.' : term || activeArea ? 'Tente outra palavra ou escolha outra área no índice.' : 'Guarde uma ideia, organize o que aprendeu ou traga uma explicação da Kira para cá.'}</p></div>
               {selected ? <div className="study-note-tools">
-                <button type="button" onClick={() => setEditor(selected)}><Pencil size={15} aria-hidden="true" /> Editar</button>
-                <button type="button" onClick={() => review(selected)}><Sparkles size={15} aria-hidden="true" /> Revisar com Kira</button>
+                <button type="button" disabled={deleting} onClick={() => setEditor(selected)}><Pencil size={15} aria-hidden="true" /> Editar</button>
+                <button type="button" disabled={deleting} onClick={() => review(selected)}><Sparkles size={15} aria-hidden="true" /> Revisar com Kira</button>
+                <button type="button" className="study-note-delete" disabled={deleting} onClick={() => removeNote(selected)}><Trash2 size={15} aria-hidden="true" />{deleting ? 'Apagando…' : 'Apagar anotação'}</button>
               </div> : !term && !activeArea && <button type="button" className="study-book-start" onClick={() => setEditor({ area: 'geral' })}><Pencil size={16} aria-hidden="true" /> Escrever primeira página</button>}
             </article>
             <nav className="study-book-pager" aria-label="Navegar no caderno">

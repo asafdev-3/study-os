@@ -146,3 +146,8 @@ REGRA DO USUÁRIO: aguardar confirmação antes de iniciar backend, segurança, 
 Analisados prints e quadros do vídeo enviado. Link Figma Community não acessível via ferramenta de leitura; não afirmar importação ou reprodução oficial de iOS 27.
 Frontend: dock com maior contraste e ícone de papel; ambiente mobile reutiliza study-room.webp com overlay escuro estático; ENEM com títulos sans e controles destacados; chat com balões azul/cinza, campo arredondado e sugestões compactas. Sem animação contínua de fundo, sem dependências/novos assets. Reduzir movimento respeitado nas novas pressões CSS. Backend permanece aguardando confirmação.
 Build/lint aprovados; validação física Safari não realizada.
+
+
+## 2026-11-13 — notebook deletion, ENEM admission reference, UI
+Implemented owner-filtered confirmed notebook deletion, failure preservation, organic reminder material, dashboard dock border/alignment fix, ENEM Kira bottom composer with visualViewport keyboard handling. Ingresso replaces fake data with 6,393 Sisu 2025 historical offers (124 institutions, 547 city/UF pairs), five-score weighting/minima and city/state/Brazil filters. Source is pinned public mirror of Sisu data; NOT live vacancies, only broad competition without bonus. User scores/city stored per-user on this device, no DB migration. Details/provenance: docs/admissions-and-ui-2026-11-13.md.
+Build, targeted ESLint, numeric/data tests and browser flows at 320/414/1024 passed; motion regression at 320/414/430/1024 passed. Mock APIs and simulated keyboard; physical iPhone and live RLS/delete not claimed verified. Backend/security/payment/policies remain pending explicit user confirmation.

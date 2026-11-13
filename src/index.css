@@ -863,3 +863,69 @@ html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; 
  html:not([data-study-motion="reduced"]) .study-chat-starters button { transition: transform 180ms cubic-bezier(.22,1,.36,1),background-color 180ms ease; }
  html:not([data-study-motion="reduced"]) .study-chat-starters button:active { transform: scale(.975); }
 }
+
+/* Material and alignment refinements: no extra continuously composited layers. */
+.study-room-dock .study-room-kira { margin:0; border-left:0; border-top:0; padding:10px 2px; min-width:0; gap:12px; }
+.study-room-dock .study-room-kira + .study-room-kira { border-top:1px solid #ffffff16; }
+.study-room-dock .study-room-kira > span { min-width:0; }
+.study-note-tools { flex-wrap:wrap; gap:8px 18px; }
+.study-note-tools .study-note-delete { color:#913d42; }
+.study-paper-postit { border:0; border-radius:2px 3px 9px 2px; padding-top:24px; background-image:linear-gradient(180deg,#00000009 0 22px,transparent 23px),linear-gradient(165deg,#ffffff48,transparent 65%,#ffffff12); box-shadow:0 1px 2px #0003,2px 7px 9px -6px #0008,inset 0 1px #ffffff38; }
+.study-paper-postit::after { width:9px; height:9px; border-radius:2px 0 8px 0; opacity:.45; }
+.study-postit-pin { display:none; }
+.study-postit-footer { padding-top:4px; flex-wrap:wrap; gap:0 6px; }
+.study-postit-footer .study-postit-complete { flex:0 0 auto; width:auto; height:44px; min-width:44px; display:flex; align-items:center; gap:5px; border:0; border-radius:8px; color:#332e3c; background:transparent; font-size:11px; }
+.study-postit-complete > span { display:grid; place-items:center; width:16px; height:16px; border:1px solid #44395180; border-radius:4px; }
+.study-postit-complete[aria-pressed="true"] > span { background:#ffffff60; }
+@media(min-width:1100px) { .study-room-dock .study-room-kira + .study-room-kira { border-top:0; border-left:1px solid #ffffff16; padding-left:18px; } }
+/* ENEM conversation owns available viewport; only its history scrolls. */
+html[data-enem-chat],html[data-enem-chat] body { overflow:hidden; }
+.study-enem[data-chat-active] { position:fixed; top:var(--enem-top,0px); height:var(--enem-height,100dvh); bottom:auto; display:flex; flex-direction:column; min-height:0; overflow:hidden; padding-bottom:calc(var(--study-nav-space,90px) + 10px); }
+.study-enem[data-chat-active] > :is(header,.study-enem-tabs) { flex-shrink:0; }
+.study-enem-chat { display:flex; flex:1; flex-direction:column; min-height:0; overflow:hidden; padding-bottom:0; }
+.study-enem-kira-title { flex-shrink:0; }
+.study-enem-conversation { flex:1; overflow-y:auto; min-height:0; overscroll-behavior:contain; padding:8px 0 12px; }
+.study-enem-conversation .study-enem-log { max-height:none; overflow:visible; padding:0; }
+.study-enem-chat .study-composer { flex-shrink:0; margin-top:8px; padding-bottom:0; }
+.study-enem-chat .study-message { white-space:pre-wrap; overflow-wrap:anywhere; }
+.study-enem-chat .study-message--assistant { background:#29313e; color:#f6f7fb; border-radius:20px 20px 20px 5px; }
+.study-enem-chat .study-message--user { background:#155eb8; color:white; border-radius:20px 20px 5px 20px; }
+@media(max-width:767px) {
+ .study-enem[data-chat-active] { left:0; right:0; width:100%; margin:0; padding-top:calc(env(safe-area-inset-top,0px) + 16px); }
+ html[data-enem-chat][data-study-keyboard] .study-enem { padding-bottom:8px; padding-top:8px; }
+ html[data-enem-chat][data-study-keyboard] .study-enem-header { display:none; }
+ html[data-enem-chat][data-study-keyboard] .study-topbar { display:none; }
+}
+@media(min-width:768px) { .study-enem[data-chat-active] { left:calc(50% + 32px); transform:translateX(-50%); width:min(100% - 144px,720px); padding-bottom:24px; } }
+.study-admissions { display:grid; gap:18px; }
+.study-admissions header h2 { font-size:clamp(23px,5vw,30px); font-weight:600; line-height:1.15; letter-spacing:-.03em; margin:10px 0; color:#f5f7ff; }
+.study-admissions p { font-size:13px; line-height:1.6; color:#c4cedd; }
+.study-admissions-form { padding:18px; background:#1a293ee8; border:1px solid #bdccec33; border-radius:22px; display:grid; gap:18px; }
+.study-admissions fieldset { min-width:0; }
+.study-admissions legend { font-size:14px; font-weight:600; margin-bottom:14px; }
+.study-score-inputs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.study-admissions label { display:grid; gap:7px; font-size:12px; color:#d5ddeb; min-width:0; }
+.study-admissions :is(input:not([type="checkbox"]),select) { width:100%; min-width:0; min-height:44px; font-size:16px; background:#101c2c; color:#f6f8ff; border:1px solid #bbc9e342; border-radius:12px; padding:10px; }
+.study-location-inputs { display:grid; grid-template-columns:84px minmax(0,1fr); gap:12px; }
+.study-admissions .study-primary { display:flex; align-items:center; justify-content:center; gap:8px; }
+.study-admissions-results { display:grid; gap:12px; }
+.study-admissions-filters { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.study-admissions .study-admissions-check { display:flex; align-items:center; gap:10px; min-height:44px; font-size:13px; }
+.study-admissions-check input { width:18px; height:18px; accent-color:#b4caff; }
+.study-admission-card { padding:18px; background:#172437ef; border:1px solid #b4c4e52e; border-radius:20px; overflow-wrap:anywhere; }
+.study-admission-card > span { color:#b7cdf3; font-size:12px; }
+.study-admission-card h3 { font-size:17px; line-height:1.3; font-weight:600; margin:8px 0; color:#fff; }
+.study-admission-card p { font-size:12px; }
+.study-admission-card dl { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:18px 0 12px; }
+.study-admission-card dt { font-size:11px; color:#c1cbdb; }
+.study-admission-card dd { font-size:24px; color:#e3ecff; font-variant-numeric:tabular-nums; }
+.study-cut-reached { color:#97e5c4; font-size:12px; }
+.study-cut-below { color:#f3cb95; font-size:12px; }
+.study-admission-card summary { font-size:12px; padding:12px 0 4px; cursor:pointer; min-height:44px; }
+.study-admissions-empty { padding:24px 18px; background:#172437cc; border-radius:20px; }
+.study-admissions-empty h3 { margin:12px 0 8px; }
+.study-admissions :is(footer a,.study-admissions-more,.study-admissions-empty button) { display:inline-flex; align-items:center; min-height:44px; color:#c1d6ff; font-size:13px; margin-right:16px; }
+.study-admissions footer { padding-top:12px; border-top:1px solid #ffffff22; }
+@media(max-width:360px) { .study-score-inputs { grid-template-columns:repeat(2,minmax(0,1fr)); } .study-admissions-filters { grid-template-columns:1fr; } }
+
+@media(max-width:767px) { .study-room-dock .study-room-kira { padding-block:0; } }

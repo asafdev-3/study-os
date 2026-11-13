@@ -1,12 +1,11 @@
 import { useSearchParams } from "react-router-dom";
 import Lembretes from "./Lembretes";
+import EnemAdmissions from "../components/EnemAdmissions";
 import EnemPractice from "../components/EnemPractice";
-// EnemScreen.jsx — StudyOS
-// Modo ENEM: Sessão de Foco + Notas de Corte + Kira ENEM + BolsasModal
+// Modo ENEM: prática, post-its, referências de ingresso e tutoria.
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { ArrowUp, ChevronRight, RotateCcw } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { supabase }   from "../lib/supabase";
 import { FOCUS_SECONDS, readFocus } from "../lib/focus";
 import { notifyFocus } from "../lib/preferences";
@@ -23,9 +22,6 @@ const AREAS = [
   { id: "red", label: "Redação",    short: "RED", color: "#ef4444" },
 ];
 
-// Fallback enquanto Supabase não estiver configurado ou o usuário não tiver scores
-const NOTAS_FALLBACK = { lc: 630, ch: 681, cn: 663, mt: 633, red: 708 };
-
 const QUICK_PROMPTS = [
   "O que estudar hoje",
   "Dica de redação",
@@ -34,158 +30,16 @@ const QUICK_PROMPTS = [
   "Cronograma final",
 ];
 
-const FACULDADES_MOCK = [
-  { nome: "USP — Medicina (Ribeirão Preto)",    corte: 795.2, bolsas: false },
-  { nome: "UNICAMP — Engenharia de Computação", corte: 740.8, bolsas: true  },
-  { nome: "UFMG — Direito",                     corte: 723.1, bolsas: true  },
-  { nome: "UFV — Ciências Biológicas",          corte: 661.4, bolsas: true  },
-  { nome: "UFOP — Engenharia Civil",            corte: 598.0, bolsas: true  },
-  { nome: "PUC-MG — Psicologia",                corte: 572.5, bolsas: true  },
-  { nome: "UNIMINAS — Administração",           corte: 510.3, bolsas: true  },
-];
-
 const BOLSAS = [
-  {
-    id: "educa",
-    nome: "Educa Mais Brasil",
-    tag: "ATÉ 70% DE BOLSA",
-    tagCor: "#f59e0b",
-    desc: "Bolsas parciais em mais de 2.000 faculdades particulares em todo o Brasil.",
-    requisitos: [
-      "ENEM realizado (qualquer edição)",
-      "Renda familiar até 3 salários mínimos",
-      "Matriculado ou candidato a curso presencial",
-    ],
-    url: "https://www.educamaisbrasil.com.br",
-    cor: "#f59e0b",
-    corBg: "rgba(245,158,11,.10)",
-    corBorder: "rgba(245,158,11,.22)",
-  },
-  {
-    id: "prouni",
-    nome: "ProUni",
-    tag: "BOLSA INTEGRAL",
-    tagCor: "#3b82f6",
-    desc: "Programa do MEC com bolsas integrais e parciais em faculdades privadas.",
-    requisitos: [
-      "ENEM a partir de 2010 com nota ≥ 450",
-      "Redação com nota acima de zero",
-      "Renda per capita até 1,5 s.m. (integral) ou 3 s.m. (parcial)",
-    ],
-    url: "https://prouniportal.mec.gov.br",
-    cor: "#3b82f6",
-    corBg: "rgba(59,130,246,.10)",
-    corBorder: "rgba(59,130,246,.22)",
-  },
-  {
-    id: "fies",
-    nome: "FIES",
-    tag: "FINANCIAMENTO FEDERAL",
-    tagCor: "#10b981",
-    desc: "Financiamento estudantil federal com juros baixos e carência de 18 meses.",
-    requisitos: [
-      "ENEM a partir de 2010 com nota ≥ 450",
-      "Renda familiar mensal bruta por pessoa ≤ 3 s.m.",
-      "Regularidade no CPF e quitação eleitoral",
-    ],
-    url: "https://fies.mec.gov.br",
-    cor: "#10b981",
-    corBg: "rgba(16,185,129,.10)",
-    corBorder: "rgba(16,185,129,.22)",
-  },
+  { id: 'prouni', nome: 'ProUni', url: 'https://acessounico.mec.gov.br/prouni' },
+  { id: 'fies', nome: 'Fies', url: 'https://acessounico.mec.gov.br/fies' },
+  { id: 'educa', nome: 'Educa Mais Brasil', url: 'https://www.educamaisbrasil.com.br' },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(s) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
-function mediaDeNotas(n) {
-  return Math.round((n.lc + n.ch + n.cn + n.mt + n.red) / 5);
-}
-
-// ─── Estilos base ─────────────────────────────────────────────────────────────
-const T = {
-  label: { fontSize: 10, letterSpacing: ".18em", fontWeight: 700, color: "#52525b" },
-  muted: { color: "#71717a" },
-};
-
-// ─── BolsasModal ──────────────────────────────────────────────────────────────
-function BolsasModal({ bolsa, onClose }) {
-  if (!bolsa) return null;
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose}
-        style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(0,0,0,.7)", backdropFilter: "blur(8px)" }}
-      />
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 32, stiffness: 300 }}
-        style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 101,
-          maxWidth: 430, margin: "0 auto",
-          background: "#0e0e12",
-          border: "1px solid rgba(255,255,255,.10)",
-          borderBottom: "none",
-          borderRadius: "28px 28px 0 0",
-          padding: "0 0 44px",
-          boxShadow: "0 -20px 60px rgba(0,0,0,.6)",
-          color: "#f4f4f5",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "center", padding: "14px 0 0" }}>
-          <div style={{ width: 36, height: 4, borderRadius: 99, background: "rgba(255,255,255,.12)" }} />
-        </div>
-
-        <div style={{ padding: "16px 24px 20px", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div>
-              <span style={{ ...T.label, color: bolsa.tagCor, display: "block", marginBottom: 6 }}>{bolsa.tag}</span>
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: "-.04em", color: "#f4f4f5" }}>{bolsa.nome}</h2>
-            </div>
-            <button onClick={onClose} style={{
-              width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-              background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.10)",
-              color: "#a1a1aa", fontSize: 20, cursor: "pointer", display: "grid", placeItems: "center",
-            }}>×</button>
-          </div>
-          <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.65, color: "#a1a1aa" }}>{bolsa.desc}</p>
-        </div>
-
-        <div style={{ padding: "20px 24px" }}>
-          <p style={{ ...T.label, margin: "0 0 12px" }}>REQUISITOS PRINCIPAIS</p>
-          {bolsa.requisitos.map((r, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
-              <div style={{
-                width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                background: bolsa.corBg, border: `1px solid ${bolsa.corBorder}`,
-                display: "grid", placeItems: "center", fontSize: 10, color: bolsa.cor, fontWeight: 700,
-              }}>✓</div>
-              <span style={{ fontSize: 13, lineHeight: 1.55, color: "#d4d4d8", paddingTop: 1 }}>{r}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ padding: "0 24px" }}>
-          <a href={bolsa.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-            <button className="btn" style={{
-              width: "100%", background: bolsa.cor, color: "#000",
-              fontWeight: 800, fontSize: 15,
-              boxShadow: `0 10px 32px ${bolsa.cor}44, inset 0 1px 0 rgba(255,255,255,.22)`,
-            }}>
-              Acessar site oficial ↗
-            </button>
-          </a>
-          <p style={{ margin: "10px 0 0", fontSize: 11, color: "#3f3f46", textAlign: "center" }}>
-            Redirecionado para o site oficial do programa.
-          </p>
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
 // ─── Sessão de Foco ───────────────────────────────────────────────────────────
 function SessaoFoco({ userId }) {
   const key = `studyos:focus:${userId}`;
@@ -315,111 +169,56 @@ function SessaoFoco({ userId }) {
   );
 }
 
-// ─── Notas de Corte ───────────────────────────────────────────────────────────
-function NotasCorte({ minhaMedia, simulada }) {
-  const [busca, setBusca]           = useState("");
-  const [soComBolsa, setSoComBolsa] = useState(false);
-
-  const filtradas = FACULDADES_MOCK.filter(f =>
-    f.nome.toLowerCase().includes(busca.toLowerCase()) && (soComBolsa ? f.bolsas : true)
-  );
-
-  return (
-    <div style={{ color: "#f4f4f5" }}>
-      <div className="glass-deep" style={{ borderRadius: 20, padding: "16px 18px", marginBottom: 14 }}>
-        <p style={{ ...T.label, margin: "0 0 10px" }}>{simulada ? "MÉDIA DE EXEMPLO" : "MÉDIA REGISTRADA"}</p>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <progress className="study-enem-score" aria-label="Pontuação de 0 a 1.000" max="1000" value={minhaMedia} />
-          <strong style={{ fontSize: 26, minWidth: 55, textAlign: "right", color: "#93c5fd", letterSpacing: "-.04em" }}>
-            {minhaMedia}
-          </strong>
-        </div>
-      </div>
-
-      <div className="study-enem-search">
-        <input className="input-glass" aria-label="Buscar faculdade ou curso" placeholder="Faculdade ou curso" value={busca}
-          onChange={e => setBusca(e.target.value)} style={{ flex: 1 }} />
-        <button className={soComBolsa ? "btn btn-enem" : "btn btn-ghost"}
-          onClick={() => setSoComBolsa(b => !b)} style={{ padding: "0 14px", fontSize: 12 }}>Bolsa</button>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {filtradas.map((f) => {
-          const pct    = minhaMedia / f.corte;
-          const status = pct >= 1 ? "ok" : pct >= .9 ? "perto" : "longe";
-          const cor    = status === "ok" ? "#10b981" : status === "perto" ? "#f59e0b" : "#6b7280";
-          return (
-            <motion.div key={f.nome} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: .16 }} className="glass" style={{ borderRadius: 18, padding: "14px 16px" }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.35, color: "#f4f4f5" }}>{f.nome}</p>
-                  <div style={{ marginTop: 10 }}>
-                    <div className="progress-track">
-                      <div className="progress-fill" style={{ width: `${Math.min(100, pct * 100)}%`, background: cor }} />
-                    </div>
-                  </div>
-                </div>
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <strong style={{ fontSize: 20, color: cor, letterSpacing: "-.03em" }}>{f.corte}</strong>
-                  <p style={{ margin: "2px 0 0", fontSize: 10, color: "#52525b" }}>corte</p>
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
-                {f.bolsas && <span className="badge badge-yellow">Bolsas disponíveis</span>}
-                {status === "ok"    && <span className="badge badge-green">Nota atingida</span>}
-                {status === "perto" && <span className="badge badge-yellow">Faltam {(f.corte - minhaMedia).toFixed(1)} pts</span>}
-                {status === "longe" && <span className="badge" style={{ background: "rgba(107,114,128,.08)", border: "1px solid rgba(107,114,128,.18)", color: "#6b7280" }}>
-                  {(f.corte - minhaMedia).toFixed(1)} pts abaixo
-                </span>}
-              </div>
-            </motion.div>
-          );
-        })}
-        {filtradas.length === 0 && (
-          <p style={{ color: "#3a3a42", textAlign: "center", padding: "32px 0", fontSize: 13 }}>
-            Nenhum resultado para "{busca}"
-          </p>
-        )}
-      </div>
-      <p style={{ fontSize: 11, color: "#2e2e35", marginTop: 14, textAlign: "center" }}>
-        Notas de corte ilustrativas. Confira os valores oficiais antes de decidir.
-      </p>
-    </div>
-  );
-}
-
 // ─── Tela Principal ───────────────────────────────────────────────────────────
 export default function EnemScreen({ userId }) {
   const [params] = useSearchParams();
   const fromNfc = params.get("modo") === "foco";
   const [tab, setTab] = useState(fromNfc ? "foco" : "praticar");
   const [switched, setSwitched] = useState(false);
-  const [bolsaAberta, setBolsaAberta] = useState(null);
-  const [scores, setScores] = useState(null);
   const [kiraInput, setKiraInput] = useState("");
   const { messages, remaining, loading, error, send, clear } = useKira(tab === "kira");
   const log = useRef(null);
 
-  useEffect(() => {
-    if (tab !== "corte" || !userId) return;
-    let active = true;
-    supabase.from("enem_scores").select("lc, ch, cn, mt, red").eq("user_id", userId)
-      .maybeSingle().then(({ data }) => { if (active && data) setScores(data); });
-    return () => { active = false; };
-  }, [tab, userId]);
+  const page = useRef(null);
+  useLayoutEffect(() => {
+    if (tab !== 'kira') return;
+    const root = document.documentElement;
+    const viewport = window.visualViewport;
+    let frame = 0;
+    let normalHeight = window.innerHeight;
+    let width = window.innerWidth;
+    root.dataset.enemChat = '';
+    function update() {
+      frame = 0;
+      if (viewport && viewport.scale !== 1) return;
+      if (width !== window.innerWidth) { width = window.innerWidth; normalHeight = window.innerHeight; }
+      const height = viewport?.height ?? window.innerHeight;
+      normalHeight = Math.max(normalHeight, window.innerHeight, height);
+      const editing = document.activeElement?.matches('.study-enem-chat input');
+      root.toggleAttribute('data-study-keyboard', normalHeight - height > 120 && (editing || root.hasAttribute('data-study-keyboard')));
+      page.current?.style.setProperty('--enem-height', `${height}px`);
+      page.current?.style.setProperty('--enem-top', `${viewport?.offsetTop ?? 0}px`);
+    }
+    function schedule() { if (!frame) frame = requestAnimationFrame(update); }
+    update();
+    viewport?.addEventListener('resize', schedule);
+    viewport?.addEventListener('scroll', schedule);
+    window.addEventListener('resize', schedule);
+    document.addEventListener('focusin', schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      viewport?.removeEventListener('resize', schedule);
+      viewport?.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      document.removeEventListener('focusin', schedule);
+      delete root.dataset.enemChat;
+      delete root.dataset.studyKeyboard;
+    };
+  }, [tab]);
 
   useEffect(() => {
     if (log.current) log.current.scrollTop = log.current.scrollHeight;
   }, [messages, loading, tab]);
-
-  useEffect(() => {
-    if (!bolsaAberta) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
-  }, [bolsaAberta]);
 
   async function enviar(texto) {
     const draft = texto ?? kiraInput;
@@ -431,7 +230,7 @@ export default function EnemScreen({ userId }) {
   ];
 
   return (
-    <main className="study-page study-enem" data-switched={switched || undefined}>
+    <main ref={page} data-chat-active={tab === "kira" || undefined} className="study-page study-enem" data-switched={switched || undefined}>
       <header className="study-enem-header">
         <h1>Modo ENEM</h1>
         <p>Foco, revisão e planejamento.</p>
@@ -445,27 +244,29 @@ export default function EnemScreen({ userId }) {
       {fromNfc && <div className="study-enem-pane" hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>}
       {tab === "postits" && <div className="study-enem-pane"><Lembretes key={userId} userId={userId} /></div>}
       {tab === "corte" && <section className="study-enem-pane" aria-label="Notas de corte e bolsas">
-        <p className="study-note">Os valores abaixo são fictícios e não indicam aprovação nem bolsas disponíveis. Compare apenas como demonstração.</p>
-        <details className="study-score-disclosure"><summary><span><strong>Comparar notas</strong><small>Explorar exemplo ilustrativo</small></span><ChevronRight size={19} aria-hidden="true" /></summary><NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} /></details>
+        <EnemAdmissions key={userId} userId={userId} />
         <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>
         {BOLSAS.map((bolsa) => (
-          <button className="study-enem-scholarship" key={bolsa.id} type="button" onClick={() => setBolsaAberta(bolsa)}>
+          <a className="study-enem-scholarship" key={bolsa.id} href={bolsa.url} target="_blank" rel="noreferrer">
             <strong>{bolsa.nome}</strong><ChevronRight size={17} aria-hidden="true" />
-          </button>
+          </a>
         ))}
+        <p className="study-note">Consulte requisitos, prazos e ofertas no site de cada programa.</p>
       </section>}
-      {tab === "kira" && <section className="study-enem-pane" aria-label="Kira no modo ENEM">
+      {tab === "kira" && <section className="study-enem-pane study-enem-chat" aria-label="Kira no modo ENEM">
         <div className="study-enem-kira-title">
           <div><h2>Kira ENEM</h2>{remaining !== null && <p>{remaining}/{KIRA_DAILY_LIMIT} mensagens hoje</p>}</div>
           {messages.length > 0 && <button type="button" onClick={clear} disabled={loading}>Limpar</button>}
         </div>
+        <div className="study-enem-conversation" ref={log}>
         {messages.length === 0 && !loading && <div className="study-enem-prompts">
           {QUICK_PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
         </div>}
-        {(messages.length > 0 || loading) && <div className="study-chat-log study-enem-log" role="log" ref={log}>
+        {(messages.length > 0 || loading) && <div className="study-chat-log study-enem-log" role="log">
           {messages.map(({ role, content }, index) => <p key={index} className={`study-message study-message--${role}`}>{content}</p>)}
           {loading && <p className="study-chat-status">Kira está preparando a resposta…</p>}
         </div>}
+        </div>
         <form className="study-composer" onSubmit={(event) => { event.preventDefault(); void enviar(); }}>
           {error && <p role="alert" className="study-chat-error">{error}</p>}
           <div className="study-composer-field">
@@ -477,7 +278,6 @@ export default function EnemScreen({ userId }) {
           </div>
         </form>
       </section>}
-      <BolsasModal bolsa={bolsaAberta} onClose={() => setBolsaAberta(null)} />
     </main>
   );
 }

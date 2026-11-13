@@ -513,27 +513,10 @@ function Lembretes({ userId }) {
                   onClick={() => toggleFeito(id)}
                   aria-label={feito ? "Marcar como pendente: " + texto : "Concluir: " + texto}
                   aria-pressed={feito}
-                  className={`
-                    w-6 h-6
-                    rounded-full
-                    border-2
-                    flex
-                    items-center
-                    justify-center
-                    transition
-                    ${
-                      feito
-                        ? 'bg-black/30 border-black/30'
-                        : 'border-black/30 bg-transparent'
-                    }
-                  `}
+                  className="study-postit-complete"
                 >
-                  {feito && (
-                    <Check
-                      size={12}
-                      className="text-black"
-                    />
-                  )}
+                  <span aria-hidden="true">{feito && <Check size={12} />}</span>
+                  {feito ? 'Concluído' : 'Concluir'}
                 </button>
               </div>
             </div>
