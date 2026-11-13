@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import Lembretes from "./Lembretes";
+import EnemPractice from "../components/EnemPractice";
 // EnemScreen.jsx — StudyOS
 // Modo ENEM: Sessão de Foco + Notas de Corte + Kira ENEM + BolsasModal
 
@@ -393,7 +394,7 @@ function NotasCorte({ minhaMedia, simulada }) {
 export default function EnemScreen({ userId }) {
   const [params] = useSearchParams();
   const fromNfc = params.get("modo") === "foco";
-  const [tab, setTab] = useState(fromNfc ? "foco" : "postits");
+  const [tab, setTab] = useState(fromNfc ? "foco" : "praticar");
   const [switched, setSwitched] = useState(false);
   const [bolsaAberta, setBolsaAberta] = useState(null);
   const [scores, setScores] = useState(null);
@@ -426,7 +427,7 @@ export default function EnemScreen({ userId }) {
   }
 
   const tabs = [
-    [fromNfc ? "foco" : "postits", fromNfc ? "Foco" : "Post-its"], ["corte", "Notas de corte"], ["kira", "Kira"],
+    [fromNfc ? "foco" : "praticar", fromNfc ? "Foco" : "Praticar"], ["postits", "Post-its"], ["corte", "Ingresso"], ["kira", "Kira"],
   ];
 
   return (
@@ -440,10 +441,12 @@ export default function EnemScreen({ userId }) {
           <button key={id} type="button" aria-pressed={tab === id} onClick={() => { if (id !== tab) { setSwitched(true); setTab(id); } }}>{label}</button>
         ))}
       </div>
+      {tab === "praticar" && <EnemPractice key={userId} userId={userId} />}
       {fromNfc && <div className="study-enem-pane" hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>}
       {tab === "postits" && <div className="study-enem-pane"><Lembretes key={userId} userId={userId} /></div>}
       {tab === "corte" && <section className="study-enem-pane" aria-label="Notas de corte e bolsas">
-        <NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} />
+        <p className="study-note">Os valores abaixo são fictícios e não indicam aprovação nem bolsas disponíveis. Compare apenas como demonstração.</p>
+        <details><summary>Ver demonstração de comparação de notas</summary><NotasCorte minhaMedia={mediaDeNotas(scores ?? NOTAS_FALLBACK)} simulada={!scores} /></details>
         <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>
         {BOLSAS.map((bolsa) => (
           <button className="study-enem-scholarship" key={bolsa.id} type="button" onClick={() => setBolsaAberta(bolsa)}>

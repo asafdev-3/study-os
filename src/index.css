@@ -774,3 +774,18 @@ html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; 
 }
 .study-room-header-actions a[aria-label="Configurações"] { width: 44px; min-width: 44px; padding: 0; justify-content: center; }
 .study-room-header-actions a[aria-label="Configurações"] > svg { display: block; }
+
+.enem-practice { display: grid; gap: 16px; }
+.enem-practice-hero { padding: clamp(22px,4vw,36px); border: 1px solid #b8bce02b; border-radius: 26px; background: linear-gradient(140deg,#28334bd9,#151c29e8); }
+.enem-practice h2 { font: 32px/1.15 var(--font-serif),Georgia,serif; color: #f3e9d8; }
+.enem-practice p { font-size: 14px; color: #c0c7d5; line-height: 1.65; margin: 14px 0; }
+.enem-practice label { display:grid; gap:8px; font-size:13px; margin:16px 0; }
+.enem-practice :is(select,input) { min-height:46px; width:100%; min-width:0; padding:10px 12px; border:1px solid #ffffff28; border-radius:12px; background:#161e2b; color:#f4f4f5; font-size:16px; }
+.enem-practice small { display:block; color:#afb9cd; font-size:11px; line-height:1.6; margin-top:12px; }
+.enem-practice-section { padding:20px; border:1px solid #ffffff20; border-radius:20px; background:#18202bbd; }
+.enem-practice-section summary { cursor:pointer; min-height:32px; font-size:14px; }
+.enem-practice-section summary span { color:#aeb8cd; font-size:11px; margin-left:8px; }
+.enem-practice-section a,.enem-error-entry button { display:block; padding:12px 0; color:#c5d2ff; font-size:13px; min-height:44px; }
+.enem-error-entry { padding:18px 0; border-bottom:1px solid #ffffff18; overflow-wrap:anywhere; }
+.study-enem-tabs { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.study-enem-tabs button { padding-inline:6px; }
