@@ -650,3 +650,37 @@ html[data-study-motion="reduced"] .study-lock-ring-progress { transition: none; 
   .study-book-leaf { padding: 24px 20px; min-height: 520px; }
   .study-book-new { font-size: 12px; padding: 0 10px; }
 }
+
+
+/* Route changes: light blur only, no folds or opaque panels. */
+.study-route-blur { position: fixed; inset: 0; z-index: 35; pointer-events: none; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+/* Desktop reading room. Static lighting avoids continuous rendering work. */
+@media (min-width: 1024px) {
+  body:has(.study-navigation) {
+    background: #10151e;
+    background-image: radial-gradient(ellipse at 92% 20%, #a87b4022, transparent 48%), linear-gradient(90deg, #0c1220e8, #111822da), url('/images/study-room.webp');
+    background-size: cover; background-position: center; background-attachment: fixed;
+  }
+  .study-navigation { left: 22px; width: 72px; }
+  .study-navigation-inner { padding: 10px 6px; gap: 10px; border-color: #c8c1ab33; background: #1c2330f5; box-shadow: 0 20px 50px #0005, inset 0 1px #fff1; }
+  .study-navigation-brand { width: 42px; height: 42px; margin-bottom: 16px; }
+  .study-tab { min-height: 58px; }
+  .study-room-shade { background: linear-gradient(90deg,#080e1890,transparent 70%),linear-gradient(0deg,#080e1899,transparent 42%); }
+  .study-room-content { max-width: 1440px; padding: 40px 70px 36px 150px; }
+  .study-room-welcome { margin-top: clamp(54px,9vh,110px); max-width: 620px; }
+  .study-room-welcome h1 { font-family: var(--font-serif), Georgia, serif; font-size: clamp(56px,5.8vw,84px); font-weight: 400; letter-spacing: -.035em; color: #f4ead8; }
+  .study-room-workspace { width: min(42%,450px); margin-top: 42px; }
+  .study-desk-paper { background: #eee4cf; border-left-color: #77739a; padding: 28px 32px; box-shadow: 0 3px #c6baa2,0 6px #ddd2bb,0 24px 44px #0006; }
+  .study-room-dock { max-width: 870px; margin-top: 32px; background: #151e2be8; border-color: #c7bd9e38; padding: 0 22px; }
+  .study-room-kira:first-child { border-left: 0; padding-left: 0; }
+  .study-room-kira > svg:first-child { margin-left: 0; }
+  .study-notes.study-notes-book { width: min(100%,1200px); padding: 0 56px 64px; }
+  .study-notes-book .study-notes-header { padding-top: 60px; margin-bottom: 32px; }
+  .study-notes-book .study-notes-header h1 { font: 400 54px/1.2 var(--font-serif),Georgia,serif; letter-spacing: -.025em; color: #f0e4cf; }
+  .study-book-cover { grid-template-columns: minmax(0,.65fr) minmax(0,1.35fr); border: 1px solid #85839a66; padding: 9px 9px 12px; background: #35394e; box-shadow: 0 30px 75px #0007,0 5px #202636; }
+  .study-book-index { padding: 44px 30px; }
+  .study-book-leaf { padding: 38px 48px; min-height: 650px; }
+  .study-book-writing h2 { font-size: 38px; margin-bottom: 30px; }
+  .study-book-lines p { font-size: 17px; }
+  .study-chat { background: #10151ef5; border-inline: 1px solid #b8b0a322; box-shadow: 0 0 70px #0004; }
+}
