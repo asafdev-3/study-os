@@ -66,6 +66,13 @@ try {
     await page.goto(base + '/dashboard')
     await holdLock(page)
     await page.getByRole('heading', { name: 'Olá, Vitor.' }).waitFor()
+    if (width < 768) {
+      await page.waitForTimeout(400)
+      const dock = await page.locator('.study-room-dock').boundingBox()
+      const bar = await page.locator('.study-navigation').boundingBox()
+      assert(dock.y + dock.height <= bar.y + 4, 'Home actions must clear navbar')
+      await page.screenshot({ path: 'qa.local/home-static-' + width + '.png' })
+    }
     await nav('Kira').click()
     const input = page.getByRole('textbox', { name: 'Mensagem para a Kira' })
     const character = page.locator('.study-chat-header .study-kira-character img')
@@ -89,7 +96,8 @@ try {
     assert.equal(await dialog.getByLabel('Texto', { exact: true }).inputValue(), answer)
     assert.equal(calls, 1)
     await dialog.getByLabel('Título', { exact: true }).fill('Fotossíntese — revisão')
-    await dialog.getByLabel('Área', { exact: true }).selectOption('cn')
+    await dialog.locator('summary').click()
+    await dialog.getByRole('radio', { name: 'Ciências da Natureza' }).check()
     await dialog.getByRole('button', { name: 'Salvar', exact: true }).click()
     await dialog.getByRole('alert').waitFor()
     assert.equal(await dialog.getByLabel('Texto', { exact: true }).inputValue(), answer)

@@ -59,9 +59,17 @@ function NovaNota({ initial = {}, onSave, onCancel }) {
   return (
     <form className="study-notebook-form" aria-labelledby="note-editor-title" onSubmit={save}>
       <h2 id="note-editor-title">{initial.id ? 'Editar anotação' : 'Nova anotação'}</h2>
-      <label><span id="note-area-label">Área</span><select aria-labelledby="note-area-label" value={area} onChange={(event) => setArea(event.target.value)}>
-        {Object.entries(areas).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-      </select></label>
+      <fieldset className="study-area-picker"><legend>Área</legend>
+        <details onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus() } }}>
+          <summary aria-label="Escolher área">{areas[area]}<span aria-hidden="true">⌄</span></summary>
+          <div className="study-area-options">
+            {Object.entries(areas).map(([id, label]) => <label key={id}>
+              <input type="radio" name="note-area" value={id} checked={area === id} onChange={event => { setArea(id); const menu = event.target.closest('details'); menu.open = false; menu.querySelector('summary').focus() }} />
+              <span>{label}</span>
+            </label>)}
+          </div>
+        </details>
+      </fieldset>
       <label><span id="note-title-label">Título</span><input aria-labelledby="note-title-label" value={title} maxLength={120} onChange={(event) => setTitle(event.target.value)} /></label>
       <label><span id="note-text-label">Texto</span><textarea aria-labelledby="note-text-label" rows={12} value={content} maxLength={10000} onChange={(event) => setContent(event.target.value)} /></label>
 

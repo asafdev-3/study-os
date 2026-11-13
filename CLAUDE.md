@@ -102,3 +102,7 @@ Build e lint aprovados. Teste study-flow aprovado em 320/414 touch/1024: criar/e
 
 ## Desktop e transição — 13/11/2026
 Pedido explícito: sem dobra. FoldableTransition mantém nome por compatibilidade, mas renderiza somente overlay transparente blur 3px por 240ms, removido ao concluir, sem interação e respeitando movimento reduzido. Não há rotação nem metades. Desktop >=1024: cenário existente reutilizado no ambiente, luz quente estática, saudação serifada, caderno maior, lombada e sombras, navegação com mais respiro. Mobile preservado. Sem nova dependência ou chamada de IA. Safari físico ainda não medido.
+
+
+## Mobile e controles — 13/11/2026
+Dashboard mobile fixo em 100dvh, overflow bloqueado somente enquanto montado, limpo ao sair; layout compacto mantém atalhos acima da navbar em 320x568 e 414x736. Exceção <=480px de altura permite rolagem para acessibilidade/landscape. Caderno: seletor Área via details/radios com Escape e retorno de foco, menu arredondado translúcido; campos com foco suave visível e botões com pressão scale .97 respeitando reduced motion. Identidade preservada. Build/lint e study-flow 320/414/1024 aprovados, captura 320 inspecionada. Safari físico não verificado.

@@ -17,6 +17,11 @@ function mainSubject(value) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  useEffect(() => {
+    document.documentElement.dataset.studyHome = 'true'
+    window.scrollTo(0, 0)
+    return () => { delete document.documentElement.dataset.studyHome }
+  }, [])
   const [profile, setProfile] = useState(null)
   const [note, setNote] = useState(null)
   const [noteError, setNoteError] = useState(false)
