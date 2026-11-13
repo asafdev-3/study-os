@@ -95,7 +95,7 @@ try{
     await page.evaluate(()=>{localStorage.setItem('studyos:preferences',JSON.stringify({reduceMotion:true}));window.dispatchEvent(new Event('studyos:preferences'))})
     await page.waitForFunction(()=>document.documentElement.dataset.studyMotion==='reduced')
     await page.getByRole('navigation').getByRole('link',{name:'Notas',exact:true}).click()
-    await page.getByRole('heading',{name:'Anotações',exact:true}).waitFor()
+    await page.getByRole('heading',{name:'Seus cadernos',exact:true}).waitFor()
     await page.waitForTimeout(250)
     assert.equal(await page.evaluate(()=>window.folds.length),priorAnimations)
     await page.close()

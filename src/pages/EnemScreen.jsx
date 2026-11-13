@@ -1,3 +1,4 @@
+import PromptField from '../components/PromptField'
 import { useSearchParams } from "react-router-dom";
 import Lembretes from "./Lembretes";
 import EnemAdmissions from "../components/EnemAdmissions";
@@ -194,7 +195,7 @@ export default function EnemScreen({ userId }) {
       if (width !== window.innerWidth) { width = window.innerWidth; normalHeight = window.innerHeight; }
       const height = viewport?.height ?? window.innerHeight;
       normalHeight = Math.max(normalHeight, window.innerHeight, height);
-      const editing = document.activeElement?.matches('.study-enem-chat input');
+      const editing = document.activeElement?.matches('.study-enem-chat textarea');
       root.toggleAttribute('data-study-keyboard', normalHeight - height > 120 && (editing || root.hasAttribute('data-study-keyboard')));
       page.current?.style.setProperty('--enem-height', `${height}px`);
       page.current?.style.setProperty('--enem-top', `${viewport?.offsetTop ?? 0}px`);
@@ -270,8 +271,8 @@ export default function EnemScreen({ userId }) {
         <form className="study-composer" onSubmit={(event) => { event.preventDefault(); void enviar(); }}>
           {error && <p role="alert" className="study-chat-error">{error}</p>}
           <div className="study-composer-field">
-            <input aria-label="Mensagem para a Kira" placeholder="Mensagem para a Kira" value={kiraInput}
-              onChange={(event) => setKiraInput(event.target.value)} maxLength={2000} enterKeyHint="send" />
+            <PromptField aria-label="Mensagem para a Kira" placeholder="Mensagem para a Kira" value={kiraInput}
+              onChange={(event) => setKiraInput(event.target.value)} maxLength={2000} />
             <button type="submit" aria-label="Enviar mensagem" disabled={loading || !kiraInput.trim()}>
               <ArrowUp size={20} aria-hidden="true" />
             </button>

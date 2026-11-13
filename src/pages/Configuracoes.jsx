@@ -99,11 +99,7 @@ export default function Configuracoes() {
       {secao === 'aparencia' && <label className="study-settings-row">Reduzir movimento
         <input type="checkbox" checked={preferences.reduceMotion} onChange={(event) => change({ reduceMotion: event.target.checked })} />
       </label>}
-      {secao === 'kira' && <label className="study-settings-row">Tom das respostas
-        <select value={preferences.kiraTone} onChange={(event) => change({ kiraTone: event.target.value })}>
-          <option value="amigo">Amigável</option><option value="formal">Formal</option><option value="seco">Direto</option>
-        </select>
-      </label>}
+      {secao === 'kira' && <fieldset className="study-tone-picker"><legend>Tom das respostas</legend>{[['amigo','Amigável','Uma conversa próxima e acolhedora.'],['formal','Formal','Explicações com linguagem mais formal.'],['seco','Direto','Respostas objetivas, sem rodeios.']].map(([value,label,description]) => <label key={value}><span><strong>{label}</strong><small>{description}</small></span><input type="radio" name="kira-tone" value={value} checked={preferences.kiraTone === value} onChange={() => change({ kiraTone:value })} /></label>)}</fieldset>}
       {secao === 'notificacoes' && <>
         <button type="button" className="study-settings-row" onClick={toggleAlerts}>
           {preferences.focusAlerts ? 'Desativar aviso de foco' : 'Ativar aviso de foco'}

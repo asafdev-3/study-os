@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
-import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles, Trash2, BookOpen } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { sendToKira } from '../lib/groq'
 
@@ -174,7 +174,7 @@ export default function Anotacoes() {
     }
     setNotes((previous) => [saved, ...(previous ?? []).filter(({ id }) => id !== saved.id)])
     setQuery('')
-    setParams({ nota: saved.id }, { replace: true })
+    setParams({}, { replace: true })
     setNotice(editor?.id ? 'Anotação atualizada.' : 'Anotação guardada no seu caderno.')
     setEditor(null)
   }
@@ -222,9 +222,9 @@ export default function Anotacoes() {
   return (
     <main className="study-page study-notes study-notes-book">
       <header className="study-notes-header">
-        <div><span className="study-eyebrow">STUDYOS / CADERNO</span><h1>Anotações</h1></div>
+        <div><span className="study-eyebrow">STUDYOS / CADERNO</span><h1>Seus cadernos</h1></div>
         <button className="study-book-new" type="button" aria-label="Nova anotação" disabled={Boolean(editor)} onClick={() => { setEditor({ area: activeArea || 'geral' }); setIndexOpen(false); setNotice('') }}>
-          <Plus size={18} aria-hidden="true" /><span>Nova página</span>
+          <Plus size={18} aria-hidden="true" /><span>Novo caderno</span>
         </button>
       </header>
       {notice && <p role="status" className="study-note">{notice}</p>}
@@ -232,10 +232,18 @@ export default function Anotacoes() {
         <button onClick={() => { setError(false); setRetry(value => value + 1) }} type="button">Tentar novamente</button></p>}
       {!notes && !error && <p role="status" className="study-note">Carregando anotações…</p>}
       {linkedNote && notes && !notes.some(note => note.id === linkedNote) && <p role="status" className="study-note">Esta anotação não está disponível nesta conta. <StudyLink to="/anotacoes">Ver meu caderno</StudyLink></p>}
-      <button className="study-book-toggle" type="button" aria-expanded={indexOpen} aria-controls="notebook-index" disabled={Boolean(editor)} onClick={() => setIndexOpen(open => !open)}>
-        <List size={17} aria-hidden="true" />{indexOpen ? 'Fechar índice' : 'Índice e busca'}<span>{notes?.length ?? 0} páginas</span>
-      </button>
-      <div className="study-book-cover" data-index-open={indexOpen}>
+      {!editor && !linkedNote && <section className="study-notebook-drawer" aria-label="Gaveta de cadernos">
+        <p className="study-note">Escolha um caderno. Abra só o que precisa agora.</p>
+        <label className="study-drawer-search"><Search size={18} aria-hidden="true" /><input type="search" aria-label="Buscar cadernos" placeholder="Buscar na gaveta" value={query} onChange={event => setQuery(event.target.value)} /></label>
+        <div className="study-drawer-books">{filtered?.map((note, index) => <button type="button" className="study-closed-book" key={note.id} onClick={() => selectNote(note.id)} style={{ '--book-hue': [226,157,29,277][index % 4] }}>
+          <span className="study-closed-book-area">{areas[note.area] ?? 'Geral'}</span>
+          <strong>{note.title || 'Sem título'}</strong><span className="study-closed-book-open"><BookOpen size={16} aria-hidden="true" />Abrir caderno</span>
+        </button>)}</div>
+        {notes && !filtered?.length && <div className="study-drawer-empty"><BookOpen size={32} aria-hidden="true" /><h2>{query ? 'Nenhum caderno encontrado' : 'Sua gaveta está pronta'}</h2><p>{query ? 'Tente outro título.' : 'Dê um título à sua primeira anotação. Ela fica guardada aqui.'}</p>{!query && <button type="button" className="study-primary" onClick={() => setEditor({ area:'geral' })}>Criar primeiro caderno</button>}</div>}
+      </section>}
+      {(editor || linkedNote) && <button type="button" className="study-drawer-back" disabled={Boolean(editor)} onClick={() => { setParams({}); setIndexOpen(false); setQuery('') }}><ArrowLeft size={18} />Guardar na gaveta</button>}
+      {linkedNote && !editor && <button className="study-book-toggle" type="button" aria-expanded={indexOpen} aria-controls="notebook-index" onClick={() => setIndexOpen(open => !open)}><List size={17} />{indexOpen ? 'Fechar índice' : 'Índice e busca'}<span>{notes?.length ?? 0} cadernos</span></button>}
+      <div className="study-book-cover" hidden={!editor && !linkedNote} data-index-open={indexOpen}>
         <section className="study-book-index" id="notebook-index" aria-label="Índice de páginas">
           <span className="study-book-imprint">SEU ESPAÇO DE ESTUDO</span>
           <h2>Índice</h2>

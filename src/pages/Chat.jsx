@@ -1,3 +1,4 @@
+import PromptField from '../components/PromptField'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion, cardSpring, pageSpring, softTransition } from '../lib/motion'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -266,13 +267,12 @@ export default function Chat({ userId }) {
           onFocusCapture={(e) => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)'}
           onBlurCapture={(e) => e.currentTarget.style.borderColor = '#bbc9e33d'}
         >
-          <input
-            ref={field}
+          <PromptField
+            fieldRef={field}
             aria-label="Mensagem para a Kira"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={activity ? "Cole o enunciado…" : "Pergunte à Kira…"}
-            enterKeyHint="send"
             maxLength={1600}
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
