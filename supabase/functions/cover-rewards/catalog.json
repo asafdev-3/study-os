@@ -1,0 +1,70 @@
+{
+  "themes": [
+    {
+      "id": "orbital",
+      "name": "Órbita Silenciosa",
+      "tagline": "Além do horizonte",
+      "colors": [
+        "#142538",
+        "#4c75aa",
+        "#b2d6e8"
+      ],
+      "motif": "orbit"
+    },
+    {
+      "id": "jardim",
+      "name": "Jardim Noturno",
+      "tagline": "Floresça no escuro",
+      "colors": [
+        "#102c32",
+        "#428b78",
+        "#bcebbd"
+      ],
+      "motif": "bloom"
+    },
+    {
+      "id": "aurora",
+      "name": "Aurora Elétrica",
+      "tagline": "Ideias em movimento",
+      "colors": [
+        "#282041",
+        "#8d6bd6",
+        "#d2afdd"
+      ],
+      "motif": "rays"
+    },
+    {
+      "id": "margem",
+      "name": "Margem do Tempo",
+      "tagline": "Tudo tem um começo",
+      "colors": [
+        "#40291b",
+        "#bb805b",
+        "#ffcf93"
+      ],
+      "motif": "rings"
+    },
+    {
+      "id": "abismo",
+      "name": "Maré Abissal",
+      "tagline": "Explore a profundidade",
+      "colors": [
+        "#0b2342",
+        "#207398",
+        "#79d5d0"
+      ],
+      "motif": "waves"
+    },
+    {
+      "id": "solsticio",
+      "name": "Solstício",
+      "tagline": "O último raio",
+      "colors": [
+        "#3b2424",
+        "#c37662",
+        "#ffcf8c"
+      ],
+      "motif": "sun"
+    }
+  ]
+}

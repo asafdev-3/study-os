@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
-import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles, Trash2, BookOpen } from 'lucide-react'
+import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles, Trash2, BookOpen, Palette } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { sendToKira } from '../lib/groq'
+import NotebookCovers from '../components/NotebookCovers'
+import NotebookCoverArt from '../components/NotebookCoverArt'
 
 const areas = {
   geral: 'Geral', lc: 'Linguagens', ch: 'Ciências Humanas',
@@ -129,6 +131,8 @@ export default function Anotacoes() {
   })
   const [notice, setNotice] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [coversOpen, setCoversOpen] = useState(false)
+  const [noteCovers, setNoteCovers] = useState({})
   const deleteLock = useRef(false)
 
   useEffect(() => {
@@ -147,6 +151,12 @@ export default function Anotacoes() {
         .order('created_at', { ascending: false })
       if (dbError) throw dbError
       if (active) setNotes(data)
+      // Legacy annotation queries stay intact until the covers migration is deployed.
+      const { data: coverRows, error: coverError } = await supabase.from('annotations')
+        .select('id,cover_id').eq('user_id', user.id)
+      if (active && !coverError) {
+        setNoteCovers(Object.fromEntries(coverRows.map(note => [note.id, note.cover_id])))
+      }
     }
     load().catch(() => { if (active) setError(true) })
     return () => { active = false }
@@ -177,6 +187,16 @@ export default function Anotacoes() {
     setParams({}, { replace: true })
     setNotice(editor?.id ? 'Anotação atualizada.' : 'Anotação guardada no seu caderno.')
     setEditor(null)
+  }
+
+  async function applyCover(noteId, coverId) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) throw new Error('Sessão indisponível')
+    const { data, error: updateError } = await supabase.from('annotations')
+      .update({ cover_id: coverId }).eq('user_id', user.id).eq('id', noteId)
+      .select('id,cover_id').single()
+    if (updateError || !data) throw updateError ?? new Error('Caderno indisponível')
+    setNoteCovers(previous => ({ ...previous, [data.id]: data.cover_id }))
   }
 
   async function removeNote(note) {
@@ -223,10 +243,16 @@ export default function Anotacoes() {
     <main className="study-page study-notes study-notes-book">
       <header className="study-notes-header">
         <div><span className="study-eyebrow">STUDYOS / CADERNO</span><h1>Seus cadernos</h1></div>
-        <button className="study-book-new" type="button" aria-label="Nova anotação" disabled={Boolean(editor)} onClick={() => { setEditor({ area: activeArea || 'geral' }); setIndexOpen(false); setNotice('') }}>
-          <Plus size={18} aria-hidden="true" /><span>Novo caderno</span>
-        </button>
+        <div className="study-notes-head-actions">
+          <button type="button" className="study-book-new" aria-pressed={coversOpen} onClick={() => { setCoversOpen(open => !open); setEditor(null); setNotice('') }}>
+            <Palette size={18} aria-hidden="true" /><span>{coversOpen ? 'Fechar capas' : 'Capas'}</span>
+          </button>
+          <button className="study-book-new" type="button" aria-label="Nova anotação" disabled={Boolean(editor)} onClick={() => { setCoversOpen(false); setEditor({ area: activeArea || 'geral' }); setIndexOpen(false); setNotice('') }}>
+            <Plus size={18} aria-hidden="true" /><span>Novo caderno</span>
+          </button>
+        </div>
       </header>
+      {coversOpen ? <NotebookCovers notes={notes ?? []} onApply={applyCover} onClose={() => setCoversOpen(false)} /> : <>
       {notice && <p role="status" className="study-note">{notice}</p>}
       {error && <p role="alert" className="study-note">Não foi possível carregar suas anotações.{' '}
         <button onClick={() => { setError(false); setRetry(value => value + 1) }} type="button">Tentar novamente</button></p>}
@@ -236,6 +262,7 @@ export default function Anotacoes() {
         <p className="study-note">Escolha um caderno. Abra só o que precisa agora.</p>
         <label className="study-drawer-search"><Search size={18} aria-hidden="true" /><input type="search" aria-label="Buscar cadernos" placeholder="Buscar na gaveta" value={query} onChange={event => setQuery(event.target.value)} /></label>
         <div className="study-drawer-books">{filtered?.map((note, index) => <button type="button" className="study-closed-book" key={note.id} onClick={() => selectNote(note.id)} style={{ '--book-hue': [226,157,29,277][index % 4] }}>
+          {noteCovers[note.id] && <NotebookCoverArt coverId={noteCovers[note.id]} />}
           <span className="study-closed-book-area">{areas[note.area] ?? 'Geral'}</span>
           <strong>{note.title || 'Sem título'}</strong><span className="study-closed-book-open"><BookOpen size={16} aria-hidden="true" />Abrir caderno</span>
         </button>)}</div>
@@ -287,6 +314,7 @@ export default function Anotacoes() {
           </>}
         </section>
       </div>
+      </>}
     </main>
   )
 }

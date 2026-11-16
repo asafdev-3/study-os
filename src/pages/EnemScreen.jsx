@@ -114,6 +114,24 @@ function SessaoFoco({ userId }) {
     return () => { active = false; };
   }, [done, userId, focusId, focusArea, deadline, retry]);
 
+  // Server-timed cover progress: a foreground heartbeat cannot accrue offline time.
+  // Intentionally independent of study_sessions so existing sessions and XP still work.
+  useEffect(() => {
+    if (!userId || !focusId || deadline == null) return;
+    const ping = () => {
+      const active = document.visibilityState === 'visible' && deadline > Date.now();
+      void supabase.rpc('cover_focus_ping', { p_session_id: focusId, p_running: active });
+    };
+    ping();
+    const timer = setInterval(ping, 30000);
+    document.addEventListener('visibilitychange', ping);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', ping);
+      void supabase.rpc('cover_focus_ping', { p_session_id: focusId, p_running: false });
+    };
+  }, [userId, focusId, deadline]);
+
   function toggleTimer() {
     const timestamp = Date.now();
     setNow(timestamp);
