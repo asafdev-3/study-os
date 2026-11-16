@@ -2,6 +2,7 @@ const loaders = {
   '/dashboard': () => import('../pages/Dashboard'),
   '/chat': () => import('../pages/Chat'),
   '/anotacoes': () => import('../pages/Anotacoes'),
+  '/lembretes': () => import('../pages/Lembretes'),
   '/enem': () => import('../pages/EnemScreen'),
   '/perfil': () => import('../pages/Perfil'),
   '/configuracoes': () => import('../pages/Configuracoes'),
@@ -25,7 +26,7 @@ export function warmStudyRoutes() {
     : callback => window.setTimeout(callback, 1200)
   const cancel = window.requestIdleCallback ? window.cancelIdleCallback.bind(window) : window.clearTimeout.bind(window)
   let task
-  const paths = ['/anotacoes', '/chat', '/enem']
+  const paths = ['/anotacoes', '/chat', '/enem', '/lembretes']
   function next() {
     if (stopped || !paths.length) return
     task = schedule(async () => {

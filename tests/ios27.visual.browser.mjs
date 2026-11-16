@@ -37,7 +37,7 @@ try {
    background:getComputedStyle(element).backgroundColor,
    radius:parseFloat(getComputedStyle(element).borderTopLeftRadius),
   }))
-  assert(navStyle.blur.includes('blur(24px)'),JSON.stringify(navStyle))
+  assert(navStyle.blur.includes(width < 768 ? 'blur(18px)' : 'blur(24px)'),JSON.stringify(navStyle))
   assert(navStyle.radius>=24)
   const slider=page.getByRole('slider',{name:'Intensidade do vidro'})
   await slider.focus()

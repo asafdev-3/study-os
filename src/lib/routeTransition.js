@@ -1,54 +1,75 @@
 import { flushSync } from 'react-dom'
 import { readPreferences } from './preferences'
+import { preloadStudyRoute } from './studyRoutes'
 
-const paths=['/dashboard','/anotacoes','/chat','/enem','/perfil','/configuracoes']
-let cancelCurrent
+const primaryPaths = ['/dashboard', '/anotacoes', '/chat', '/enem', '/perfil', '/configuracoes']
+let navigationRequest = 0
+let inFlight = null
 
-function reduceMotion() {
-  return readPreferences().reduceMotion
-    || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+function motionDisabled() {
+  return readPreferences().reduceMotion ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    document.documentElement.hasAttribute('data-study-keyboard')
 }
 
-export function transitionTo(change,nextIndex,prevIndex,target) {
-  cancelCurrent?.()
-  if (reduceMotion() || document.documentElement.hasAttribute('data-study-keyboard')) {
+function cleanup(transition) {
+  if (inFlight !== transition) return
+  inFlight = null
+  delete document.documentElement.dataset.studyTransition
+}
+
+function stableCrossfade(change) {
+  // No browser snapshot support: an immediate change is better than fading into an empty screen.
+  if (motionDisabled() || typeof document.startViewTransition !== 'function') {
     change()
     return
   }
-  const direction=nextIndex>=prevIndex?1:-1
-  const root=document.documentElement
-  if (typeof document.startViewTransition === 'function') {
-    root.dataset.studyTransition='crossfade'
-    root.style.setProperty('--study-crossfade-direction',String(direction))
-    const transition=document.startViewTransition(() => flushSync(change))
-    const cleanup=()=>{
-      delete root.dataset.studyTransition
-      root.style.removeProperty('--study-crossfade-direction')
-      if (cancelCurrent===cancel) cancelCurrent=undefined
-    }
-    const cancel=()=>{ transition.skipTransition();cleanup() }
-    cancelCurrent=cancel
-    void transition.finished.then(cleanup,cleanup)
+
+  if (inFlight) {
+    inFlight.skipTransition()
+    cleanup(inFlight)
+  }
+  const root = document.documentElement
+  root.dataset.studyTransition = 'crossfade'
+  try {
+    const transition = document.startViewTransition(() => {
+      // The next page bundle was prefetched before taking either snapshot.
+      flushSync(change)
+    })
+    inFlight = transition
+    void transition.finished.then(
+      () => cleanup(transition),
+      () => cleanup(transition),
+    )
+  } catch {
+    delete root.dataset.studyTransition
+    change()
+  }
+}
+
+/** Within ENEM, never transition the document or the tab bar. */
+export function transitionTo(change) {
+  change()
+}
+
+export async function transitionRoute(path, change) {
+  const request = ++navigationRequest
+
+  if (motionDisabled()) {
+    stableCrossfade(change)
     return
   }
-
-  // For browsers without View Transitions, retain a short outgoing animation
-  // and React's existing incoming PageMotion. No permanent filters or layers.
-  const content=target ?? document.querySelector('main') ?? document.querySelector('.study-page-enter')
-  if (!content?.animate) { change();return }
-  const original=content.style.willChange
-  content.style.willChange='opacity, transform, filter'
-  const frames=[
-    { opacity:1, transform:'perspective(1200px) rotateY(0deg) scale(1)', filter:'none' },
-    { opacity:.3, transform:`perspective(1200px) rotateY(${-2*direction}deg) scale(.985)`, filter:'blur(5px)' },
-  ]
-  const exit=content.animate(frames,{duration:135,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'})
-  let cancelled=false
-  const cleanup=()=>{ cancelled=true;exit.cancel();content.style.willChange=original;if(cancelCurrent===cleanup)cancelCurrent=undefined }
-  cancelCurrent=cleanup
-  void exit.finished.then(()=>{if(cancelled)return;cleanup();change()},cleanup)
+  // Cold lazy chunks must load while the previous screen is still fully visible.
+  // This prevents Suspense's fallback from becoming the incoming snapshot.
+  try {
+    await preloadStudyRoute(path)
+  } catch {
+    // The existing screen remains usable; a normal navigation may display its error state.
+  }
+  if (request !== navigationRequest) return
+  stableCrossfade(change)
 }
-export function transitionRoute(path,change) {
-  const index=value=>paths.findIndex(route=>value.startsWith(route))
-  transitionTo(change,index(path),index(location.pathname))
+
+export function routeIndex(path) {
+  return primaryPaths.findIndex(route => path.startsWith(route))
 }

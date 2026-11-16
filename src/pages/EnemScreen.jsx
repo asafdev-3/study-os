@@ -1,5 +1,5 @@
 import { transitionTo, transitionRoute } from '../lib/routeTransition';
-import { m } from 'framer-motion';
+import { m, LayoutGroup } from 'framer-motion';
 import { useViewportSpring } from '../lib/useViewportSpring';
 import { kiraMessageMotion } from '../lib/kiraMotion';
 import { useStudyReducedMotion } from '../lib/motion';
@@ -245,9 +245,18 @@ export default function EnemScreen({ userId }) {
         <p>Foco, revisão e planejamento.</p>
       </header>
       <div className="study-enem-tabs" role="group" aria-label="Seções do modo ENEM">
-        {tabs.map(([id, label]) => (
-          <button key={id} type="button" aria-pressed={tab === id} onClick={() => { if (id !== tab) { transitionTo(() => { setSwitched(true); setTab(id); }, tabs.findIndex(([key]) => key === id), tabs.findIndex(([key]) => key === tab), page.current); } }}>{label}</button>
-        ))}
+        <LayoutGroup id="study-enem-segment">
+          {tabs.map(([id, label]) => (
+            <button className="study-enem-segment" key={id} type="button"
+              aria-pressed={tab === id}
+              onClick={() => { if (id !== tab) transitionTo(() => { setSwitched(true); setTab(id); }) }}>
+              {tab === id && <m.span className="study-enem-segment-active" layoutId="active-segment"
+                aria-hidden="true"
+                transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 430, damping: 38, mass: .7 }} />}
+              <span>{label}</span>
+            </button>
+          ))}
+        </LayoutGroup>
       </div>
       {tab === "praticar" && <EnemPractice key={userId} userId={userId} />}
       {fromNfc && <div className="study-enem-pane" hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>}
@@ -265,7 +274,7 @@ export default function EnemScreen({ userId }) {
       {tab === "kira" && <section className="study-enem-pane study-enem-chat" aria-label="Kira no modo ENEM">
         <div className="study-enem-kira-title">
           <div><h2>Kira ENEM</h2>{remaining !== null && <p>{remaining}/{KIRA_DAILY_LIMIT} mensagens hoje</p>}</div>
-          <button type="button" onClick={() => transitionRoute("/chat", () => navigate("/chat", { state: { expanded: true } }))}>Expandir</button>
+          <button type="button" onClick={() => { void transitionRoute("/chat", () => navigate("/chat", { state: { expanded: true } })) }}>Expandir</button>
           {messages.length > 0 && <button type="button" onClick={clear} disabled={loading}>Limpar</button>}
         </div>
         <div className="study-enem-conversation" ref={log}>

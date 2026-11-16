@@ -87,11 +87,13 @@ export default function Configuracoes() {
         <h1>{secao ? pages[secao][0] : 'Configurações'}</h1>
         {secao && <p>{pages[secao][1]}</p>}
       </header>
-      {!secao && Object.entries(pages).map(([id, [name, subtitle]]) => (
-        <Link key={id} className="study-settings-row" to={'/configuracoes/' + id}>
-          <span><strong>{name}</strong><small>{subtitle}</small></span><ChevronRight size={17} aria-hidden="true" />
-        </Link>
-      ))}
+      {!secao && <section className="study-settings-group" aria-label="Categorias das configurações">
+        {Object.entries(pages).map(([id, [name, subtitle]]) => (
+          <Link key={id} className="study-settings-row" to={'/configuracoes/' + id}>
+            <span><strong>{name}</strong><small>{subtitle}</small></span><ChevronRight size={17} aria-hidden="true" />
+          </Link>
+        ))}
+      </section>}
       {secao === 'conta' && <>
         <Link className="study-settings-row" to="/perfil">Abrir perfil</Link>
         <button type="button" className="study-settings-row" disabled={pending} onClick={signOut}>Sair da conta neste dispositivo</button>

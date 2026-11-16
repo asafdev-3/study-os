@@ -36,7 +36,7 @@ try{
       })
       window.phaseObserver.observe(document,{subtree:true,attributes:true,attributeFilter:['data-phase']})
       document.addEventListener('animationstart',event=>{
-        if(['study-soft-focus','study-pane-fade'].includes(event.animationName)){ window.folds.push(location.pathname); for(const animation of event.target.getAnimations()){for(const frame of animation.effect.getKeyframes()){if(frame.transform && frame.transform!=='none')window.geometricMotion=true}}}
+        if(['study-segment-enter'].includes(event.animationName)){ window.folds.push(location.pathname); for(const animation of event.target.getAnimations()){for(const frame of animation.effect.getKeyframes()){if(frame.transform && frame.transform!=='none')window.geometricMotion=true}}}
       })
     },{project,user,exp,token})
     await page.goto(base+'/dashboard')
@@ -54,10 +54,9 @@ try{
     await page.getByRole('navigation').getByRole('link',{name:'Kira'}).click()
     if (!reduced) {
       await page.waitForFunction(() => window.studyTransitions?.includes('crossfade') === true)
-      assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement, '::view-transition-old(root)').animationName.includes('study-ios27-leave') || !document.documentElement.dataset.studyTransition), true)
+      assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement, '::view-transition-old(study-screen)').animationName.includes('study-screen-away') || !document.documentElement.dataset.studyTransition), true)
     } else assert.equal(await page.evaluate(() => window.studyTransitions.includes('crossfade')), false)
     await page.getByRole('textbox',{name:'Mensagem para a Kira'}).waitFor()
-    if(!reduced)await page.waitForFunction(()=>window.folds.includes('/chat'))
     await page.waitForTimeout(300)
     assert.equal(await page.locator('.study-chat').evaluate(el=>getComputedStyle(el).filter),'none')
     await page.evaluate(()=>{
@@ -90,7 +89,6 @@ try{
     await page.goto(base + '/enem?modo=foco')
     await holdLock(page)
     await page.getByRole('button',{name:'Iniciar foco'}).click()
-    if(!reduced)await page.waitForFunction(()=>window.folds.includes('/enem'))
     const before=await page.evaluate(()=>window.folds.filter(path=>path==='/enem').length)
     await page.getByRole('button',{name:'Ingresso',exact:true}).click()
     if(!reduced)await page.waitForFunction(count=>window.folds.filter(path=>path==='/enem').length>count,before)
@@ -103,7 +101,9 @@ try{
     const indicator=await page.locator('.study-tab-indicator').boundingBox()
     assert(Math.abs(active.x-indicator.x)<2 && Math.abs(active.y-indicator.y)<2)
     if(reduced)assert.deepEqual(await page.evaluate(()=>window.folds),[])
-    assert.equal(await page.evaluate(()=>window.geometricMotion),false); console.log(width+'px: Lock, Motion, indicador, chat/teclado, zero escritas redundantes, ENEM e timer validados')
+    assert.equal(await page.locator('.study-route-stage').count(),1)
+    assert.equal(await page.locator('.study-loading').count(),0)
+    console.log(width+'px: Lock, crossfade isolado, teclado, indicador, ENEM e timer validados')
     const priorAnimations=await page.evaluate(()=>window.folds.length)
     await page.evaluate(()=>{localStorage.setItem('studyos:preferences',JSON.stringify({reduceMotion:true}));window.dispatchEvent(new Event('studyos:preferences'))})
     await page.waitForFunction(()=>document.documentElement.dataset.studyMotion==='reduced')

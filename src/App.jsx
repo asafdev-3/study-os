@@ -15,12 +15,13 @@ import PaywallModal from './components/PaywallModal'
 import './components/glass.css'
 import './styles/ios27.css'
 import './styles/ios27-transitions.css'
+import './styles/apple-polish.css'
 
 const Lock = lazy(() => import('./pages/Lock'))
 const Dashboard = lazy(loadStudyRoute['/dashboard'])
 const Anotacoes = lazy(loadStudyRoute['/anotacoes'])
 const Chat = lazy(loadStudyRoute['/chat'])
-const Lembretes = lazy(() => import('./pages/Lembretes'))
+const Lembretes = lazy(loadStudyRoute['/lembretes'])
 const Perfil = lazy(loadStudyRoute['/perfil'])
 const Configuracoes = lazy(loadStudyRoute['/configuracoes'])
 const Upgrade = lazy(() => import('./pages/Upgrade'))
@@ -70,7 +71,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
   }
 
   return (
-    <Routes location={location} key={location.pathname}>
+    <Routes location={location}>
       <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
       <Route path="/login" element={<Login />} />
       <Route path="/lock" element={<Lock onUnlock={desbloquear} />} />
@@ -106,7 +107,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
       {comSidebar && <Navbar />}
       {comSidebar && <FoldableTransition screen={location.pathname} />}
       {comSidebar && <PaywallModal />}
-      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={comSidebar && location.pathname !== '/dashboard' ? 'md:pl-[88px]' : ''}>
+      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />
         </Suspense>

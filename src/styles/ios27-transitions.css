@@ -1,31 +1,56 @@
-/* Crossfade images are browser-managed snapshots, never duplicate React trees. */
-@supports (view-transition-name:root) {
-  html[data-study-transition="crossfade"]::view-transition-old(root) {
-    animation:study-ios27-leave 285ms cubic-bezier(.22,1,.36,1) both;
+/* Persistent tab/navigation layer, one composited content transition.
+   The browser snapshots only the content region, not the full window. */
+@supports (view-transition-name: none) {
+  html[data-study-transition="crossfade"] .study-route-stage {
+    view-transition-name: study-screen;
   }
-  html[data-study-transition="crossfade"]::view-transition-new(root) {
-    animation:study-ios27-enter 285ms cubic-bezier(.22,1,.36,1) both;
+  html[data-study-transition="crossfade"] .study-navigation {
+    view-transition-name: study-tabs;
   }
-  @keyframes study-ios27-leave {
-    from { opacity:1; filter:none; transform:scale(1); }
-    to { opacity:0; filter:blur(6px); transform:scale(.984); }
+  html[data-study-transition="crossfade"] .study-topbar {
+    view-transition-name: study-toolbar;
   }
-  @keyframes study-ios27-enter {
-    from { opacity:.24; transform:scale(1.008); }
-    to { opacity:1; transform:scale(1); }
+
+  html::view-transition-old(root),
+  html::view-transition-new(root),
+  html::view-transition-old(study-tabs),
+  html::view-transition-new(study-tabs),
+  html::view-transition-old(study-toolbar),
+  html::view-transition-new(study-toolbar) {
+    animation-duration: 0s;
+  }
+
+  html::view-transition-group(study-screen) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(.22,1,.36,1);
+  }
+  html::view-transition-old(study-screen) {
+    animation: study-screen-away 220ms cubic-bezier(.22,1,.36,1) both;
+  }
+  html::view-transition-new(study-screen) {
+    animation: study-screen-arrive 220ms cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes study-screen-away {
+    0% { opacity:1; transform:scale(1); }
+    40% { opacity:.95; transform:scale(.998); }
+    100% { opacity:0; transform:scale(.99); }
+  }
+  @keyframes study-screen-arrive {
+    0% { opacity:.45; transform:translateY(3px) scale(.997); }
+    100% { opacity:1; transform:none; }
   }
 }
-/* Directional fog over resize/posture events, only while the effect is active. */
-.study-fold-resize {
-  position:fixed;inset:0;z-index:49;pointer-events:none;
-  background:rgba(199,220,252,.035);
-  -webkit-backdrop-filter:blur(18px) saturate(150%);
-  backdrop-filter:blur(18px) saturate(150%);
-  -webkit-mask-image:linear-gradient(to right,#000 0%,transparent 35%,transparent 65%,#000 100%);
-  mask-image:linear-gradient(to right,#000 0%,transparent 35%,transparent 65%,#000 100%);
-  will-change:opacity,transform;
+/* An ENEM segment changes only the inner panel; don't fade the entire route. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
+    animation:study-segment-enter 180ms cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes study-segment-enter {
+    from { opacity:.90; transform:translateY(3px); }
+    to { opacity:1; transform:none; }
+  }
 }
-@media(prefers-reduced-motion:reduce),(prefers-reduced-transparency:reduce) {
-  .study-fold-resize {display:none;}
-  html::view-transition-old(root),html::view-transition-new(root) { animation-duration:0s !important; }
+@media (prefers-reduced-motion: reduce) {
+  html::view-transition-old(root),html::view-transition-new(root),
+  html::view-transition-old(study-screen),html::view-transition-new(study-screen) {animation-duration:0s!important;}
 }
