@@ -1,14 +1,19 @@
 import { useEffect } from 'react'
 import { m as motion, MotionConfig, LazyMotion } from 'framer-motion'
 import { pageSpring, softTransition, useStudyReducedMotion } from '../lib/motion'
+import { readPreferences } from '../lib/preferences'
+import { installFoldBlur } from '../lib/foldBlur'
 
 const loadFeatures = () => import('../lib/motionFeatures').then(module => module.default)
 
 /** Provider raiz — wrap em App.jsx. Define spring como padrão global. */
 export function StudyMotion({ children }) {
   const reduced = useStudyReducedMotion()
+  useEffect(() => installFoldBlur(), [])
   useEffect(() => {
     document.documentElement.dataset.studyMotion = reduced ? 'reduced' : 'system'
+    const opacity = Number(readPreferences().glassOpacity)
+    document.documentElement.style.setProperty('--ios27-glass-alpha', String(Number.isFinite(opacity) ? Math.max(.42, Math.min(.92, opacity)) : .67))
   }, [reduced])
   return (
     <LazyMotion features={loadFeatures}>

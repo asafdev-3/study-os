@@ -13,6 +13,8 @@ import TopBar from './components/TopBar'
 import Navbar from './components/Navbar'
 import PaywallModal from './components/PaywallModal'
 import './components/glass.css'
+import './styles/ios27.css'
+import './styles/ios27-transitions.css'
 
 const Lock = lazy(() => import('./pages/Lock'))
 const Dashboard = lazy(loadStudyRoute['/dashboard'])

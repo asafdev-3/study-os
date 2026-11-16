@@ -979,20 +979,7 @@ select option { background:#1c293b; color:#f7f9ff; }
 @media(prefers-contrast:more) { .study-navigation-inner,.study-closed-book,.study-tone-picker { border-color:#dce6ff; } }
 @media(max-width:767px) { .study-notes-book .study-notes-header { padding-top:calc(env(safe-area-inset-top,0px) + 72px); flex-wrap:wrap; gap:12px; margin-bottom:12px; } .study-notes-header > div { flex:1 0 180px; } .study-notes-header h1 { font-size:clamp(26px,7vw,34px); } }
 
-/* Shared glass surfaces. Keep repeated message rows free of backdrop layers. */
-:root { --study-glass: rgba(40,55,77,.38); --study-glass-filter: blur(20px) saturate(180%); --study-glass-light: 0 1px 1px rgba(255,255,255,.08) inset; }
-:is(.glass,.glass-deep,.glass-sm,.glass-raised,.glass-violet,.glass-blue,.glass-green,.glass-sidebar,.glass-toast,.study-navigation,.study-navigation-inner,.study-composer-field,.study-glass-card,.study-glass-modal,.study-tone-picker,.study-focus-card,.study-note-card,.study-admission-card,.study-entry-panel,.study-admissions-form,.study-enem-tabs,.study-chat-starters button) {
- border-radius:20px; background:var(--study-glass) !important; -webkit-backdrop-filter:var(--study-glass-filter); backdrop-filter:var(--study-glass-filter); box-shadow:var(--study-glass-light) !important; border:1px solid rgba(255,255,255,.14);
-}
-.study-navigation-inner { border-radius:999px; }
-.study-navigation { -webkit-backdrop-filter:none; backdrop-filter:none; background:transparent !important; border:0; }
-.study-composer-field { border-radius:28px !important; }
-:is(.glass-raised,.study-glass-modal,.study-paywall,.study-paywall-panel,[role="dialog"]) { border-radius:28px; box-shadow:var(--study-glass-light); }
-:is(.glass-sm,.study-activity-toggle,.study-enem-prompts button) { border-radius:999px !important; }
-@media(prefers-reduced-transparency:reduce),(prefers-contrast:more) {
- :root { --study-glass:#253246; --study-glass-filter:none; }
-}
-
+/* Liquid Glass controls and content materials now live in styles/ios27.css. */
 .study-route-blur { position:fixed; inset:0; z-index:35; pointer-events:none; background:rgba(255,255,255,.01); -webkit-backdrop-filter:blur(28px); backdrop-filter:blur(28px); mask-image:linear-gradient(var(--blur-direction,to right),transparent,#000 40%,#000 65%,transparent); -webkit-mask-image:linear-gradient(var(--blur-direction,to right),transparent,#000 40%,#000 65%,transparent); }
 
 /* Organic tinted glass; stable per original item index, including filtered lists. */
