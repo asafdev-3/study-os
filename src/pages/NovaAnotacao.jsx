@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { X, Zap, RotateCcw } from 'lucide-react'
 
 function NovaAnotacao() {
   const navigate = useNavigate()
-  const [params] = useSearchParams()
-  const modo = params.get('modo') // 'camera'
 
   const videoRef = useRef(null)
   const [fase, setFase] = useState('preview') // preview | capturando | processando | resultado

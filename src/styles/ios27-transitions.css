@@ -1,0 +1,31 @@
+/* Crossfade images are browser-managed snapshots, never duplicate React trees. */
+@supports (view-transition-name:root) {
+  html[data-study-transition="crossfade"]::view-transition-old(root) {
+    animation:study-ios27-leave 285ms cubic-bezier(.22,1,.36,1) both;
+  }
+  html[data-study-transition="crossfade"]::view-transition-new(root) {
+    animation:study-ios27-enter 285ms cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes study-ios27-leave {
+    from { opacity:1; filter:none; transform:scale(1); }
+    to { opacity:0; filter:blur(6px); transform:scale(.984); }
+  }
+  @keyframes study-ios27-enter {
+    from { opacity:.24; transform:scale(1.008); }
+    to { opacity:1; transform:scale(1); }
+  }
+}
+/* Directional fog over resize/posture events, only while the effect is active. */
+.study-fold-resize {
+  position:fixed;inset:0;z-index:49;pointer-events:none;
+  background:rgba(199,220,252,.035);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+  backdrop-filter:blur(18px) saturate(150%);
+  -webkit-mask-image:linear-gradient(to right,#000 0%,transparent 35%,transparent 65%,#000 100%);
+  mask-image:linear-gradient(to right,#000 0%,transparent 35%,transparent 65%,#000 100%);
+  will-change:opacity,transform;
+}
+@media(prefers-reduced-motion:reduce),(prefers-reduced-transparency:reduce) {
+  .study-fold-resize {display:none;}
+  html::view-transition-old(root),html::view-transition-new(root) { animation-duration:0s !important; }
+}

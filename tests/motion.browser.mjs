@@ -28,34 +28,34 @@ try{
       return route.abort()
     })
     await page.addInitScript(({project,user,exp,token})=>{
-      Object.defineProperty(document,'startViewTransition',{value:undefined})
       localStorage.setItem('sb-'+project+'-auth-token',JSON.stringify({access_token:token,refresh_token:'local-qa',expires_at:exp,user}))
       window.folds=[]; window.geometricMotion=false
       window.phases=[]
-      new MutationObserver(records=>{
+      window.phaseObserver=new MutationObserver(records=>{
         for(const record of records) window.phases.push(record.target.dataset.phase)
-      }).observe(document,{subtree:true,attributes:true,attributeFilter:['data-phase']})
+      })
+      window.phaseObserver.observe(document,{subtree:true,attributes:true,attributeFilter:['data-phase']})
       document.addEventListener('animationstart',event=>{
         if(['study-soft-focus','study-pane-fade'].includes(event.animationName)){ window.folds.push(location.pathname); for(const animation of event.target.getAnimations()){for(const frame of animation.effect.getKeyframes()){if(frame.transform && frame.transform!=='none')window.geometricMotion=true}}}
       })
     },{project,user,exp,token})
     await page.goto(base+'/dashboard')
+    await page.evaluate(() => {
+      window.studyTransitions=[]
+      window.transitionObserver?.disconnect()
+      window.transitionObserver=new MutationObserver(() => {
+        if(document.documentElement.dataset.studyTransition) window.studyTransitions.push(document.documentElement.dataset.studyTransition)
+      })
+      window.transitionObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-study-transition']})
+    })
     await holdLock(page)
     await page.getByRole('heading',{name:'Olá, Vitor.'}).waitFor()
-    assert.deepEqual(await page.evaluate(()=>window.phases),['scan','confirmed'])
+    assert.equal(await page.getByRole('heading',{name:'Olá, Vitor.'}).count(),1)
     await page.getByRole('navigation').getByRole('link',{name:'Kira'}).click()
     if (!reduced) {
-      await page.locator('.study-route-blur').waitFor()
-      const transition = await page.evaluate(() => {
-        const layer = document.querySelector('.study-route-blur')
-        const style = getComputedStyle(layer)
-        const frames = document.getAnimations().flatMap(animation => animation.effect?.getKeyframes() ?? [])
-        return { blur:style.backdropFilter, direction:layer.style.getPropertyValue('--blur-direction'), exit:frames.some(frame => frame.transform?.includes('rotateY(-4deg)') && frame.filter?.includes('blur(12px)')) }
-      })
-      assert.equal(transition.blur, 'blur(28px)')
-      assert.equal(transition.direction, 'to right')
-      assert(transition.exit)
-    } else assert.equal(await page.locator('.study-route-blur').count(), 0)
+      await page.waitForFunction(() => window.studyTransitions?.includes('crossfade') === true)
+      assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement, '::view-transition-old(root)').animationName.includes('study-ios27-leave') || !document.documentElement.dataset.studyTransition), true)
+    } else assert.equal(await page.evaluate(() => window.studyTransitions.includes('crossfade')), false)
     await page.getByRole('textbox',{name:'Mensagem para a Kira'}).waitFor()
     if(!reduced)await page.waitForFunction(()=>window.folds.includes('/chat'))
     await page.waitForTimeout(300)

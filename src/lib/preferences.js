@@ -1,5 +1,5 @@
 const key = 'studyos:preferences'
-const defaults = { lock: true, reduceMotion: false, kiraTone: 'amigo', focusAlerts: false, quiet: true }
+const defaults = { lock: true, reduceMotion: false, kiraTone: 'amigo', focusAlerts: false, quiet: true, glassOpacity: 0.67 }
 
 export function readPreferences() {
   try { return { ...defaults, ...JSON.parse(localStorage.getItem(key)) } }
@@ -10,6 +10,7 @@ export function updatePreferences(patch) {
   const next = { ...readPreferences(), ...patch }
   localStorage.setItem(key, JSON.stringify(next))
   document.documentElement.dataset.studyMotion = next.reduceMotion ? 'reduced' : 'system'
+  document.documentElement.style.setProperty('--ios27-glass-alpha', String(Math.max(.42, Math.min(.92, Number(next.glassOpacity) || .67))))
   window.dispatchEvent(new Event('studyos:preferences'))
   return next
 }

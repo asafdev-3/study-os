@@ -97,7 +97,7 @@ try {
     await page.locator('.study-paper-postit').waitFor()
     const radius = await page.locator('.study-paper-postit').evaluate(el => parseFloat(getComputedStyle(el).borderTopLeftRadius))
     assert(radius >= 16 && radius <= 22)
-    assert.equal(await page.locator('.study-paper-postit').evaluate(el => getComputedStyle(el).backdropFilter), 'blur(20px) saturate(1.8)')
+    assert.equal(await page.locator('.study-paper-postit').evaluate(el => getComputedStyle(el).backdropFilter), 'none', 'Paper post-its must not have expensive glass blur')
     const complete = page.getByRole('button', { name:'Concluir: Revisar porcentagem e resolver duas questões.' })
     await complete.click()
     assert.equal(await page.getByRole('button', { name:'Marcar como pendente: Revisar porcentagem e resolver duas questões.' }).getAttribute('aria-pressed'), 'true')

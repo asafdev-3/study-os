@@ -1,0 +1,154 @@
+/* StudyOS 27 — only navigation and transient controls use glass.
+   Native Apple refraction isn't available to CSS; this is a light web approximation. */
+:root {
+  color-scheme:dark;
+  --ios27-glass-alpha:.67;
+  --ios27-glass-rgb:23,30,43;
+  --ios27-filter:blur(24px) saturate(180%);
+  --ios27-specular:rgba(255,255,255,.24);
+  --ios27-border:rgba(230,240,255,.21);
+  --ios27-line:rgba(230,240,255,.12);
+  --ios27-ink:#f8faff;
+  --ios27-muted:#c1cede;
+  --ios27-accent:#b9d5ff;
+  --ios27-ease:cubic-bezier(.32,.72,0,1);
+  --study-canvas:#0b111b;
+  --study-surface:#1b2736;
+  --study-ink:var(--ios27-ink);
+  --study-muted:var(--ios27-muted);
+  --study-accent:var(--ios27-accent);
+  --study-line:var(--ios27-line);
+}
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+html,body,#root { min-width:0; }
+body {
+  background:var(--study-canvas); color:var(--ios27-ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,Geist,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  letter-spacing:-.011em; -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select { font:inherit; }
+button,a { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+:is(button,a,input,textarea,select,summary):focus-visible { outline:2px solid var(--ios27-accent); outline-offset:3px; }
+:is(h1,h2,h3) { text-wrap:balance; }
+p { overflow-wrap:break-word; }
+/* Reusable functional material — don't apply to content cards. */
+:is(.ios27-glass,.glass,.glass-deep,.glass-raised,.glass-sm,.glass-sidebar,.glass-toast,.glass-violet,.glass-blue,.glass-green) {
+  background:rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
+  border:1px solid var(--ios27-border); border-radius:24px;
+  -webkit-backdrop-filter:var(--ios27-filter); backdrop-filter:var(--ios27-filter);
+  box-shadow:inset 0 1px var(--ios27-specular),0 9px 26px rgba(0,0,0,.12);
+}
+:is(.study-navigation-inner,.study-composer-field,.study-tone-picker,.study-room-dock) {
+  background:rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
+  -webkit-backdrop-filter:var(--ios27-filter); backdrop-filter:var(--ios27-filter);
+  border:1px solid var(--ios27-border);
+  box-shadow:inset 0 1px var(--ios27-specular),0 9px 27px rgba(0,0,0,.15);
+}
+.study-navigation { background:none; border:0; -webkit-backdrop-filter:none;backdrop-filter:none; padding-bottom:calc(9px + env(safe-area-inset-bottom,0px)); }
+.study-navigation-inner { position:relative; border-radius:999px; padding:5px; overflow:visible; }
+.study-navigation-brand { border-radius:12px; }
+.study-tab { position:relative; isolation:isolate; min-height:50px; min-width:0; border-radius:999px; gap:4px; color:var(--ios27-muted); font-weight:500; font-size:10px; transition:color 180ms ease; }
+.study-tab > svg,.study-tab > span:not(.study-tab-indicator) { position:relative;z-index:2; }
+.study-tab[aria-current="page"] { color:#f8faff; background:transparent; }
+.study-tab-indicator {
+  z-index:0; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(150deg,rgba(185,214,255,.26),rgba(160,189,230,.11));
+  border:1px solid rgba(244,249,255,.22);
+  box-shadow:inset 0 1px rgba(255,255,255,.20),0 2px 8px #0002;
+}
+.study-topbar a {
+  border-radius:999px; background:rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
+  -webkit-backdrop-filter:var(--ios27-filter);backdrop-filter:var(--ios27-filter);
+  border:1px solid var(--ios27-border);box-shadow:inset 0 1px var(--ios27-specular);
+}
+.study-topbar svg { color:#e9f1ff; }
+/* Stable, readable content surfaces (no backdrops). */
+:is(.study-focus-card,.study-admission-card,.study-admissions-form,.enem-practice-hero,.enem-practice-section,
+.study-note-card,.study-about,.study-covers-progress,.study-covers-challenge) {
+  background:#1b2838; border:1px solid var(--ios27-line); border-radius:25px;
+  -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:inset 0 1px rgba(255,255,255,.05);
+}
+.enem-practice-hero { background:linear-gradient(145deg,#293e58,#172739 70%); }
+.study-admission-card,.study-note-card { background:#192637; }
+.study-covers .study-covers-progress,.study-covers .study-covers-challenge { background:#192638; -webkit-backdrop-filter:none;backdrop-filter:none; }
+.study-room-dock { border-radius:27px; padding:4px 14px; }
+:is(.study-room-header-actions .study-room-nfc,.study-room-nfc) {
+  min-height:44px; border-radius:999px;
+  background:rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
+  -webkit-backdrop-filter:var(--ios27-filter);backdrop-filter:var(--ios27-filter);
+  border:1px solid var(--ios27-border);box-shadow:inset 0 1px var(--ios27-specular);
+}
+:is(.study-room-welcome h1,.study-notes-header h1,.study-enem-header h1,.study-home-header h1) {
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,Geist,sans-serif;
+  font-weight:650;letter-spacing:-.043em;line-height:1.12;
+}
+.study-room-welcome h1 { font-size:clamp(31px,7.8vw,54px); }
+.study-eyebrow { font-weight:600;letter-spacing:.06em; }
+:is(.study-book-cover,.study-book-leaf,.study-book-index,.study-closed-book,.study-paper-postit) {
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.study-drawer-search { min-height:52px; border-radius:20px;background:#1b293c;border:1px solid var(--ios27-line); }
+.study-closed-book { border-radius:6px 15px 15px 6px; }
+.study-book-new,.study-drawer-back,.study-book-toggle { border-radius:999px; min-height:44px; }
+.study-book-new { padding-inline:15px;background:rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha)); }
+.study-tone-picker { border-radius:26px;padding:8px 19px; }
+.study-primary,.btn,.btn-primary,.study-enem-controls .study-primary {
+  border-radius:999px;min-height:44px;padding:11px 21px;font-weight:650;
+  background:#dceaff;color:#112038;box-shadow:inset 0 1px rgba(255,255,255,.6);
+}
+.study-primary:disabled { opacity:.5; }
+.study-settings-row { min-height:58px;padding:13px 10px; border-bottom:1px solid var(--ios27-line);font-size:15px; }
+.study-settings-row strong { font-size:15px; font-weight:600; }
+.study-settings-row small { color:var(--ios27-muted);font-size:12px; }
+.study-settings-row select { border-radius:14px;background:#283b51;color:#fff;min-height:40px; }
+.study-appearance-slider { display:grid;gap:9px;padding:18px 12px 22px; }
+.study-appearance-slider > div { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.study-appearance-slider label { font-weight:600;font-size:14px; }
+.study-appearance-slider output,.study-appearance-slider p { font-size:12px;color:var(--ios27-muted); }
+.study-appearance-slider input { width:100%;height:44px;accent-color:#b9d5ff;cursor:pointer; }
+.study-appearance-sample { border-radius:999px;padding:14px 20px;min-height:48px; }
+.study-enem-tabs { border-radius:999px;padding:4px;background:#1b2838;border:1px solid var(--ios27-line);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px rgba(255,255,255,.05); }
+.study-enem-tabs button { border-radius:999px;min-height:44px; }
+.study-enem-tabs button[aria-pressed="true"] { color:#fff;background:rgba(188,215,253,.19);border:1px solid rgba(240,246,255,.18);box-shadow:inset 0 1px rgba(255,255,255,.10); }
+.study-enem-areas button { border-radius:15px; }
+.study-enem-areas button[aria-pressed="true"] { background:#354c6e; }
+.study-chat { background:#0e1724; }
+.study-chat-header { border-color:var(--ios27-line);background:rgba(15,25,39,.84); }
+.study-chat-empty h2 {font-weight:650;letter-spacing:-.043em;}
+.study-message {line-height:1.55;}
+.study-message--user { background:#244770;border-radius:22px 22px 6px 22px; }
+.study-message--assistant { background:#1b2a3c;border-radius:22px 22px 22px 6px; }
+.study-composer-field { border-radius:28px; padding:5px; }
+.study-composer button { background:#d5e6ff;color:#15283d; }
+.study-activity-toggle { border-radius:999px; }
+.study-paywall,.study-note-overlay section,.study-glass-modal,[role="dialog"] {
+  border-radius:28px;border:1px solid var(--ios27-border);background:#1b2a3c;
+  box-shadow:inset 0 1px rgba(255,255,255,.1),0 16px 45px rgba(0,0,0,.24);
+}
+body:has(.study-navigation):not(:has(.study-room)) { background:radial-gradient(ellipse 80% 45% at 93% -8%,#1b344b,transparent 80%),#0b111b; }
+body:has(.study-navigation):not(:has(.study-room))::before { background:none; }
+@media(max-width:767px) {
+ .study-navigation {padding-inline:12px;padding-bottom:calc(9px + env(safe-area-inset-bottom,0px));}
+ .study-navigation-inner {padding:4px;}
+ .study-tab {min-height:51px;}
+ .study-room-dock {border-radius:24px;}
+ .study-chat {background:#0e1724;}
+ .study-notes-book .study-notes-header {padding-top:calc(env(safe-area-inset-top,0px) + 69px);}
+}
+@media(min-width:768px) {
+ .study-navigation {padding:0;}
+ .study-navigation-inner {border-radius:28px;}
+ .study-tab {min-height:56px;}
+ .study-room-welcome h1 {font-size:clamp(45px,5vw,64px);}
+}
+@media(prefers-reduced-motion:no-preference) {
+ html:not([data-study-motion="reduced"]) :is(.study-primary,.study-book-new,.study-room-nfc,.study-composer button,.study-enem-tabs button) {transition:transform 200ms var(--ios27-ease),background-color 200ms ease;}
+ html:not([data-study-motion="reduced"]) :is(.study-primary,.study-book-new,.study-room-nfc,.study-composer button,.study-enem-tabs button):active {transform:scale(.96);}
+}
+@media(prefers-reduced-transparency:reduce),(prefers-contrast:more) {
+ :root {--ios27-glass-alpha:1;--ios27-filter:none;}
+ :is(.ios27-glass,.glass,.glass-deep,.glass-raised,.glass-sm,.glass-sidebar,.glass-toast,
+ .study-navigation-inner,.study-topbar a,.study-room-dock,.study-composer-field,.study-room-nfc) {
+  background:#1b2d44;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:#90a6c4;
+ }
+}

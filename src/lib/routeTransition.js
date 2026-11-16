@@ -1,42 +1,54 @@
+import { flushSync } from 'react-dom'
 import { readPreferences } from './preferences'
-const paths = ['/dashboard', '/anotacoes', '/chat', '/enem', '/perfil', '/configuracoes']
+
+const paths=['/dashboard','/anotacoes','/chat','/enem','/perfil','/configuracoes']
 let cancelCurrent
-export function transitionTo(change, nextIndex, prevIndex, target) {
-  cancelCurrent?.()
-  if (readPreferences().reduceMotion || matchMedia('(prefers-reduced-motion: reduce)').matches) { change(); return }
-  const content = target ?? document.querySelector('main') ?? document.querySelector('.study-page-enter')
-  if (!content?.animate) { change(); return }
-  const direction = nextIndex >= prevIndex ? 1 : -1
-  const glass = document.createElement('div')
-  glass.className = 'study-route-blur'
-  glass.setAttribute('aria-hidden', 'true')
-  glass.style.setProperty('--blur-direction', direction > 0 ? 'to right' : 'to left')
-  document.body.append(glass)
-  const previousWillChange = content.style.willChange
-  content.style.willChange = 'transform, filter'
-  const baseTransform = getComputedStyle(content).transform
-  const base = baseTransform === 'none' ? '' : baseTransform + ' '
-  const outgoing = content.animate([
-    { transform: base + 'perspective(1200px) rotateY(0deg) scale(1)', filter: 'blur(0px) brightness(1)' },
-    { transform: `${base}perspective(1200px) rotateY(${-4 * direction}deg) scale(.985)`, filter: 'blur(12px) brightness(.92)' },
-  ], { duration: 180, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' })
-  const veil = glass.animate([{ opacity: 0 }, { opacity: 1, offset: .43 }, { opacity: 0 }],
-    { duration: 420, easing: 'cubic-bezier(.22,1,.36,1)' })
-  let cancelled = false
-  const cleanup = () => {
-    cancelled = true; outgoing.cancel(); veil.cancel(); glass.remove()
-    content.style.willChange = previousWillChange
-    if (cancelCurrent === cleanup) cancelCurrent = undefined
-  }
-  cancelCurrent = cleanup
-  outgoing.finished.then(() => {
-    if (cancelled) return
-    outgoing.cancel(); content.style.willChange = previousWillChange
-    change()
-  }).catch(() => {})
-  veil.finished.then(cleanup).catch(() => {})
+
+function reduceMotion() {
+  return readPreferences().reduceMotion
+    || window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
-export function transitionRoute(path, change) {
-  const index = value => paths.findIndex(route => value.startsWith(route))
-  transitionTo(change, index(path), index(location.pathname))
+
+export function transitionTo(change,nextIndex,prevIndex,target) {
+  cancelCurrent?.()
+  if (reduceMotion() || document.documentElement.hasAttribute('data-study-keyboard')) {
+    change()
+    return
+  }
+  const direction=nextIndex>=prevIndex?1:-1
+  const root=document.documentElement
+  if (typeof document.startViewTransition === 'function') {
+    root.dataset.studyTransition='crossfade'
+    root.style.setProperty('--study-crossfade-direction',String(direction))
+    const transition=document.startViewTransition(() => flushSync(change))
+    const cleanup=()=>{
+      delete root.dataset.studyTransition
+      root.style.removeProperty('--study-crossfade-direction')
+      if (cancelCurrent===cancel) cancelCurrent=undefined
+    }
+    const cancel=()=>{ transition.skipTransition();cleanup() }
+    cancelCurrent=cancel
+    void transition.finished.then(cleanup,cleanup)
+    return
+  }
+
+  // For browsers without View Transitions, retain a short outgoing animation
+  // and React's existing incoming PageMotion. No permanent filters or layers.
+  const content=target ?? document.querySelector('main') ?? document.querySelector('.study-page-enter')
+  if (!content?.animate) { change();return }
+  const original=content.style.willChange
+  content.style.willChange='opacity, transform, filter'
+  const frames=[
+    { opacity:1, transform:'perspective(1200px) rotateY(0deg) scale(1)', filter:'none' },
+    { opacity:.3, transform:`perspective(1200px) rotateY(${-2*direction}deg) scale(.985)`, filter:'blur(5px)' },
+  ]
+  const exit=content.animate(frames,{duration:135,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'})
+  let cancelled=false
+  const cleanup=()=>{ cancelled=true;exit.cancel();content.style.willChange=original;if(cancelCurrent===cleanup)cancelCurrent=undefined }
+  cancelCurrent=cleanup
+  void exit.finished.then(()=>{if(cancelled)return;cleanup();change()},cleanup)
+}
+export function transitionRoute(path,change) {
+  const index=value=>paths.findIndex(route=>value.startsWith(route))
+  transitionTo(change,index(path),index(location.pathname))
 }

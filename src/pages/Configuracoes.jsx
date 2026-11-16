@@ -6,7 +6,7 @@ import { readPreferences, updatePreferences } from '../lib/preferences'
 
 const pages = {
   conta: ['Conta', 'Seu perfil e acesso'],
-  aparencia: ['Aparência', 'Movimento e transições'],
+  aparencia: ['Aparência', 'Movimento, transparência e leitura'],
   kira: ['Kira', 'Estilo das respostas'],
   notificacoes: ['Notificações', 'Avisos de sessão concluída'],
   entrada: ['Tela de bloqueio', 'Impressão digital na tela de retorno'],
@@ -96,9 +96,22 @@ export default function Configuracoes() {
         <Link className="study-settings-row" to="/perfil">Abrir perfil</Link>
         <button type="button" className="study-settings-row" disabled={pending} onClick={signOut}>Sair da conta neste dispositivo</button>
       </>}
-      {secao === 'aparencia' && <label className="study-settings-row">Reduzir movimento
-        <input type="checkbox" checked={preferences.reduceMotion} onChange={(event) => change({ reduceMotion: event.target.checked })} />
-      </label>}
+      {secao === 'aparencia' && <>
+        <label className="study-settings-row">Reduzir movimento
+          <input type="checkbox" checked={preferences.reduceMotion} onChange={(event) => change({ reduceMotion: event.target.checked })} />
+        </label>
+        <section className="study-appearance-slider">
+          <div>
+            <label htmlFor="study-glass-opacity">Intensidade do vidro</label>
+            <output htmlFor="study-glass-opacity">{Math.round((preferences.glassOpacity ?? .67) * 100)}%</output>
+          </div>
+          <input id="study-glass-opacity" type="range" min="42" max="92" step="1"
+            value={Math.round((preferences.glassOpacity ?? .67) * 100)}
+            onChange={event => change({ glassOpacity: Number(event.target.value) / 100 })} />
+          <div className="ios27-glass study-appearance-sample">Visualização do Liquid Glass</div>
+          <p>O ajuste afeta barras e controles, sem diminuir o contraste dos textos e cadernos.</p>
+        </section>
+      </>}
       {secao === 'kira' && <fieldset className="study-tone-picker"><legend>Tom das respostas</legend>{[['amigo','Amigável','Uma conversa próxima e acolhedora.'],['formal','Formal','Explicações com linguagem mais formal.'],['seco','Direto','Respostas objetivas, sem rodeios.']].map(([value,label,description]) => <label key={value}><span><strong>{label}</strong><small>{description}</small></span><input type="radio" name="kira-tone" value={value} checked={preferences.kiraTone === value} onChange={() => change({ kiraTone:value })} /></label>)}</fieldset>}
       {secao === 'notificacoes' && <>
         <button type="button" className="study-settings-row" onClick={toggleAlerts}>
