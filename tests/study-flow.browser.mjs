@@ -8,7 +8,7 @@ const project = new URL(process.env.VITE_SUPABASE_URL).hostname.split('.')[0]
 const user = { id: '11111111-1111-4111-8111-111111111111', aud: 'authenticated', role: 'authenticated' }
 const exp = Math.floor(Date.now() / 1000) + 3600
 const token = [Buffer.from('{"alg":"HS256","typ":"JWT"}').toString('base64url'), Buffer.from(JSON.stringify({ exp, sub: user.id })).toString('base64url'), 'c2ln'].join('.')
-const answer = 'Fotossíntese\n\nA planta transforma luz em energia.\n1. Absorve luz.\n2. Produz glicose.\n\n' + 'Um exemplo para estudar. '.repeat(22)
+const answer = 'Fotossíntese\n\nA planta transforma luz em energia.\n1. Absorve luz.\n2. Produz glicose.\n\n' + 'Um exemplo para estudar. '.repeat(22).trim()
 let browser
 try {
   for (let i = 0; i < 45; i++) {
@@ -57,12 +57,13 @@ try {
       }
       if (url.pathname === '/functions/v1/kira') {
         if (request.postDataJSON()?.action === 'quota') return route.fulfill({ json: { remaining: 10 - calls } })
+        assert(['formal','amigo','seco'].includes(request.postDataJSON()?.tone))
         const last = request.postDataJSON()?.messages?.at(-1)?.content
         assert.match(last, /ensine automaticamente/)
         if (calls === 0) assert.match(last, /Modo atividade/)
         calls++
         if (hold) await new Promise(resolve => { release = resolve })
-        return route.fulfill({ json: { answer, remaining: 10 - calls } })
+        return route.fulfill({ json: { answer: "**" + answer + "** 🚀", remaining: 10 - calls } })
       }
       return route.abort()
     })
@@ -94,6 +95,9 @@ try {
     await page.getByPlaceholder('O que precisa lembrar?').fill('Revisar porcentagem e resolver duas questões.')
     await page.getByRole('button', { name:'Colar post-it' }).click()
     await page.locator('.study-paper-postit').waitFor()
+    const radius = await page.locator('.study-paper-postit').evaluate(el => parseFloat(getComputedStyle(el).borderTopLeftRadius))
+    assert(radius >= 16 && radius <= 22)
+    assert.equal(await page.locator('.study-paper-postit').evaluate(el => getComputedStyle(el).backdropFilter), 'blur(20px) saturate(1.8)')
     const complete = page.getByRole('button', { name:'Concluir: Revisar porcentagem e resolver duas questões.' })
     await complete.click()
     assert.equal(await page.getByRole('button', { name:'Marcar como pendente: Revisar porcentagem e resolver duas questões.' }).getAttribute('aria-pressed'), 'true')
@@ -130,6 +134,7 @@ try {
         visualViewport.dispatchEvent(new Event('resize'))
       })
       await page.waitForFunction(() => document.documentElement.hasAttribute('data-study-keyboard'))
+      await page.waitForTimeout(650)
       const keyboardComposer = await page.locator('.study-enem-chat .study-composer').boundingBox()
       assert(keyboardComposer.y + keyboardComposer.height <= 400, 'Composer must clear simulated keyboard')
       assert(!(await page.locator('.study-navigation').isVisible()))
@@ -230,6 +235,13 @@ try {
     release()
     await page.waitForFunction(() => document.querySelectorAll('.study-message--assistant').length === 2)
     assert.equal(calls, 2)
+    await nav('ENEM').click()
+    await page.getByRole('group', { name:'Seções do modo ENEM' }).getByRole('button', { name:'Kira', exact:true }).click()
+    await page.waitForFunction(() => document.querySelectorAll('.study-message--assistant').length === 2)
+    await page.getByRole('button', { name:'Expandir', exact:true }).click()
+    await page.waitForURL('**/chat')
+    await page.locator('.study-chat').waitFor()
+    await page.waitForFunction(() => document.querySelectorAll('.study-message--assistant').length === 2)
     await page.waitForFunction(() => getComputedStyle(document.querySelector('.study-chat')).opacity === '1' && [...document.querySelectorAll('.study-chat-log > div')].every(el => getComputedStyle(el).opacity === '1'))
     if (width === 414) await page.screenshot({ path: 'qa.local/study-flow-chat.png' })
     await page.reload()
@@ -257,6 +269,20 @@ try {
     assert(await page.getByRole('radio', { name:/Formal/ }).isChecked())
     assert.equal(await page.locator('select').count(),0)
     if(width===414) await page.screenshot({path:'qa.local/kira-tone.png'})
+    hold = false
+    for (const label of ['Amigável','Direto','Formal']) {
+      await page.getByRole('radio', { name: new RegExp(label) }).check()
+      await nav('Kira').click()
+      await input.fill('Explique 2 + 2 em uma frase.')
+      const count = calls
+      await page.getByRole('button', { name:'Enviar mensagem' }).click()
+      await page.waitForFunction(() => !document.querySelector('button[aria-label="Enviar mensagem"]').disabled || !document.querySelector('textarea').value)
+      await page.waitForFunction(() => !document.body.textContent.includes('Kira está preparando a resposta…'))
+      assert.equal(calls, count + 1)
+      assert(!(await page.locator('.study-message--assistant').last().textContent()).includes('**'))
+      await page.goto(base + '/configuracoes/kira')
+      await holdLock(page)
+    }
     assert.equal(errors.length, 0, errors.join('\n'))
     console.log(width + 'px: copiar/fallback, criar/repetir, editar/erro, revisão sem chamada extra, conversa entre abas/em voo/reload, sem overflow.')
     await page.close()

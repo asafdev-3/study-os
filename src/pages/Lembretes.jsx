@@ -94,12 +94,12 @@ function ModalNovoPostit({ onClose, onSalvar }) {
           zIndex: 10,
           pointerEvents: 'auto',
 
-          background: 'rgba(12,12,15,0.97)',
-          backdropFilter: 'blur(40px)',
-          WebkitBackdropFilter: 'blur(40px)',
+          background: 'rgba(22,30,44,0.78)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
 
           boxShadow:
-            '0 30px 90px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.05)',
+            '0 1px 1px rgba(255,255,255,.08) inset',
 
           opacity: visivel ? 1 : 0,
 
@@ -467,16 +467,15 @@ function Lembretes({ userId }) {
 
       <div className="grid grid-cols-2 gap-3">
         {itensFiltrados.map(
-          ({ id, materia, cor, texto, prazo, feito }, idx) => (
+          ({ id, materia, cor, texto, prazo, feito }) => (
             <div
               key={id}
               className="study-paper-postit relative p-4 flex flex-col justify-between min-h-[160px]"
               style={{
-                backgroundColor: cor,
+                '--postit-color': cor,
+                '--postit-radius': `${16 + (itens.findIndex(item => item.id === id) % 4) * 2}px`,
                 transform: `rotate(${
-                  idx % 2 === 0
-                    ? (idx % 3) * 0.8
-                    : -((idx % 3) * 0.7)
+                  (itens.findIndex(item => item.id === id) % 5) - 2
                 }deg)`,
               }}
             >

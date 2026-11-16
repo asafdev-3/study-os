@@ -1,19 +1,21 @@
-import { useState } from 'react'
-import { createPortal } from 'react-dom'
-import { m } from 'framer-motion'
-import { useStudyReducedMotion } from '../lib/motion'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { transitionRoute } from '../lib/routeTransition'
 
-function Blur() {
-  const [finished, setFinished] = useState(false)
-  if (finished) return null
-  return createPortal(<m.div className="study-route-blur" aria-hidden="true"
-    initial={{ opacity: 1 }} animate={{ opacity: 0 }}
-    transition={{ duration: .24, ease: [.22, 1, .36, 1] }}
-    onAnimationComplete={() => setFinished(true)} />, document.body)
-}
-
-// Kept as an export alias to preserve existing route integration.
-export function FoldableTransition({ screen }) {
-  const reduced = useStudyReducedMotion()
-  return reduced ? null : <Blur key={screen} />
+// Animate the outgoing DOM before navigation; never mount a duplicate live screen.
+export function FoldableTransition() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    function click(event) {
+      const link = event.target.closest('a[href]')
+      if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return
+      const url = new URL(link.href)
+      if (url.origin !== location.origin || url.pathname === location.pathname) return
+      event.preventDefault()
+      transitionRoute(url.pathname, () => navigate(url.pathname + url.search + url.hash))
+    }
+    document.addEventListener('click', click, true)
+    return () => document.removeEventListener('click', click, true)
+  }, [navigate])
+  return null
 }

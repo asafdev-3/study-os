@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { sanitizeKiraOutput } from './sanitizeKiraOutput'
 import { getKiraQuota, sendToKira } from './groq'
 
 const conversations = new Map()
@@ -9,7 +10,7 @@ function readConversation(key) {
     const stored = JSON.parse(sessionStorage.getItem(key))
     return Array.isArray(stored) ? stored.filter(message =>
       ['user', 'assistant'].includes(message?.role) && typeof message.content === 'string'
-    ).slice(-30) : []
+    ).slice(-30).map(message => message.role === 'assistant' ? { ...message, content: sanitizeKiraOutput(message.content) } : message) : []
   } catch { return [] }
 }
 
@@ -32,7 +33,7 @@ function createConversation(key) {
   }
 }
 
-// The caller remounts Chat by user ID. Other Kira surfaces remain independent.
+// Chat and ENEM use the same user-scoped external store; requests survive navigation.
 export function useKira(enabled = true, storageKey = null) {
   const [store] = useState(() => {
     if (!storageKey) return createConversation(null)
@@ -63,7 +64,7 @@ export function useKira(enabled = true, storageKey = null) {
     try {
       const result = await sendToKira(next, activity)
       store.update({
-        messages: [...next, { role: 'assistant', content: result.answer }].slice(-30),
+        messages: [...next, { role: 'assistant', content: sanitizeKiraOutput(result.answer) }].slice(-30),
         remaining: result.remaining, loading: false,
       })
       return true

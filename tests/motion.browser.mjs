@@ -44,6 +44,18 @@ try{
     await page.getByRole('heading',{name:'Olá, Vitor.'}).waitFor()
     assert.deepEqual(await page.evaluate(()=>window.phases),['scan','confirmed'])
     await page.getByRole('navigation').getByRole('link',{name:'Kira'}).click()
+    if (!reduced) {
+      await page.locator('.study-route-blur').waitFor()
+      const transition = await page.evaluate(() => {
+        const layer = document.querySelector('.study-route-blur')
+        const style = getComputedStyle(layer)
+        const frames = document.getAnimations().flatMap(animation => animation.effect?.getKeyframes() ?? [])
+        return { blur:style.backdropFilter, direction:layer.style.getPropertyValue('--blur-direction'), exit:frames.some(frame => frame.transform?.includes('rotateY(-4deg)') && frame.filter?.includes('blur(12px)')) }
+      })
+      assert.equal(transition.blur, 'blur(28px)')
+      assert.equal(transition.direction, 'to right')
+      assert(transition.exit)
+    } else assert.equal(await page.locator('.study-route-blur').count(), 0)
     await page.getByRole('textbox',{name:'Mensagem para a Kira'}).waitFor()
     if(!reduced)await page.waitForFunction(()=>window.folds.includes('/chat'))
     await page.waitForTimeout(300)
@@ -57,6 +69,7 @@ try{
     await page.getByRole('textbox',{name:'Mensagem para a Kira'}).focus()
     await page.evaluate(()=>{window.testHeight=320;window.testTop=20;visualViewport.dispatchEvent(new Event('resize'))})
     await page.waitForFunction(()=>document.documentElement.hasAttribute('data-study-keyboard'))
+    await page.waitForTimeout(650)
     const composer=await page.locator('.study-composer').boundingBox()
     assert(composer.y+composer.height<=341)
     await page.getByRole('button',{name:'Enviar mensagem'}).click()

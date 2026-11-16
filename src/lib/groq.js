@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { sanitizeKiraOutput } from './sanitizeKiraOutput'
 import { readPreferences } from './preferences'
 
 export const KIRA_DAILY_LIMIT = 10
@@ -39,11 +40,13 @@ export function getKiraQuota() {
 }
 
 export function sendToKira(messages, activity = false) {
-  const tone = { formal: 'Use um tom formal e claro.', seco: 'Seja breve e direto.' }[readPreferences().kiraTone]
+  const preference = readPreferences().kiraTone
+  const kiraTone = ['formal', 'amigo', 'seco'].includes(preference) ? preference : 'amigo'
+  const tone = { formal: 'Use um tom formal e claro.', amigo: 'Use um tom amigável, próximo e respeitoso.', seco: 'Seja breve e direto, sem rodeios.' }[kiraTone]
   const history = messages.slice(-10).map(({ role, content }) => ({ role, content: content.slice(0, 2000) }))
   const guidance = 'Se for um exercício, ensine automaticamente: diga o que a questão pede, explique os passos e por que funcionam, e confira o resultado. Use linguagem simples e breve. Se faltarem dados, pergunte. Não entregue só o gabarito.'
   const instruction = [tone, guidance, activity && 'Modo atividade: guie a resolução com uma ideia-chave e passos curtos.'].filter(Boolean).join(' ') + '\n\n'
   const last = history.at(-1)
   if (last?.role === 'user') last.content = instruction + last.content.slice(0, 2000 - instruction.length)
-  return invokeKira({ messages: history })
+  return invokeKira({ messages: history, tone: kiraTone }).then(result => ({ ...result, answer: sanitizeKiraOutput(result.answer) }))
 }

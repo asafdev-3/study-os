@@ -6,7 +6,20 @@ const cors = {
 
 const systemPrompt = `Você é Kira, assistente de estudos do StudyOS especializada no ENEM.
 Responda em português brasileiro em até três parágrafos curtos. Seja objetiva e ajude o estudante a entender o raciocínio.
-Não invente dados sobre o estudante, o histórico dele ou notas de corte.`
+Não invente dados sobre o estudante, o histórico dele ou notas de corte.
+Nunca use markdown. Sem **, *, #, →, emojis ou qualquer símbolo de formatação.
+Escreva em texto puro. Use numeração simples (1. 2. 3.) se precisar listar.`
+
+const tones: Record<string, string> = {
+  formal: "Use linguagem formal, clara e respeitosa.",
+  amigo: "Use linguagem amigável, próxima e acolhedora, sem emojis.",
+  seco: "Seja breve e direto, sem rodeios, cumprimentos ou frases de preenchimento.",
+}
+
+function promptForTone(value: unknown) {
+  const tone = typeof value === "string" && Object.hasOwn(tones, value) ? value : "amigo"
+  return systemPrompt + "\nInstrução obrigatória em TODAS as respostas: " + tones[tone]
+}
 
 type Message = { role: "user" | "assistant"; content: string }
 
@@ -102,7 +115,7 @@ Deno.serve(async (request: Request) => {
       headers: { Authorization: "Bearer " + groqKey, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "openai/gpt-oss-20b",
-        messages: [{ role: "system", content: systemPrompt }, ...messages!],
+        messages: [{ role: "system", content: promptForTone(body?.tone) }, ...messages!],
         temperature: 0.7,
         reasoning_effort: "low",
         max_completion_tokens: 1024,

@@ -1,5 +1,10 @@
+import { transitionTo, transitionRoute } from '../lib/routeTransition';
+import { m } from 'framer-motion';
+import { useViewportSpring } from '../lib/useViewportSpring';
+import { kiraMessageMotion } from '../lib/kiraMotion';
+import { useStudyReducedMotion } from '../lib/motion';
 import PromptField from '../components/PromptField'
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Lembretes from "./Lembretes";
 import EnemAdmissions from "../components/EnemAdmissions";
 import EnemPractice from "../components/EnemPractice";
@@ -172,15 +177,19 @@ function SessaoFoco({ userId }) {
 
 // ─── Tela Principal ───────────────────────────────────────────────────────────
 export default function EnemScreen({ userId }) {
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const fromNfc = params.get("modo") === "foco";
   const [tab, setTab] = useState(fromNfc ? "foco" : "praticar");
   const [switched, setSwitched] = useState(false);
   const [kiraInput, setKiraInput] = useState("");
-  const { messages, remaining, loading, error, send, clear } = useKira(tab === "kira");
+  const { messages, remaining, loading, error, send, clear } = useKira(tab === "kira", userId ? `studyos:chat:${userId}` : null);
   const log = useRef(null);
+  const reduced = useStudyReducedMotion();
+  const [restoredCount] = useState(messages.length);
 
   const page = useRef(null);
+  const updateViewport = useViewportSpring(page, "enem");
   useLayoutEffect(() => {
     if (tab !== 'kira') return;
     const root = document.documentElement;
@@ -197,8 +206,7 @@ export default function EnemScreen({ userId }) {
       normalHeight = Math.max(normalHeight, window.innerHeight, height);
       const editing = document.activeElement?.matches('.study-enem-chat textarea');
       root.toggleAttribute('data-study-keyboard', normalHeight - height > 120 && (editing || root.hasAttribute('data-study-keyboard')));
-      page.current?.style.setProperty('--enem-height', `${height}px`);
-      page.current?.style.setProperty('--enem-top', `${viewport?.offsetTop ?? 0}px`);
+      updateViewport(height, viewport?.offsetTop ?? 0);
     }
     function schedule() { if (!frame) frame = requestAnimationFrame(update); }
     update();
@@ -215,7 +223,7 @@ export default function EnemScreen({ userId }) {
       delete root.dataset.enemChat;
       delete root.dataset.studyKeyboard;
     };
-  }, [tab]);
+  }, [tab, updateViewport]);
 
   useEffect(() => {
     if (log.current) log.current.scrollTop = log.current.scrollHeight;
@@ -238,7 +246,7 @@ export default function EnemScreen({ userId }) {
       </header>
       <div className="study-enem-tabs" role="group" aria-label="Seções do modo ENEM">
         {tabs.map(([id, label]) => (
-          <button key={id} type="button" aria-pressed={tab === id} onClick={() => { if (id !== tab) { setSwitched(true); setTab(id); } }}>{label}</button>
+          <button key={id} type="button" aria-pressed={tab === id} onClick={() => { if (id !== tab) { transitionTo(() => { setSwitched(true); setTab(id); }, tabs.findIndex(([key]) => key === id), tabs.findIndex(([key]) => key === tab), page.current); } }}>{label}</button>
         ))}
       </div>
       {tab === "praticar" && <EnemPractice key={userId} userId={userId} />}
@@ -257,6 +265,7 @@ export default function EnemScreen({ userId }) {
       {tab === "kira" && <section className="study-enem-pane study-enem-chat" aria-label="Kira no modo ENEM">
         <div className="study-enem-kira-title">
           <div><h2>Kira ENEM</h2>{remaining !== null && <p>{remaining}/{KIRA_DAILY_LIMIT} mensagens hoje</p>}</div>
+          <button type="button" onClick={() => transitionRoute("/chat", () => navigate("/chat", { state: { expanded: true } }))}>Expandir</button>
           {messages.length > 0 && <button type="button" onClick={clear} disabled={loading}>Limpar</button>}
         </div>
         <div className="study-enem-conversation" ref={log}>
@@ -264,7 +273,7 @@ export default function EnemScreen({ userId }) {
           {QUICK_PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
         </div>}
         {(messages.length > 0 || loading) && <div className="study-chat-log study-enem-log" role="log">
-          {messages.map(({ role, content }, index) => <p key={index} className={`study-message study-message--${role}`}>{content}</p>)}
+          {messages.map(({ role, content }, index) => <m.p key={index} {...kiraMessageMotion(role, reduced, index < restoredCount)} className={`study-message study-message--${role}`}>{content}</m.p>)}
           {loading && <p className="study-chat-status">Kira está preparando a resposta…</p>}
         </div>}
         </div>

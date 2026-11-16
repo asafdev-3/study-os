@@ -103,11 +103,11 @@ function ModalConquista({ conquista, onClose }) {
         onClick={onClose}
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center px-6 pointer-events-none">
-        <div className="w-full max-w-sm pointer-events-auto" style={{
+        <div className="study-glass-modal w-full max-w-sm pointer-events-auto" style={{
           background: 'rgba(16,16,20,0.97)',
           border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: 28,
-          boxShadow: '0 30px 80px rgba(0,0,0,0.8)',
+          boxShadow: '0 1px 1px rgba(255,255,255,.08) inset',
         }}>
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#1f1f27]">
             <span className="text-xs tracking-[0.2em] text-zinc-500 uppercase">Conquista</span>
@@ -264,7 +264,7 @@ function Perfil() {
           { icon: '⚡', valor: sessoes ? total : '—', label: 'SESSÕES' },
           { icon: '△', valor: sessoes ? total : '—', label: 'ÁRVORES\nPLANTADAS' },
         ].map(({ icon, valor, label }) => (
-          <div key={label} className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl min-w-0 p-2.5 sm:p-4 flex flex-col gap-1">
+          <div key={label} className="study-glass-card bg-[#0a0a0c] border border-[#16161b] rounded-2xl min-w-0 p-2.5 sm:p-4 flex flex-col gap-1">
             <span className="text-[#a1a1aa] text-sm">{icon}</span>
             <span style={{ fontFamily: 'Geist Mono, monospace' }} className="text-3xl font-medium">{valor}</span>
             <span className="text-[#a1a1aa] text-[9px] tracking-wide whitespace-pre-line">{label}</span>
@@ -285,7 +285,7 @@ function Perfil() {
 
       {/* Ritmo */}
       <p className="text-[#a1a1aa] text-[10px] tracking-widest uppercase mb-3">Seu ritmo · últimas 12 semanas</p>
-      <div className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl p-4 mb-6">
+      <div className="study-glass-card bg-[#0a0a0c] border border-[#16161b] rounded-2xl p-4 mb-6">
         <div className="grid grid-cols-12 gap-1">
           {semanas.map((semana, s) => (
             <div key={s} className="flex flex-col gap-1">
@@ -312,7 +312,7 @@ function Perfil() {
           <button
             key={conquista.id}
             onClick={() => setConquistaSelecionada(conquista)}
-            className="bg-[#0a0a0c] border border-[#16161b] rounded-2xl px-4 py-3 flex items-center gap-3 text-left w-full active:scale-[0.98] transition-all"
+            className="study-glass-card bg-[#0a0a0c] border border-[#16161b] rounded-2xl px-4 py-3 flex items-center gap-3 text-left w-full active:scale-[0.98] transition-all"
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg
               ${conquista.desbloqueada ? 'bg-[#1a1a1a]' : 'bg-[#0d0d0d] border border-[#1a1a1a] opacity-40'}`}>

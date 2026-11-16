@@ -1,3 +1,5 @@
+import { useViewportSpring } from '../lib/useViewportSpring'
+import { kiraMessageMotion } from '../lib/kiraMotion'
 import PromptField from '../components/PromptField'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion, cardSpring, pageSpring, softTransition } from '../lib/motion'
@@ -32,6 +34,7 @@ export default function Chat({ userId }) {
   const field = useRef(null)
   const page = useRef(null)
   const follow = useRef(true)
+  const updateViewport = useViewportSpring(page, 'chat')
 
   useEffect(() => {
     if (location.state?.prompt) navigate(location.pathname + location.search, { replace: true, state: null })
@@ -40,7 +43,6 @@ export default function Chat({ userId }) {
   // Viewport e teclado — Safari-aware
   useLayoutEffect(() => {
     const viewport = window.visualViewport
-    const element = page.current
     const root = document.documentElement
     root.dataset.studyChat = ''
     let frame = 0
@@ -63,11 +65,11 @@ export default function Chat({ userId }) {
       root.toggleAttribute('data-study-keyboard', keyboard)
       const resized = viewport.height !== lastHeight
       if (resized) {
-        element.style.setProperty('--chat-height', `${viewport.height}px`)
+        updateViewport(viewport.height, viewport.offsetTop)
         lastHeight = viewport.height
       }
       if (viewport.offsetTop !== lastTop) {
-        element.style.setProperty('--chat-top', `${viewport.offsetTop}px`)
+        updateViewport(viewport.height, viewport.offsetTop)
         lastTop = viewport.offsetTop
       }
       if (resized && follow.current && log.current) log.current.scrollTop = log.current.scrollHeight
@@ -90,7 +92,7 @@ export default function Chat({ userId }) {
       delete root.dataset.studyChat
       delete root.dataset.studyKeyboard
     }
-  }, [])
+  }, [updateViewport])
 
   useLayoutEffect(() => {
     if (follow.current && log.current) log.current.scrollTop = log.current.scrollHeight
@@ -215,9 +217,7 @@ export default function Chat({ userId }) {
         {messages.map(({ role, content }, index) => (
           <motion.div
             key={index}
-            initial={reduced || index < restoredCount ? false : { opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 36, mass: 0.7 }}
+            {...kiraMessageMotion(role, reduced, index < restoredCount)}
             style={{
               display: 'flex',
               justifyContent: role === 'user' ? 'flex-end' : 'flex-start',
