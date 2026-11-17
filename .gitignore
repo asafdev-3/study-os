@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Expo local build state
+native/.expo/
+native/ios/
+native/android/

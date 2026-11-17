@@ -9,6 +9,7 @@ import { loadStudyRoute, warmStudyRoutes } from './lib/studyRoutes'
 import { pendingDestination, clearDestination } from './lib/nfc'
 import Splash from './pages/Splash'
 import Login from './pages/Login'
+import NativeSession from './pages/NativeSession'
 import TopBar from './components/TopBar'
 import Navbar from './components/Navbar'
 import PaywallModal from './components/PaywallModal'
@@ -39,10 +40,10 @@ function TelaCarregando() {
   return <div className="study-loading" role="status">Carregando StudyOS…</div>
 }
 
-const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/esqueci-senha']
+const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/esqueci-senha', '/native-session']
 
 // Rotas sem sidebar desktop (públicas + onboarding)
-const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock']
+const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock', '/native-session']
 
 function PageWrapper({ children }) {
   return <PageMotion>{children}</PageMotion>
@@ -74,6 +75,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
     <Routes location={location}>
       <Route path="/" element={<PageWrapper><Splash /></PageWrapper>} />
       <Route path="/login" element={<Login />} />
+      <Route path="/native-session" element={<NativeSession />} />
       <Route path="/lock" element={<Lock onUnlock={desbloquear} />} />
       <Route path="/dashboard" element={<PageWrapper><DashboardEntry /></PageWrapper>} />
       <Route path="/anotacoes" element={<PageWrapper><Anotacoes /></PageWrapper>} />
