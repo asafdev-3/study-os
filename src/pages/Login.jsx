@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { m as motion } from 'framer-motion'
+import { useStudyReducedMotion } from '../lib/motion'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
@@ -105,9 +107,10 @@ export default function Login() {
   }
 
   const creating = mode === 'signup'
+  const reducedMotion = useStudyReducedMotion()
 
   return (
-    <main className="study-entry study-auth-page">
+    <main className="study-entry study-auth-page study-auth-login">
       <div className="study-auth-watermark" aria-hidden="true">S</div>
 
       <section className="study-auth-card" aria-labelledby="auth-title">
@@ -116,10 +119,16 @@ export default function Login() {
           <span>StudyOS</span>
         </header>
 
-        <div className="study-auth-heading">
+        <motion.div
+          key={mode}
+          className="study-auth-heading"
+          initial={reducedMotion ? false : { opacity: 0.55, y: 7 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
           <h1 id="auth-title">{creating ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</h1>
           <p>{creating ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</p>
-        </div>
+        </motion.div>
 
         <div className="study-auth-switch" data-creating={creating} role="group" aria-label="Acesso à conta">
           <button type="button" aria-pressed={!creating} className={!creating ? 'is-active' : ''} onClick={() => changeMode('login')}>Entrar</button>
@@ -147,13 +156,17 @@ export default function Login() {
               </button>
             </span>
           </div>
-          {creating && <label className="study-auth-field">
-            <span>Confirmar senha</span>
-            <span className="study-auth-input-wrap">
-              <LockKeyhole size={18} aria-hidden="true" />
-              <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" name="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} required />
-            </span>
-          </label>}
+          <div className="study-auth-confirm" data-open={creating} inert={!creating}>
+            <div className="study-auth-confirm-clip">
+              <label className="study-auth-field">
+                <span>Confirmar senha</span>
+                <span className="study-auth-input-wrap">
+                  <LockKeyhole size={18} aria-hidden="true" />
+                  <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" name="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} disabled={!creating} required={creating} />
+                </span>
+              </label>
+            </div>
+          </div>
 
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}

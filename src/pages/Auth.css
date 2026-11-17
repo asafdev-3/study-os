@@ -427,3 +427,33 @@
 @media (prefers-reduced-motion: reduce) { .study-auth-watermark { transform:translate(-.08em,-.04em); } }
 @media (max-width:480px) { .study-auth-card { padding:27px 23px; border-radius:25px; } }
 @media (max-width:359px) { .study-auth-card { padding:24px 18px; } }
+
+/* Keep the glass static while the confirmation row opens. */
+.study-auth-login .study-auth-form { gap: 0; }
+.study-auth-login .study-auth-form > * + :not(.study-auth-confirm),
+.study-auth-confirm .study-auth-field { margin-top: 16px; }
+
+.study-auth-confirm {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.study-auth-confirm[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.study-auth-confirm-clip { min-height: 0; }
+.study-auth-confirm[data-open="false"] .study-auth-confirm-clip { overflow: hidden; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) .study-auth-confirm {
+    transition: grid-template-rows 320ms var(--auth-ease), opacity 200ms ease;
+  }
+  html:not([data-study-motion="reduced"]) .study-auth-confirm-clip {
+    overflow: hidden;
+    transition: overflow 320ms allow-discrete;
+  }
+  html:not([data-study-motion="reduced"]) .study-auth-confirm[data-open="true"] .study-auth-confirm-clip {
+    overflow: visible;
+  }
+}
