@@ -166,12 +166,12 @@ export default function Login() {
           <button type="button" aria-pressed={creating} className={creating ? 'is-active' : ''} onClick={() => changeMode('signup')}>Criar conta</button>
         </div>
 
-        <form className="study-auth-form" onSubmit={handleSubmit}>
+        <form className="study-auth-form" autoComplete={creating ? 'off' : 'on'} onSubmit={handleSubmit}>
           <label className="study-auth-field">
             <span>E-mail</span>
             <span className="study-auth-input-wrap">
               <Mail size={18} aria-hidden="true" />
-              <input type="email" autoComplete="email" inputMode="email" name="email" placeholder="voce@email.com" value={email} onChange={event => setEmail(event.target.value)} required />
+              <input type="email" autoComplete={creating ? 'off' : 'email'} inputMode="email" name={creating ? 'registration-contact' : 'email'} placeholder="voce@email.com" value={email} onChange={event => setEmail(event.target.value)} required />
             </span>
           </label>
           <div className="study-auth-field">
@@ -181,7 +181,7 @@ export default function Login() {
             </div>
             <span className="study-auth-input-wrap">
               <LockKeyhole size={18} aria-hidden="true" />
-              <input type={showPassword ? 'text' : 'password'} autoComplete={creating ? 'new-password' : 'current-password'} name="password" id="auth-password" placeholder={creating ? 'Mínimo de 8 caracteres' : 'Sua senha'} value={password} onChange={event => setPassword(event.target.value)} required />
+              <input type={showPassword ? 'text' : 'password'} autoComplete={creating ? 'off' : 'current-password'} name="password" id="auth-password" placeholder={creating ? 'Mínimo de 8 caracteres' : 'Sua senha'} value={password} onChange={event => setPassword(event.target.value)} required />
               <button className="study-auth-reveal" type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword(value => !value)}>
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -193,7 +193,7 @@ export default function Login() {
                 <span>Confirmar senha</span>
                 <span className="study-auth-input-wrap">
                   <LockKeyhole size={18} aria-hidden="true" />
-                  <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" name="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} disabled={!creating} required={creating} />
+                  <input type={showPassword ? 'text' : 'password'} autoComplete="off" name="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} disabled={!creating} required={creating} />
                 </span>
               </label>
             </div>
