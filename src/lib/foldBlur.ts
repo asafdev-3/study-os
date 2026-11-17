@@ -5,6 +5,11 @@
 type Segment = { left:number; top:number; width:number; height:number }
 type WindowWithSegments = Window & { getWindowSegments?:()=>Segment[] }
 export function installFoldBlur():()=>void {
+  // Most browsers (including iOS Safari) expose neither fold posture nor
+  // viewport segments. Avoid keeping a global resize listener there.
+  if (!("getWindowSegments" in window) && !window.matchMedia?.('(device-posture: folded)').matches) {
+    return () => {}
+  }
   let previousWidth=window.innerWidth
   let overlay:HTMLDivElement|null=null
   let current:Animation|null=null

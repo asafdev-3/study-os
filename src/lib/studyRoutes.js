@@ -19,7 +19,10 @@ export function preloadStudyRoute(to) {
   return loadStudyRoute[key]?.()
 }
 export function warmStudyRoutes() {
-  if (navigator.connection?.saveData) return () => {}
+  const connection = navigator.connection
+  const constrained = connection?.saveData || /^(slow-2g|2g)$/.test(connection?.effectiveType ?? '')
+  const narrowScreen = window.matchMedia('(max-width: 767px)').matches
+  if (constrained || narrowScreen) return () => {}
   let stopped = false
   const schedule = window.requestIdleCallback
     ? callback => window.requestIdleCallback(callback, { timeout: 3000 })

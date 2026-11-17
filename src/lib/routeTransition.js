@@ -8,6 +8,7 @@ let inFlight = null
 
 function motionDisabled() {
   return readPreferences().reduceMotion ||
+    window.matchMedia('(max-width: 767px)').matches ||
     window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
     document.documentElement.hasAttribute('data-study-keyboard')
 }
