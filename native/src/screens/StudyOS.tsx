@@ -6,6 +6,7 @@ import {
 import WebView from 'react-native-webview'
 import * as WebBrowser from 'expo-web-browser'
 import { GlassSurface } from '../components/GlassSurface'
+import Animated, { FadeIn, FadeInDown, FadeInUp, LinearTransition, useReducedMotion } from 'react-native-reanimated'
 import { supabase } from '../supabase'
 
 const WEB_ORIGIN = 'https://study-os-three-pearl.vercel.app'
@@ -23,6 +24,8 @@ function message(error: unknown) {
 
 export default function App() {
   const webRef = useRef<React.ElementRef<typeof WebView>>(null)
+  const reduceMotion = useReducedMotion()
+  const enter = (delay = 0) => reduceMotion ? undefined : FadeInDown.springify().damping(22).stiffness(180).delay(delay)
   const [session, setSession] = useState<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>(null)
   const [checking, setChecking] = useState(true)
   const [mode, setMode] = useState<Mode>('login')
@@ -103,7 +106,7 @@ export default function App() {
     finally { setBusy(false) }
   }
 
-  if (checking) return <View style={styles.loading}><ActivityIndicator color="#dce9fc" /></View>
+  if (checking) return <View style={styles.loading}><Animated.View entering={reduceMotion ? undefined : FadeIn.duration(260)} style={styles.loadingMark}><Text style={styles.logoLetter}>S</Text></Animated.View><ActivityIndicator color="#dce9fc" /></View>
 
   if (session) {
     return <SafeAreaView style={styles.shell}>
@@ -139,15 +142,16 @@ export default function App() {
     <View style={styles.mark}><Text style={styles.markText}>S</Text></View>
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.center} keyboardShouldPersistTaps="handled">
-        <View style={styles.card}>
+        <Animated.View entering={enter(60)} layout={reduceMotion ? undefined : LinearTransition.springify().damping(24).stiffness(190)} style={styles.card}>
           <GlassSurface />
-          <View style={styles.brand}><View style={styles.logo}><Text style={styles.logoLetter}>S</Text></View><Text style={styles.brandText}>STUDYOS</Text></View>
-          <Text style={styles.title}>{mode === 'recovery' ? 'Recupere seu acesso.' : mode === 'signup' ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</Text>
-          <Text style={styles.subtitle}>{mode === 'recovery' ? 'Enviaremos um link para seu e-mail.' : mode === 'signup' ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</Text>
-          {mode !== 'recovery' && <View style={styles.switch}>
+          <Animated.View entering={enter(100)} style={styles.brand}><View style={styles.logo}><Text style={styles.logoLetter}>S</Text></View><Text style={styles.brandText}>STUDYOS</Text></Animated.View>
+          <Animated.Text key={mode + 'title'} entering={reduceMotion ? undefined : FadeInUp.duration(260)} style={styles.title}>{mode === 'recovery' ? 'Recupere seu acesso.' : mode === 'signup' ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</Animated.Text>
+          <Animated.Text key={mode + 'subtitle'} entering={reduceMotion ? undefined : FadeIn.duration(300).delay(60)} style={styles.subtitle}>{mode === 'recovery' ? 'Enviaremos um link para seu e-mail.' : mode === 'signup' ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</Animated.Text>
+          {mode !== 'recovery' && <Animated.View entering={enter(140)} style={styles.switch}>
             <Pressable onPress={() => switchMode('login')} style={[styles.switchItem, mode === 'login' && styles.selected]}><Text style={styles.switchText}>Entrar</Text></Pressable>
             <Pressable onPress={() => switchMode('signup')} style={[styles.switchItem, mode === 'signup' && styles.selected]}><Text style={styles.switchText}>Criar conta</Text></Pressable>
-          </View>}
+          </Animated.View>}
+          <Animated.View key={mode + 'fields'} entering={enter(180)} layout={reduceMotion ? undefined : LinearTransition.springify().damping(25).stiffness(210)}>
           <Text style={styles.label}>E-mail</Text>
           <TextInput style={styles.input} placeholder="voce@email.com" placeholderTextColor="#acb9ca" autoCapitalize="none" keyboardType="email-address" autoComplete="email" value={email} onChangeText={setEmail} />
           {mode !== 'recovery' && <>
@@ -162,7 +166,8 @@ export default function App() {
           {!!notice && <Text style={styles.notice}>{notice}</Text>}
           <Pressable disabled={busy} onPress={submit} style={({ pressed }) => [styles.primary, pressed && styles.pressed]}><Text style={styles.primaryText}>{busy ? 'Aguarde…' : mode === 'recovery' ? 'Enviar link' : mode === 'signup' ? 'Criar conta' : 'Entrar'}</Text></Pressable>
           {mode === 'recovery' ? <Pressable onPress={() => switchMode('login')}><Text style={styles.back}>Voltar ao acesso</Text></Pressable> : <><Text style={styles.or}>ou</Text><Pressable disabled={busy} onPress={google} style={styles.secondary}><Text style={styles.secondaryText}>Continuar com Google</Text></Pressable></>}
-        </View>
+          </Animated.View>
+        </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
     </SafeAreaView>
@@ -171,7 +176,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 }, page: { flex: 1, backgroundColor: '#101a28' }, shell: { flex: 1, backgroundColor: '#101a28' }, web: { flex: 1, backgroundColor: '#101a28' },
-  loading: { flex: 1, justifyContent: 'center', backgroundColor: '#101a28' },
+  loading: { flex: 1, gap: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#101a28' }, loadingMark: { width: 48, height: 48, borderRadius: 15, backgroundColor: '#071325', alignItems: 'center', justifyContent: 'center' },
   glow: { position: 'absolute', width: 340, height: 340, borderRadius: 170, top: -100, right: -130, backgroundColor: '#1c3454', opacity: .5 },
   mark: { position: 'absolute', alignSelf: 'center', top: '20%' }, markText: { color: 'rgba(225,236,255,.06)', fontSize: 340, fontWeight: '700' },
   center: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 20, paddingVertical: 30 },
