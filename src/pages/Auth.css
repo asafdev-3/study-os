@@ -468,7 +468,7 @@
 
 /* Clear glass: the room stays visible through the center, with light on the rim. */
 .study-auth-login::before {
-  background: linear-gradient(120deg, rgb(8 17 30 / .64), rgb(11 24 42 / .30) 54%, rgb(7 14 25 / .65));
+  background: linear-gradient(120deg, rgb(8 17 30 / .64), rgb(11 24 42 / .25) 54%, rgb(7 14 25 / .65));
 }
 
 .study-auth-login .study-auth-card {
@@ -514,12 +514,12 @@
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .study-auth-login .study-auth-card {
-    background: linear-gradient(135deg, rgb(202 225 255 / .07), rgb(6 18 34 / .23));
-    -webkit-backdrop-filter: brightness(1.04) blur(14px) saturate(125%);
-    backdrop-filter: brightness(1.04) blur(14px) saturate(125%);
+    background: linear-gradient(135deg, rgb(202 225 255 / .055), rgb(6 18 34 / .14));
+    -webkit-backdrop-filter: brightness(1.03) blur(18px) saturate(130%);
+    backdrop-filter: brightness(1.03) blur(18px) saturate(130%);
   }
   .study-auth-login .study-auth-card[data-refraction="true"] {
-    backdrop-filter: brightness(1.04) blur(14px) saturate(125%) var(--auth-glass-filter);
+    backdrop-filter: brightness(1.03) blur(18px) saturate(130%) var(--auth-glass-filter);
   }
 }
 .study-auth-login .study-auth-card::before {
