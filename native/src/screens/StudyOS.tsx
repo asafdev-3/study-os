@@ -5,8 +5,9 @@ import {
 } from 'react-native'
 import WebView from 'react-native-webview'
 import * as WebBrowser from 'expo-web-browser'
+import * as Haptics from 'expo-haptics'
 import { GlassSurface } from '../components/GlassSurface'
-import Animated, { FadeIn, FadeInDown, FadeInUp, LinearTransition, useReducedMotion } from 'react-native-reanimated'
+import Animated, { Easing, FadeIn, FadeInDown, FadeInUp, FadeOutUp, useReducedMotion } from 'react-native-reanimated'
 import { supabase } from '../supabase'
 
 const WEB_ORIGIN = 'https://study-os-three-pearl.vercel.app'
@@ -25,7 +26,7 @@ function message(error: unknown) {
 export default function App() {
   const webRef = useRef<React.ElementRef<typeof WebView>>(null)
   const reduceMotion = useReducedMotion()
-  const enter = (delay = 0) => reduceMotion ? undefined : FadeInDown.springify().damping(22).stiffness(180).delay(delay)
+  const enter = (delay = 0) => reduceMotion ? undefined : FadeInDown.duration(300).easing(Easing.out(Easing.cubic)).delay(delay)
   const [session, setSession] = useState<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>(null)
   const [checking, setChecking] = useState(true)
   const [mode, setMode] = useState<Mode>('login')
@@ -46,7 +47,11 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  function switchMode(next: Mode) { setMode(next); setError(''); setNotice(''); setConfirm('') }
+  function switchMode(next: Mode) {
+    if (next === mode) return
+    void Haptics.selectionAsync()
+    setMode(next); setError(''); setNotice(''); setConfirm('')
+  }
 
   async function submit() {
     setError('')
@@ -142,16 +147,16 @@ export default function App() {
     <View style={styles.mark}><Text style={styles.markText}>S</Text></View>
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.center} keyboardShouldPersistTaps="handled">
-        <Animated.View entering={enter(60)} layout={reduceMotion ? undefined : LinearTransition.springify().damping(24).stiffness(190)} style={styles.card}>
+        <Animated.View entering={reduceMotion ? undefined : FadeInDown.springify().damping(26).stiffness(170).mass(0.8)} style={styles.card}>
           <GlassSurface />
           <Animated.View entering={enter(100)} style={styles.brand}><View style={styles.logo}><Text style={styles.logoLetter}>S</Text></View><Text style={styles.brandText}>STUDYOS</Text></Animated.View>
-          <Animated.Text key={mode + 'title'} entering={reduceMotion ? undefined : FadeInUp.duration(260)} style={styles.title}>{mode === 'recovery' ? 'Recupere seu acesso.' : mode === 'signup' ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</Animated.Text>
+          <Animated.Text key={mode + 'title'} entering={reduceMotion ? undefined : FadeInUp.duration(240).easing(Easing.out(Easing.cubic))} style={styles.title}>{mode === 'recovery' ? 'Recupere seu acesso.' : mode === 'signup' ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</Animated.Text>
           <Animated.Text key={mode + 'subtitle'} entering={reduceMotion ? undefined : FadeIn.duration(300).delay(60)} style={styles.subtitle}>{mode === 'recovery' ? 'Enviaremos um link para seu e-mail.' : mode === 'signup' ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</Animated.Text>
           {mode !== 'recovery' && <Animated.View entering={enter(140)} style={styles.switch}>
             <Pressable onPress={() => switchMode('login')} style={[styles.switchItem, mode === 'login' && styles.selected]}><Text style={styles.switchText}>Entrar</Text></Pressable>
             <Pressable onPress={() => switchMode('signup')} style={[styles.switchItem, mode === 'signup' && styles.selected]}><Text style={styles.switchText}>Criar conta</Text></Pressable>
           </Animated.View>}
-          <Animated.View key={mode + 'fields'} entering={enter(180)} layout={reduceMotion ? undefined : LinearTransition.springify().damping(25).stiffness(210)}>
+          <Animated.View key={mode + 'fields'} entering={reduceMotion ? undefined : FadeInDown.duration(260).easing(Easing.out(Easing.cubic)).delay(30)} exiting={reduceMotion ? undefined : FadeOutUp.duration(110)}>
           <Text style={styles.label}>E-mail</Text>
           <TextInput style={styles.input} placeholder="voce@email.com" placeholderTextColor="#acb9ca" autoCapitalize="none" keyboardType="email-address" autoComplete="email" value={email} onChangeText={setEmail} />
           {mode !== 'recovery' && <>
