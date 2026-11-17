@@ -108,6 +108,22 @@ export default function Login() {
 
   return (
     <main className="study-entry study-auth-page">
+      {/* Liquid Glass — SVG displacement filter (refração, Chromium only) */}
+      <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute', overflow: 'hidden' }}>
+        <filter id="lg-noise" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.009 0.012"
+                        numOctaves="2" seed="5" result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="1.3" result="soft" />
+          <feDisplacementMap in="SourceGraphic" in2="soft" scale="30"
+                             xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+
+      {/* Blobs de cor — dão ao glass algo colorido para refratar */}
+      <div className="lg-blob lg-blob-1" aria-hidden="true" />
+      <div className="lg-blob lg-blob-2" aria-hidden="true" />
+      <div className="lg-blob lg-blob-3" aria-hidden="true" />
+
       <section className="study-auth-card" aria-labelledby="auth-title">
         <header className="study-auth-brand">
           <img src="/icons/icon-192.png" alt="" className="study-auth-logo" />
