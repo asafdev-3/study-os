@@ -359,3 +359,71 @@
   }
   .lg-blob { display: none; }
 }
+
+/* StudyOS authentication: quiet, transparent surface */
+.study-entry.study-auth-page {
+  align-items: center;
+  background: #101a28 url('/images/study-room.webp') center / cover no-repeat;
+}
+.study-auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(8,17,30,.78), rgba(11,24,42,.52) 54%, rgba(7,14,25,.79));
+  pointer-events: none;
+}
+.study-auth-watermark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  color: rgba(225,236,255,.065);
+  font-size: clamp(330px,68vw,880px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.16em;
+  transform: translate(-.08em,-.04em);
+  user-select: none;
+}
+.study-auth-card {
+  width: min(100%,420px);
+  margin-block: auto;
+  padding: 32px;
+  border-radius: 28px;
+  background: linear-gradient(155deg,rgba(27,44,65,.43),rgba(12,25,43,.31));
+  border: 1px solid rgba(235,245,255,.25);
+  -webkit-backdrop-filter: blur(13px) saturate(125%);
+  backdrop-filter: blur(13px) saturate(125%);
+  box-shadow: 0 12px 42px rgba(2,8,17,.19), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.study-auth-card::after { display: none; }
+.study-auth-brand { justify-content: flex-start; margin-bottom: 30px; font-size: 13px; font-weight: 650; letter-spacing: .09em; text-transform: uppercase; }
+.study-auth-logo { width: 30px; height: 30px; }
+.study-auth-heading { text-align: left; }
+.study-auth-switch, .study-auth-input-wrap, .study-auth-submit, .study-auth-google {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.study-auth-switch { background: rgba(7,17,30,.28); }
+.study-auth-switch::before {
+  background: rgba(207,226,255,.19);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.21);
+  border-color: rgba(255,255,255,.12);
+}
+.study-auth-input-wrap {
+  background: rgba(7,16,29,.38);
+  border-color: rgba(228,239,255,.22);
+  box-shadow: none;
+}
+.study-auth-input-wrap:focus-within { background: rgba(7,16,29,.5); border-color: #bcd7ff; box-shadow: 0 0 0 3px rgba(145,188,251,.17); }
+.study-auth-submit { background: #dce9fc; box-shadow: none; }
+.study-auth-google { background: rgba(235,245,255,.10); box-shadow: none; }
+@media (hover:hover) and (pointer:fine) {
+  .study-auth-submit:not(:disabled):hover { background:#f0f5ff; box-shadow:none; }
+  .study-auth-google:not(:disabled):hover { background:rgba(235,245,255,.17); box-shadow:none; }
+}
+@media (prefers-reduced-motion: reduce) { .study-auth-watermark { transform:translate(-.08em,-.04em); } }
+@media (max-width:480px) { .study-auth-card { padding:27px 23px; border-radius:25px; } }
+@media (max-width:359px) { .study-auth-card { padding:24px 18px; } }
