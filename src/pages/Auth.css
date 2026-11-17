@@ -199,6 +199,17 @@
 }
 .study-auth-input-wrap input { width:100%; min-width:0; min-height:48px; border:0; outline:0; background:transparent; color:var(--auth-text); font-size:16px; font-weight:400; box-shadow:none; }
 .study-auth-input-wrap input::placeholder { color:#8e99ad; opacity:1; }
+/* Brave/Chrome paint a solid autofill color over transparent inputs. Keep the
+   saved email/password on the same dark surface as the rest of the field. */
+.study-auth-input-wrap input:-webkit-autofill,
+.study-auth-input-wrap input:-webkit-autofill:hover,
+.study-auth-input-wrap input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--auth-text);
+  caret-color: var(--auth-text);
+  -webkit-box-shadow: 0 0 0 100px #111e32 inset;
+  box-shadow: 0 0 0 100px #111e32 inset;
+  border-radius: 3px;
+}
 .study-auth-input-wrap input:focus-visible { outline:none; }
 .study-auth-reveal { display:grid; place-items:center; width:44px; height:44px; flex:0 0 44px; margin-right:-8px; border-radius:50%; color:#a8b7cb; cursor:pointer; }
 .study-auth-forgot { display:flex; justify-content:flex-end; margin-top:-7px; }
