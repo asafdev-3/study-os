@@ -492,3 +492,42 @@
     backdrop-filter: none;
   }
 }
+
+
+/* Adapted visual technique from polidario/Frontend-Projects, liquid-glass-vue.
+   The SVG distortion applies to the backdrop, keeping form text crisp. */
+.study-auth-glass-filter {
+  position: absolute;
+  pointer-events: none;
+  overflow: hidden;
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .study-auth-login .study-auth-card {
+    background: linear-gradient(135deg, rgb(202 225 255 / .07), rgb(6 18 34 / .23));
+    -webkit-backdrop-filter: brightness(1.08) blur(3px) saturate(135%);
+    backdrop-filter: brightness(1.08) blur(3px) saturate(135%);
+  }
+  .study-auth-login .study-auth-card[data-refraction="true"] {
+    backdrop-filter: brightness(1.08) blur(2px) saturate(135%) var(--auth-glass-filter);
+  }
+}
+.study-auth-login .study-auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 1px 1px 0 rgb(255 255 255 / .38),
+    inset -1px -1px 0 rgb(214 234 255 / .17),
+    inset 0 0 6px 1px rgb(232 244 255 / .15);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .study-auth-login .study-auth-card,
+  .study-auth-login .study-auth-card[data-refraction="true"] {
+    background: #111e30;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .study-auth-login .study-auth-card::before { display: none; }
+}

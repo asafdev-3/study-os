@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion } from '../lib/motion'
@@ -106,14 +106,32 @@ export default function Login() {
     }
   }
 
+  const glassFilterId = useId().replace(/[^a-zA-Z0-9_-]/g, '')
+  // SVG backdrop filters are an enhancement for desktop Chromium only.
+  const refractiveGlass = /Chrome\//.test(navigator.userAgent)
+    && !/Android|Mobile|iPhone|iPad/.test(navigator.userAgent)
+
   const creating = mode === 'signup'
   const reducedMotion = useStudyReducedMotion()
 
   return (
     <main className="study-entry study-auth-page study-auth-login">
+      <svg width="0" height="0" className="study-auth-glass-filter" aria-hidden="true" focusable="false">
+        <defs>
+          <filter id={glassFilterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="2" seed="8" result="turbulence" />
+            <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="14" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
       <div className="study-auth-watermark" aria-hidden="true">S</div>
 
-      <section className="study-auth-card" aria-labelledby="auth-title">
+      <section
+        className="study-auth-card"
+        data-refraction={refractiveGlass}
+        style={{ '--auth-glass-filter': 'url(#' + glassFilterId + ')' }}
+        aria-labelledby="auth-title"
+      >
         <header className="study-auth-brand">
           <img src="/icons/icon-192.png" alt="" className="study-auth-logo" />
           <span>StudyOS</span>
