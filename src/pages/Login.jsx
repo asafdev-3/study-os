@@ -122,12 +122,12 @@ export default function Login() {
         <defs>
           <filter id={glassFilterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
             <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="2" seed="8" result="turbulence" />
-            <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="14" xChannelSelector="R" yChannelSelector="G" />
+            <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </defs>
       </svg>
       <div className="study-auth-watermark study-auth-brand-backdrop" aria-hidden="true">
-        <img src={studyosBackdrop} alt="" width="900" height="900" />
+        <img src={studyosBackdrop} alt="" width="900" height="900" style={{ maskImage: `url(${studyosBackdrop})`, WebkitMaskImage: `url(${studyosBackdrop})` }} />
       </div>
 
       <section

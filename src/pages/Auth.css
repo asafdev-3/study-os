@@ -504,11 +504,11 @@
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .study-auth-login .study-auth-card {
     background: linear-gradient(135deg, rgb(202 225 255 / .07), rgb(6 18 34 / .23));
-    -webkit-backdrop-filter: brightness(1.08) blur(3px) saturate(135%);
-    backdrop-filter: brightness(1.08) blur(3px) saturate(135%);
+    -webkit-backdrop-filter: brightness(1.04) blur(14px) saturate(125%);
+    backdrop-filter: brightness(1.04) blur(14px) saturate(125%);
   }
   .study-auth-login .study-auth-card[data-refraction="true"] {
-    backdrop-filter: brightness(1.08) blur(2px) saturate(135%) var(--auth-glass-filter);
+    backdrop-filter: brightness(1.04) blur(14px) saturate(125%) var(--auth-glass-filter);
   }
 }
 .study-auth-login .study-auth-card::before {
@@ -562,19 +562,24 @@
 
 /* The logo is part of the scene behind the glass, so backdrop-filter blurs it. */
 .study-auth-login .study-auth-brand-backdrop {
+  grid-template-columns: minmax(0, 1fr);
   z-index: 0;
   transform: none;
   font-size: inherit;
   letter-spacing: normal;
-  opacity: .66;
-  mix-blend-mode: screen;
+  opacity: .28;
 }
 .study-auth-brand-backdrop img {
   display: block;
-  width: clamp(560px, 85vmin, 900px);
+  width: clamp(680px, 105vmin, 1100px);
   height: auto;
   max-width: none;
-  mix-blend-mode: screen;
+  /* Luminance removes the dark image canvas without changing the logo asset. */
+  mask-mode: luminance;
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
 }
 .study-auth-login-wordmark {
   color: #e6eef9;
