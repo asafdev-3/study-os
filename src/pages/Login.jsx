@@ -104,11 +104,48 @@ export default function Login() {
     }
   }
 
+  function handleCardMouseMove(event) {
+    const card = event.currentTarget
+    const bounds = card.getBoundingClientRect()
+    card.style.setProperty('--mouse-x', `${event.clientX - bounds.left}px`)
+    card.style.setProperty('--mouse-y', `${event.clientY - bounds.top}px`)
+  }
+
   const creating = mode === 'signup'
 
   return (
     <main className="study-entry study-auth-page">
-      <section className="study-auth-card" aria-labelledby="auth-title">
+      <svg className="study-auth-filter" aria-hidden="true" focusable="false">
+        <filter
+          id="apple-liquid-glass"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.012 0.018"
+            numOctaves="2"
+            seed="8"
+            result="glass-noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="glass-noise"
+            scale="11"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+
+      <section
+        className="study-auth-card"
+        aria-labelledby="auth-title"
+        onMouseMove={handleCardMouseMove}
+      >
         <header className="study-auth-brand">
           <img src="/icons/icon-192.png" alt="" className="study-auth-logo" />
           <span>STUDYOS</span>
