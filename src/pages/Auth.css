@@ -449,11 +449,8 @@
   html:not([data-study-motion="reduced"]) .study-auth-confirm {
     transition: grid-template-rows 320ms var(--auth-ease), opacity 200ms ease;
   }
-  html:not([data-study-motion="reduced"]) .study-auth-confirm-clip {
-    overflow: hidden;
-    transition: overflow 320ms allow-discrete;
-  }
   html:not([data-study-motion="reduced"]) .study-auth-confirm[data-open="true"] .study-auth-confirm-clip {
     overflow: visible;
+    transition: overflow 0ms 320ms allow-discrete;
   }
 }
