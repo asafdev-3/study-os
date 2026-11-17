@@ -104,62 +104,24 @@ export default function Login() {
     }
   }
 
-  function handleCardMouseMove(event) {
-    const card = event.currentTarget
-    const bounds = card.getBoundingClientRect()
-    card.style.setProperty('--mouse-x', `${event.clientX - bounds.left}px`)
-    card.style.setProperty('--mouse-y', `${event.clientY - bounds.top}px`)
-  }
-
   const creating = mode === 'signup'
 
   return (
     <main className="study-entry study-auth-page">
-      <svg className="study-auth-filter" aria-hidden="true" focusable="false">
-        <filter
-          id="apple-liquid-glass"
-          x="-20%"
-          y="-20%"
-          width="140%"
-          height="140%"
-          colorInterpolationFilters="sRGB"
-        >
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.012 0.018"
-            numOctaves="2"
-            seed="8"
-            result="glass-noise"
-          />
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="glass-noise"
-            scale="11"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </svg>
-
-      <section
-        className="study-auth-card"
-        aria-labelledby="auth-title"
-        onMouseMove={handleCardMouseMove}
-      >
+      <section className="study-auth-card" aria-labelledby="auth-title">
         <header className="study-auth-brand">
           <img src="/icons/icon-192.png" alt="" className="study-auth-logo" />
-          <span>STUDYOS</span>
+          <span>StudyOS</span>
         </header>
 
         <div className="study-auth-heading">
-          <p className="study-auth-kicker">SEU ESPAÇO DE ESTUDO</p>
-          <h1 id="auth-title">{creating ? 'Comece por aqui.' : 'Bom ter você de volta.'}</h1>
-          <p>{creating ? 'Crie sua conta e organize sua preparação para o ENEM.' : 'Entre para continuar de onde você parou.'}</p>
+          <h1 id="auth-title">{creating ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</h1>
+          <p>{creating ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</p>
         </div>
 
-        <div className="study-auth-switch" role="tablist" aria-label="Acesso à conta">
-          <button type="button" role="tab" aria-selected={!creating} className={!creating ? 'is-active' : ''} onClick={() => changeMode('login')}>Entrar</button>
-          <button type="button" role="tab" aria-selected={creating} className={creating ? 'is-active' : ''} onClick={() => changeMode('signup')}>Criar conta</button>
+        <div className="study-auth-switch" data-creating={creating} role="group" aria-label="Acesso à conta">
+          <button type="button" aria-pressed={!creating} className={!creating ? 'is-active' : ''} onClick={() => changeMode('login')}>Entrar</button>
+          <button type="button" aria-pressed={creating} className={creating ? 'is-active' : ''} onClick={() => changeMode('signup')}>Criar conta</button>
         </div>
 
         <form className="study-auth-form" onSubmit={handleSubmit}>
@@ -170,16 +132,19 @@ export default function Login() {
               <input type="email" autoComplete="email" inputMode="email" name="email" placeholder="voce@email.com" value={email} onChange={event => setEmail(event.target.value)} required />
             </span>
           </label>
-          <label className="study-auth-field">
-            <span>Senha</span>
+          <div className="study-auth-field">
+            <div className="study-auth-field-heading">
+              <label htmlFor="auth-password">Senha</label>
+              {!creating && <Link to="/esqueci-senha">Esqueceu a senha?</Link>}
+            </div>
             <span className="study-auth-input-wrap">
               <LockKeyhole size={18} aria-hidden="true" />
-              <input type={showPassword ? 'text' : 'password'} autoComplete={creating ? 'new-password' : 'current-password'} name="password" placeholder={creating ? 'Mínimo de 8 caracteres' : 'Sua senha'} value={password} onChange={event => setPassword(event.target.value)} required />
+              <input type={showPassword ? 'text' : 'password'} autoComplete={creating ? 'new-password' : 'current-password'} name="password" id="auth-password" placeholder={creating ? 'Mínimo de 8 caracteres' : 'Sua senha'} value={password} onChange={event => setPassword(event.target.value)} required />
               <button className="study-auth-reveal" type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword(value => !value)}>
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </span>
-          </label>
+          </div>
           {creating && <label className="study-auth-field">
             <span>Confirmar senha</span>
             <span className="study-auth-input-wrap">
@@ -187,8 +152,6 @@ export default function Login() {
               <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" name="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} required />
             </span>
           </label>}
-
-          {!creating && <div className="study-auth-forgot"><Link to="/esqueci-senha">Esqueci minha senha</Link></div>}
 
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}
@@ -199,12 +162,11 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="study-auth-divider"><span>ou continue com</span></div>
+        <div className="study-auth-divider"><span>ou</span></div>
         <button className="study-auth-google" type="button" onClick={handleGoogle} disabled={loading}>
           <GoogleIcon /> Continuar com Google
         </button>
 
-        <p className="study-auth-terms">Ao continuar, você concorda em usar o StudyOS de forma responsável.</p>
       </section>
     </main>
   )
