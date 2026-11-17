@@ -6,7 +6,7 @@ import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
 import kiraLogin from '../assets/kira-login.webp'
-import studyosLogo from '../assets/studyos-login.webp'
+import studyosBackdrop from '../assets/studyos-backdrop.webp'
 import './Auth.css'
 
 const GoogleIcon = () => (
@@ -126,7 +126,9 @@ export default function Login() {
           </filter>
         </defs>
       </svg>
-      <div className="study-auth-watermark" aria-hidden="true">S</div>
+      <div className="study-auth-watermark study-auth-brand-backdrop" aria-hidden="true">
+        <img src={studyosBackdrop} alt="" width="900" height="900" />
+      </div>
 
       <section
         className="study-auth-card"
@@ -135,7 +137,7 @@ export default function Login() {
         aria-labelledby="auth-title"
       >
         <header className="study-auth-login-brand">
-          <img src={studyosLogo} alt="StudyOS" width="80" height="80" className="study-auth-login-logo" />
+          <span className="study-auth-login-wordmark">StudyOS</span>
           <motion.img
             src={kiraLogin}
             alt="Kira, sua tutora de estudos"

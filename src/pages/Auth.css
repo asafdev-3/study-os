@@ -558,3 +558,30 @@
   .study-auth-login-logo { width: 64px; height: 64px; }
   .study-auth-kira { width: 114px; height: 76px; }
 }
+
+
+/* The logo is part of the scene behind the glass, so backdrop-filter blurs it. */
+.study-auth-login .study-auth-brand-backdrop {
+  z-index: 0;
+  transform: none;
+  font-size: inherit;
+  letter-spacing: normal;
+  opacity: .66;
+  mix-blend-mode: screen;
+}
+.study-auth-brand-backdrop img {
+  display: block;
+  width: clamp(560px, 85vmin, 900px);
+  height: auto;
+  max-width: none;
+  mix-blend-mode: screen;
+}
+.study-auth-login-wordmark {
+  color: #e6eef9;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -.035em;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .study-auth-login .study-auth-brand-backdrop { opacity: .25; }
+}
