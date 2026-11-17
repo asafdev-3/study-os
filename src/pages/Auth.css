@@ -454,3 +454,17 @@
     transition: overflow 0ms 320ms allow-discrete;
   }
 }
+
+.study-auth-login .study-auth-card {
+  background: linear-gradient(155deg, rgba(27, 44, 65, .35), rgba(12, 25, 43, .25));
+  -webkit-backdrop-filter: blur(17px) saturate(125%);
+  backdrop-filter: blur(17px) saturate(125%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .study-auth-login .study-auth-card {
+    background: #111e30;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
