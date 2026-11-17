@@ -531,3 +531,30 @@
   }
   .study-auth-login .study-auth-card::before { display: none; }
 }
+
+
+.study-auth-login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: -8px 0 20px;
+}
+.study-auth-login-logo {
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 18px;
+}
+.study-auth-kira {
+  display: block;
+  width: 132px;
+  height: 88px;
+  object-fit: contain;
+}
+@media (max-height: 740px) {
+  .study-auth-login-brand { margin-bottom: 14px; }
+  .study-auth-login-logo { width: 64px; height: 64px; }
+  .study-auth-kira { width: 114px; height: 76px; }
+}

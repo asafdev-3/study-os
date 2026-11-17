@@ -5,6 +5,8 @@ import { useStudyReducedMotion } from '../lib/motion'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
+import kiraLogin from '../assets/kira-login.webp'
+import studyosLogo from '../assets/studyos-login.webp'
 import './Auth.css'
 
 const GoogleIcon = () => (
@@ -132,9 +134,18 @@ export default function Login() {
         style={{ '--auth-glass-filter': 'url(#' + glassFilterId + ')' }}
         aria-labelledby="auth-title"
       >
-        <header className="study-auth-brand">
-          <img src="/icons/icon-192.png" alt="" className="study-auth-logo" />
-          <span>StudyOS</span>
+        <header className="study-auth-login-brand">
+          <img src={studyosLogo} alt="StudyOS" width="80" height="80" className="study-auth-login-logo" />
+          <motion.img
+            src={kiraLogin}
+            alt="Kira, sua tutora de estudos"
+            width="132"
+            height="88"
+            className="study-auth-kira"
+            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          />
         </header>
 
         <motion.div
