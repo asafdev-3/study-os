@@ -5,7 +5,7 @@ import { useStudyReducedMotion } from '../lib/motion'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
-import kiraLogin from '../assets/kira-login.webp'
+import KiraLoginScene from '../components/KiraLoginScene'
 import studyosBackdrop from '../assets/studyos-backdrop.webp'
 import './Auth.css'
 
@@ -130,6 +130,8 @@ export default function Login() {
         <img src={studyosBackdrop} alt="" width="900" height="900" style={{ maskImage: `url(${studyosBackdrop})`, WebkitMaskImage: `url(${studyosBackdrop})` }} />
       </div>
 
+      <KiraLoginScene reducedMotion={reducedMotion} />
+
       <section
         className="study-auth-card"
         data-refraction={refractiveGlass}
@@ -138,16 +140,6 @@ export default function Login() {
       >
         <header className="study-auth-login-brand">
           <span className="study-auth-login-wordmark">StudyOS</span>
-          <motion.img
-            src={kiraLogin}
-            alt="Kira, sua tutora de estudos"
-            width="132"
-            height="88"
-            className="study-auth-kira"
-            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          />
         </header>
 
         <motion.div

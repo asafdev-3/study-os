@@ -466,47 +466,39 @@
   }
 }
 
-/* Clear glass: the room stays visible through the center, with light on the rim. */
-.study-auth-login::before {
-  background: linear-gradient(120deg, rgb(8 17 30 / .64), rgb(11 24 42 / .25) 54%, rgb(7 14 25 / .65));
+/* The login scene owns its sky; recovery retains the room background. */
+.study-entry.study-auth-login {
+  display: grid;
+  grid-template-columns: minmax(0, 470px) minmax(0, 420px);
+  align-content: center;
+  align-items: center;
+  gap: clamp(24px, 5vw, 88px);
+  background:
+    radial-gradient(ellipse at 28% 49%, #193b56 0%, transparent 34%),
+    radial-gradient(ellipse at 30% 77%, #312e55 0%, transparent 42%),
+    linear-gradient(150deg, #080f1c 16%, #101d31 65%, #080f1a);
 }
-
+.study-auth-login::before {
+  background:
+    radial-gradient(1.5px 1.5px at 14% 34%, #c3eaff 65%, transparent),
+    radial-gradient(1px 1px at 25% 21%, #bdd2ef 70%, transparent),
+    radial-gradient(1px 1px at 42% 26%, #bdd2ef 70%, transparent),
+    radial-gradient(2px 2px at 11% 62%, #b1a4df 50%, transparent),
+    radial-gradient(1px 1px at 38% 73%, #bdd2ef 70%, transparent),
+    radial-gradient(1.5px 1.5px at 84% 22%, #bdd2ef 60%, transparent),
+    radial-gradient(1px 1px at 93% 68%, #bdd2ef 70%, transparent);
+}
 .study-auth-login .study-auth-card {
-  background: rgb(12 25 43 / .88);
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 32px;
+  border: 1px solid rgb(210 229 251 / .16);
+  background: #122038;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .06), 0 10px 32px rgb(2 9 19 / .13);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  border-color: rgb(206 229 255 / .23);
-  box-shadow: 0 14px 40px rgb(2 8 17 / .26);
 }
 
-@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .study-auth-login .study-auth-card {
-    background:
-      radial-gradient(ellipse at 18% 0%, rgb(177 215 255 / .15), transparent 55%),
-      linear-gradient(155deg, rgb(16 32 52 / .21), rgb(8 18 33 / .33));
-    border-color: rgb(206 229 255 / .24);
-    border-top-color: rgb(225 242 255 / .49);
-    border-left-color: rgb(216 237 255 / .36);
-    -webkit-backdrop-filter: blur(6px) saturate(145%);
-    backdrop-filter: blur(6px) saturate(145%);
-    box-shadow:
-      inset 0 1px 0 rgb(245 251 255 / .23),
-      inset 0 -1px 0 rgb(176 214 255 / .12),
-      0 14px 40px rgb(2 8 17 / .26);
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .study-auth-login .study-auth-card {
-    background: #111e30;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-
-/* Adapted visual technique from polidario/Frontend-Projects, liquid-glass-vue.
-   The SVG distortion applies to the backdrop, keeping form text crisp. */
 .study-auth-glass-filter {
   position: absolute;
   pointer-events: none;
@@ -522,17 +514,6 @@
     backdrop-filter: brightness(1.03) blur(18px) saturate(130%) var(--auth-glass-filter);
   }
 }
-.study-auth-login .study-auth-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow:
-    inset 1px 1px 0 rgb(255 255 255 / .38),
-    inset -1px -1px 0 rgb(214 234 255 / .17),
-    inset 0 0 6px 1px rgb(232 244 255 / .15);
-}
 @media (prefers-reduced-transparency: reduce) {
   .study-auth-login .study-auth-card,
   .study-auth-login .study-auth-card[data-refraction="true"] {
@@ -544,32 +525,67 @@
 }
 
 
-.study-auth-login-brand {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: -8px 0 20px;
-}
-.study-auth-login-logo {
-  display: block;
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  border-radius: 18px;
-}
-.study-auth-kira {
-  display: block;
-  width: 132px;
-  height: 88px;
-  object-fit: contain;
-}
-@media (max-height: 740px) {
-  .study-auth-login-brand { margin-bottom: 14px; }
-  .study-auth-login-logo { width: 64px; height: 64px; }
-  .study-auth-kira { width: 114px; height: 76px; }
-}
+.study-auth-login-brand { margin-bottom: 24px; }
 
+.kira-scene { position: relative; z-index: 1; min-width: 0; text-align: center; }
+.kira-actor {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: min(100%, 380px);
+  margin: auto;
+  padding: 20px 8px 10px;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.kira-track { display: block; width: 91%; transition: transform 200ms ease-out; pointer-events: none; }
+.kira-track img { display: block; width: 100%; height: auto; user-select: none; }
+.kira-orbit {
+  position: absolute;
+  inset: auto 0 32px;
+  height: 25%;
+  pointer-events: none;
+  border: 1px solid rgb(154 217 255 / .3);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #66c7ff3b, #597ded12 43%, transparent 70%);
+  transform: rotate(-5deg);
+}
+.kira-orbit::before {
+  content: "";
+  position: absolute;
+  inset: 8% 7%;
+  border: 1px solid rgb(164 202 255 / .18);
+  border-radius: 50%;
+}
+.kira-caption {
+  position: relative;
+  margin-top: 18px;
+  padding: 5px 12px;
+  color: #d1dfed;
+  font-size: 13px;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+@media (max-width: 760px) {
+  .study-entry.study-auth-login {
+    grid-template-columns: minmax(0, 420px);
+    gap: 10px;
+    padding-block: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-bottom));
+    background: radial-gradient(ellipse at 50% 9%, #214158, transparent 41%),
+      linear-gradient(158deg, #101a2a, #151c32 58%, #0b1423);
+  }
+  .kira-actor { width: 100%; padding: 0; }
+  .kira-track { width: 136px; }
+  .kira-orbit { width: 160px; inset: auto auto 26px; }
+  .kira-caption { margin-top: 4px; padding: 3px 8px; }
+  .study-auth-login-brand { margin-bottom: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kira-track { transition: none; }
+}
 
 /* The logo is part of the scene behind the glass, so backdrop-filter blurs it. */
 .study-auth-login .study-auth-brand-backdrop {
