@@ -1,0 +1,143 @@
+/* Immersive, full-viewport onboarding. The form stays narrow; the scene does not. */
+.study-onboarding {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 100svh;
+  min-height: 100dvh;
+  color: #f4f7ff;
+  background: #081522;
+  overflow-x: clip;
+}
+.study-onboarding::before {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(7, 14, 26, .62), rgba(6, 14, 25, .89)),
+    url('../assets/autumn-rain-mobile.webp') center / cover no-repeat;
+}
+.study-onboarding::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 0%, rgba(132, 159, 206, .14), transparent 64%);
+}
+.study-onboarding-shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: min(100%, 464px);
+  min-height: 100svh;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding:
+    max(22px, calc(env(safe-area-inset-top, 0px) + 14px))
+    22px
+    max(22px, calc(env(safe-area-inset-bottom, 0px) + 14px));
+  background: linear-gradient(180deg, rgba(8, 20, 35, .4), rgba(9, 21, 34, .16));
+}
+.study-onboarding-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 34px;
+  margin-bottom: 26px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.study-onboarding-brand img { width: 28px; height: 28px; border-radius: 9px; }
+.study-onboarding-brand .study-onboarding-caption {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 450;
+  letter-spacing: .02em;
+  color: #c2d0e4;
+}
+.study-onboarding-progress { flex: none; padding-bottom: 24px; }
+.study-onboarding-progress-track { display: flex; gap: 6px; margin-bottom: 12px; }
+.study-onboarding-progress-segment {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(238, 245, 255, .18);
+}
+.study-onboarding-progress-segment[data-complete="true"] {
+  background: linear-gradient(90deg, #8caeff, #a6a1ff);
+}
+.study-onboarding-progress p {
+  color: #b7c5d8;
+  font-size: 12px;
+  margin: 0;
+}
+.study-onboarding-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 1px 12px;
+  scrollbar-width: none;
+}
+.study-onboarding-body::-webkit-scrollbar { display: none; }
+.study-onboarding-body h1 { text-shadow: 0 1px 12px rgba(0, 0, 0, .14); }
+.study-onboarding-choice {
+  min-height: 54px;
+  border-radius: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+.study-onboarding-choice:focus-visible,
+.study-onboarding-footer button:focus-visible {
+  outline: 2px solid #c6d7ff;
+  outline-offset: 3px;
+}
+.study-onboarding-footer {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding-top: 18px;
+}
+.study-onboarding-footer > button { min-height: 52px; }
+.study-onboarding-error { flex: 1 0 100%; color: #ffd5db; font-size: 12px; }
+@media (min-width: 768px) {
+  .study-onboarding::before {
+    background:
+      linear-gradient(180deg, rgba(8, 16, 28, .56), rgba(5, 13, 24, .87)),
+      url('../assets/autumn-rain.webp') center / cover no-repeat;
+  }
+  .study-onboarding-shell {
+    min-height: min(880px, calc(100dvh - 72px));
+    margin-block: 36px;
+    padding: 30px 30px 32px;
+    border: 1px solid rgba(225, 238, 255, .17);
+    border-radius: 30px;
+    background: linear-gradient(145deg, rgba(16, 28, 47, .72), rgba(10, 21, 36, .7));
+    box-shadow: 0 28px 76px rgba(0, 0, 0, .26), inset 0 1px rgba(255,255,255,.10);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+}
+@media (max-width: 767px) {
+  .study-onboarding-shell { width: 100%; padding-inline: clamp(18px, 5vw, 24px); }
+  .study-onboarding-brand { margin-bottom: 16px; }
+  .study-onboarding-progress { padding-bottom: 18px; }
+}
+@media (max-height: 650px) {
+  .study-onboarding-brand { margin-bottom: 10px; }
+  .study-onboarding-progress { padding-bottom: 12px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) .study-onboarding-choice {
+    transition: transform 170ms cubic-bezier(.22, 1, .36, 1), background-color 170ms ease, border-color 170ms ease;
+  }
+  html:not([data-study-motion="reduced"]) .study-onboarding-choice:active { transform: scale(.986); }
+}
