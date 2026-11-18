@@ -130,7 +130,7 @@ export default function Login() {
         <img src={studyosBackdrop} alt="" width="900" height="900" style={{ maskImage: `url(${studyosBackdrop})`, WebkitMaskImage: `url(${studyosBackdrop})` }} />
       </div>
 
-      <KiraLoginScene reducedMotion={reducedMotion} />
+      <KiraLoginScene reducedMotion={reducedMotion} creating={creating} />
 
       <section
         className="study-auth-card"

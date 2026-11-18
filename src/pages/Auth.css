@@ -506,7 +506,9 @@
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .study-auth-login .study-auth-card {
-    background: linear-gradient(135deg, rgb(202 225 255 / .055), rgb(6 18 34 / .14));
+    background:
+      radial-gradient(ellipse at 0% 0%, rgb(159 215 255 / .10), transparent 51%),
+      linear-gradient(135deg, rgb(187 215 243 / .05), rgb(8 19 37 / .28) 65%, rgb(125 137 192 / .08));
     -webkit-backdrop-filter: brightness(1.03) blur(18px) saturate(130%);
     backdrop-filter: brightness(1.03) blur(18px) saturate(130%);
   }
@@ -514,7 +516,20 @@
     backdrop-filter: brightness(1.03) blur(18px) saturate(130%) var(--auth-glass-filter);
   }
 }
-@media (prefers-reduced-transparency: reduce) {
+@supports (mask-composite: exclude) {
+  .study-auth-login .study-auth-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: linear-gradient(142deg, rgb(220 244 255 / .45), transparent 30%, transparent 68%, rgb(191 199 255 / .24));
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .study-auth-login .study-auth-card,
   .study-auth-login .study-auth-card[data-refraction="true"] {
     background: #111e30;
@@ -527,64 +542,122 @@
 
 .study-auth-login-brand { margin-bottom: 24px; }
 
-.kira-scene { position: relative; z-index: 1; min-width: 0; text-align: center; }
+.kira-scene { position: relative; z-index: 1; min-width: 0; }
 .kira-actor {
-  position: relative;
   display: grid;
+  grid-template-areas: "bubble" "stage";
   justify-items: center;
-  width: min(100%, 380px);
+  width: min(100%, 374px);
   margin: auto;
-  padding: 20px 8px 10px;
+  padding: 12px;
   border: 0;
   border-radius: 28px;
   background: transparent;
   cursor: pointer;
   touch-action: manipulation;
 }
-.kira-track { display: block; width: 91%; transition: transform 200ms ease-out; pointer-events: none; }
-.kira-track img { display: block; width: 100%; height: auto; user-select: none; }
-.kira-orbit {
-  position: absolute;
-  inset: auto 0 32px;
-  height: 25%;
+.kira-stage {
+  grid-area: stage;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  padding: 22px 0 16px;
+  perspective: 760px;
   pointer-events: none;
-  border: 1px solid rgb(154 217 255 / .3);
-  border-radius: 50%;
-  background: radial-gradient(ellipse, #66c7ff3b, #597ded12 43%, transparent 70%);
-  transform: rotate(-5deg);
 }
-.kira-orbit::before {
+.kira-track { display: block; width: 92%; }
+.kira-figure, .kira-face { position: relative; display: block; }
+.kira-face img { display: block; width: 100%; height: auto; user-select: none; }
+
+/* Both lids are anchored inside the LED bezels in the 360 × 240 artwork. */
+.kira-eye { position: absolute; top: 35.8%; width: 8.9%; height: 19.7%; overflow: hidden; border-radius: 12%; }
+.kira-eye-left { left: 35.55%; }
+.kira-eye-right { left: 67%; }
+.kira-eye::before, .kira-eye::after {
   content: "";
   position: absolute;
-  inset: 8% 7%;
-  border: 1px solid rgb(164 202 255 / .18);
+  inset-inline: 0;
+  height: 49%;
+  background: linear-gradient(110deg, #10264a, #071326 60%, #182e49);
+  transform: scaleY(0);
+}
+.kira-eye::before { top: 0; transform-origin: top; }
+.kira-eye::after { bottom: 0; transform-origin: bottom; }
+@media (prefers-reduced-motion: no-preference) {
+  .kira-scene:not([data-still]) .kira-eye::before,
+  .kira-scene:not([data-still]) .kira-eye::after { animation: kira-blink 6.4s linear -3s infinite; }
+  .kira-scene:not([data-still]) .kira-face { animation: kira-hover 5.2s ease-in-out infinite; }
+}
+@keyframes kira-blink {
+  0%, 67%, 70.8%, 100% { transform: scaleY(0); }
+  68.5%, 69% { transform: scaleY(1); }
+}
+@keyframes kira-hover {
+  0%, 100% { transform: translateY(1px); }
+  50% { transform: translateY(-3px); }
+}
+.kira-orbit {
+  position: absolute;
+  inset: auto 1% 9px;
+  height: 23%;
+  border: 1px solid rgb(154 217 255 / .23);
   border-radius: 50%;
+  background: radial-gradient(ellipse, #64baff3b, #597ded12 43%, transparent 70%);
+  transform: rotate(-5deg);
 }
-.kira-caption {
+.kira-bubble {
+  grid-area: bubble;
   position: relative;
-  margin-top: 18px;
-  padding: 5px 12px;
-  color: #d1dfed;
-  font-size: 13px;
-  line-height: 1.4;
-  text-wrap: balance;
+  justify-self: end;
+  width: min(100%, 245px);
+  text-align: left;
+  padding: 13px 18px 14px;
+  color: #f1f7ff;
+  background: linear-gradient(135deg, #263c55, #172a42);
+  border: 1px solid rgb(179 216 245 / .26);
+  border-radius: 21px 21px 21px 6px;
+  box-shadow: inset 0 1px rgb(236 248 255 / .1);
 }
+.kira-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 22px;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  background: #23384f;
+  border-right: 1px solid rgb(179 216 245 / .26);
+  border-bottom: 1px solid rgb(179 216 245 / .26);
+}
+.kira-speaker { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: #b9dcf6; font-size: 12px; font-weight: 600; }
+.kira-speaker::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #8be2ff; }
+.kira-speech { display: grid; align-items: center; min-height: 2.8em; font-size: 16px; line-height: 1.4; }
+.kira-speech > span { grid-area: 1 / 1; }
+.kira-speech-size { visibility: hidden; }
 @media (max-width: 760px) {
   .study-entry.study-auth-login {
     grid-template-columns: minmax(0, 420px);
-    gap: 10px;
+    gap: 12px;
     padding-block: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-bottom));
-    background: radial-gradient(ellipse at 50% 9%, #214158, transparent 41%),
+    background: radial-gradient(ellipse at 28% 12%, #223f59, transparent 45%),
       linear-gradient(158deg, #101a2a, #151c32 58%, #0b1423);
   }
-  .kira-actor { width: 100%; padding: 0; }
-  .kira-track { width: 136px; }
-  .kira-orbit { width: 160px; inset: auto auto 26px; }
-  .kira-caption { margin-top: 4px; padding: 3px 8px; }
+  .kira-actor {
+    width: 100%;
+    grid-template-areas: "stage bubble";
+    grid-template-columns: minmax(90px, .65fr) minmax(0, 1fr);
+    align-items: center;
+    padding: 4px;
+    gap: 10px;
+  }
+  .kira-stage { padding: 10px 0; }
+  .kira-track { width: 100%; }
+  .kira-bubble { width: 100%; padding: 10px 13px; border-radius: 18px 18px 18px 5px; }
+  .kira-bubble::after { left: -5px; bottom: 16px; transform: rotate(135deg); }
+  .kira-speech { min-height: 4.2em; font-size: 14px; }
   .study-auth-login-brand { margin-bottom: 16px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .kira-track { transition: none; }
 }
 
 /* The logo is part of the scene behind the glass, so backdrop-filter blurs it. */
@@ -594,7 +667,7 @@
   transform: none;
   font-size: inherit;
   letter-spacing: normal;
-  opacity: .28;
+  opacity: .18;
 }
 .study-auth-brand-backdrop img {
   display: block;
