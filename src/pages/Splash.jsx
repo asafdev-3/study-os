@@ -15,7 +15,7 @@ function Splash() {
   }, [navigate])
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
+    <div className="min-h-dvh w-full bg-black flex flex-col items-center justify-center gap-4">
       <div
         className="flex flex-col items-center gap-4 transition-opacity duration-700"
         style={{ opacity: visivel ? 1 : 0 }}
