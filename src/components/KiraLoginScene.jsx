@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, m as motion, useSpring, useTransform } from 'framer-motion'
-import kira from '../assets/kira-login.webp'
+import { AnimatePresence, m as motion, useSpring } from 'framer-motion'
+import blink from '../assets/kira-blink.webp'
+import turnClip from '../assets/kira-turn.webp'
+import noteClip from '../assets/kira-note.webp'
+import eyesClosed from '../assets/kira-private.webp'
+import resting from '../assets/kira-rest.webp'
 
 const greetings = [
   'Oi, eu sou a Kira. Vamos estudar?',
@@ -9,7 +13,10 @@ const greetings = [
   'Quando entrar, me chama na aba Kira.',
 ]
 const turnSpring = { stiffness: 170, damping: 25, mass: 0.7 }
-const nodSpring = { stiffness: 280, damping: 18, mass: 0.55 }
+const gestures = {
+  turn: { src: turnClip, duration: 1800 },
+  note: { src: noteClip, duration: 1417 },
+}
 const bubbleTransition = { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
 
 export default function KiraLoginScene({ reducedMotion, creating, focusedField }) {
@@ -17,13 +24,13 @@ export default function KiraLoginScene({ reducedMotion, creating, focusedField }
   const speech = line === 0 && creating ? 'Vamos preparar seu espaço de estudo?' : greetings[line]
   const privateField = focusedField === 'password' || focusedField === 'confirmPassword'
   const gaze = privateField ? 'away' : focusedField ? 'form' : 'free'
-  const release = useRef(null)
+  const [gesture, setGesture] = useState(null)
+  const restore = useRef(null)
+  const active = !privateField && !reducedMotion ? gestures[gesture] : null
+  const image = privateField ? eyesClosed : reducedMotion ? resting : active?.src || blink
+  useEffect(() => () => clearTimeout(restore.current), [gesture, privateField, reducedMotion])
   const turn = useSpring(0, turnSpring)
   const tilt = useSpring(0, turnSpring)
-  const lift = useSpring(0, nodSpring)
-  const nod = useTransform(lift, [0, 1], [0, -8])
-  const lean = useTransform(lift, [0, 1], [0, -3])
-
   useEffect(() => {
     const mouse = window.matchMedia('(hover: hover) and (pointer: fine)')
     function center() {
@@ -35,10 +42,14 @@ export default function KiraLoginScene({ reducedMotion, creating, focusedField }
       turn.set((2 * event.clientX / window.innerWidth - 1) * 13)
       tilt.set((1 - 2 * event.clientY / window.innerHeight) * 6)
     }
-    if (gaze !== 'free' && !reducedMotion) {
+    if (reducedMotion) {
+      turn.jump(0)
+      tilt.jump(0)
+    } else if (gaze !== 'free') {
       turn.set(gaze === 'away' ? -15 : 10)
       tilt.set(gaze === 'away' ? -4 : 2)
-    } else if (!reducedMotion) {
+    } else {
+      center()
       window.addEventListener('pointermove', follow, { passive: true })
       window.addEventListener('blur', center)
       document.documentElement.addEventListener('pointerleave', center)
@@ -49,19 +60,18 @@ export default function KiraLoginScene({ reducedMotion, creating, focusedField }
       window.removeEventListener('blur', center)
       document.documentElement.removeEventListener('pointerleave', center)
       mouse.removeEventListener('change', center)
-      clearTimeout(release.current)
-      turn.jump(0)
-      tilt.jump(0)
-      lift.jump(0)
     }
-  }, [turn, tilt, lift, reducedMotion, gaze])
+  }, [turn, tilt, reducedMotion, gaze])
 
   function greet() {
-    setLine(previous => (previous + 1) % greetings.length)
-    if (reducedMotion) return
-    clearTimeout(release.current)
-    lift.set(1)
-    release.current = setTimeout(() => lift.set(0), 155)
+    const next = (line + 1) % greetings.length
+    setLine(next)
+    if (!reducedMotion) setGesture(next % 2 ? 'turn' : 'note')
+  }
+
+  function settleAfterPlayback() {
+    clearTimeout(restore.current)
+    if (active) restore.current = setTimeout(() => setGesture(null), active.duration)
   }
 
   return (
@@ -70,13 +80,11 @@ export default function KiraLoginScene({ reducedMotion, creating, focusedField }
         <span className="kira-stage" aria-hidden="true">
           <span className="kira-orbit" />
           <motion.span className="kira-track" style={{ rotateX: tilt, rotateY: turn }}>
-            <motion.span className="kira-figure" style={{ y: nod, rotate: lean }}>
-              <span className="kira-face">
-                <img src={kira} alt="" width="360" height="240" draggable="false" />
-                <span className="kira-eye kira-eye-left" />
-                <span className="kira-eye kira-eye-right" />
-              </span>
-            </motion.span>
+            <img className="kira-frame" src={image} width="312" height="264" alt=""
+              draggable="false" onLoad={settleAfterPlayback}
+              onError={event => {
+                if (event.currentTarget.src !== new URL(resting, document.baseURI).href) event.currentTarget.src = resting
+              }} />
           </motion.span>
         </span>
         <span className="kira-bubble" aria-hidden="true">

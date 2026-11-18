@@ -474,7 +474,7 @@
   align-items: center;
   gap: clamp(24px, 5vw, 88px);
   background: #101e2a;
-  --rain-glass-blur: 42px;
+  --rain-glass-blur: 46px;
 }
 .study-auth-login::before { content: none; }
 .study-auth-login .study-auth-card {
@@ -497,13 +497,18 @@
   .study-auth-login .study-auth-card {
     background:
       radial-gradient(ellipse at 0% 0%, rgb(159 215 255 / .10), transparent 51%),
-      linear-gradient(135deg, rgb(24 42 62 / .32), rgb(8 19 37 / .47) 65%, rgb(32 41 57 / .33));
+      linear-gradient(135deg, rgb(24 42 62 / .27), rgb(8 19 37 / .41) 65%, rgb(32 41 57 / .28));
     -webkit-backdrop-filter: blur(var(--rain-glass-blur)) saturate(148%);
     backdrop-filter: blur(var(--rain-glass-blur)) saturate(148%);
   }
   .study-auth-login .study-auth-card[data-refraction="true"] {
     backdrop-filter: blur(var(--rain-glass-blur)) saturate(148%) var(--auth-glass-filter);
   }
+}
+.study-auth-login .study-auth-card::after {
+  display: block;
+  background: url('../assets/glass-condensation.svg') center / 100% 100% no-repeat;
+  mix-blend-mode: normal;
 }
 @supports (mask-composite: exclude) {
   .study-auth-login .study-auth-card::before {
@@ -525,7 +530,8 @@
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  .study-auth-login .study-auth-card::before { display: none; }
+  .study-auth-login .study-auth-card::before,
+  .study-auth-login .study-auth-card::after { display: none; }
 }
 
 
@@ -556,41 +562,12 @@
   pointer-events: none;
 }
 .kira-track { display: block; width: 92%; }
-.kira-figure, .kira-face { position: relative; display: block; }
-.kira-face img { display: block; width: 100%; height: auto; user-select: none; }
-
-/* Both lids are anchored inside the LED bezels in the 360 × 240 artwork. */
-.kira-eye { position: absolute; top: 35.8%; width: 8.9%; height: 19.7%; overflow: hidden; border-radius: 12%; }
-.kira-eye-left { left: 35.55%; }
-.kira-eye-right { left: 67%; }
-.kira-eye::before, .kira-eye::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  height: 49%;
-  background: linear-gradient(110deg, #10264a, #071326 60%, #182e49);
-  transform: scaleY(0);
-}
-.kira-eye::before { top: 0; transform-origin: top; }
-.kira-eye::after { bottom: 0; transform-origin: bottom; }
-@media (prefers-reduced-motion: no-preference) {
-  .kira-scene:not([data-still]) .kira-eye::before,
-  .kira-scene:not([data-still]) .kira-eye::after { animation: kira-blink 6.4s linear -3s infinite; }
-  .kira-scene:not([data-still]) .kira-face { animation: kira-hover 5.2s ease-in-out infinite; }
-}
-/* Kira turns away while either password field has focus. */
-.kira-scene[data-gaze="away"] .kira-eye::before,
-.kira-scene[data-gaze="away"] .kira-eye::after {
-  animation: none;
-  transform: scaleY(.97);
-}
-@keyframes kira-blink {
-  0%, 67%, 70.8%, 100% { transform: scaleY(0); }
-  68.5%, 69% { transform: scaleY(1); }
-}
-@keyframes kira-hover {
-  0%, 100% { transform: translateY(1px); }
-  50% { transform: translateY(-3px); }
+.kira-frame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 312 / 264;
+  object-fit: contain;
+  user-select: none;
 }
 .kira-orbit {
   position: absolute;
@@ -636,7 +613,7 @@
     grid-template-columns: minmax(0, 420px);
     gap: 12px;
     padding-block: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-bottom));
-    --rain-glass-blur: 30px;
+    --rain-glass-blur: 33px;
   }
   .kira-actor {
     width: 100%;
