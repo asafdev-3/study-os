@@ -145,9 +145,9 @@ export default function Onboarding() {
             </div>
             <div className="welcome-kira-message">
               <span className="welcome-kira-label"><i /> KIRA</span>
-              <div className="welcome-kira-message-body" aria-live="polite" aria-atomic="true">
+              <div className="welcome-kira-message-body" aria-live={step === 2 ? "off" : "polite"} aria-atomic="true">
                 <AnimatePresence mode="wait" initial={false}>
-                  <motion.p key={message}
+                  <motion.p key={step === 2 ? 'personal-greeting' : message}
                     initial={reduced ? false : { opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={reduced ? undefined : { opacity: 0, y: -4 }}
