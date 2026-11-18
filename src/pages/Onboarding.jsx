@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
+import './Onboarding.css'
 
 const CURSOS = [
   { id: 'medicina',    label: 'Medicina',       emoji: '🩺' },
@@ -83,26 +84,15 @@ export default function Onboarding() {
     (step === 1 && dificuldades.length > 0 && (!temOutro || outroDificuldade.trim())) ||
     (step === 2 && !!nome.trim())
 
-  const container = {
-    width: '100%',
-    minHeight: '100dvh',
-    background: '#0a0a0a',
-    display: 'flex',
-    flexDirection: 'column',
-    // Full-width background with a centered, readable content column.
-    paddingInline: 'max(20px, calc((100vw - 430px) / 2))',
-    boxSizing: 'border-box',
-  }
-
   const btnOpcao = (selecionado) => ({
     display: 'flex', alignItems: 'center', gap: 14,
     padding: '14px 18px', borderRadius: 14, cursor: 'pointer',
     border: selecionado
-      ? '1.5px solid rgba(99,102,241,0.7)'
-      : '1.5px solid rgba(255,255,255,0.08)',
+      ? '1px solid rgba(175, 199, 255, .55)'
+      : '1px solid rgba(227, 238, 255, .15)',
     background: selecionado
-      ? 'rgba(99,102,241,0.12)'
-      : 'rgba(255,255,255,0.04)',
+      ? 'rgba(94, 133, 201, .29)'
+      : 'rgba(13, 27, 45, .68)',
     color: '#fff', fontSize: 16,
     fontWeight: selecionado ? 600 : 400,
     transition: 'all 0.2s', textAlign: 'left',
@@ -110,27 +100,25 @@ export default function Onboarding() {
   })
 
   return (
-    <div style={container}>
+    <main className="study-onboarding">
+      <div className="study-onboarding-shell">
+      <div className="study-onboarding-brand">
+        <img src="/icons/icon-192.png" alt="" aria-hidden="true" width="28" height="28" />
+        <strong>StudyOS</strong>
+        <span className="study-onboarding-caption">Seu espaço de estudo</span>
+      </div>
       {/* Barra de progresso */}
-      <div style={{ paddingTop: 'max(32px, calc(env(safe-area-inset-top, 0px) + 24px))', paddingBottom: 28 }}>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+      <div className="study-onboarding-progress" aria-label={`Etapa ${step + 1} de 3`}>
+        <div className="study-onboarding-progress-track" aria-hidden="true">
           {[0, 1, 2].map(i => (
-            <div key={i} style={{
-              flex: 1, height: 3, borderRadius: 2,
-              background: i <= step
-                ? 'linear-gradient(90deg, #3b82f6, #8b5cf6)'
-                : 'rgba(255,255,255,0.1)',
-              transition: 'background 0.3s',
-            }} />
+            <div key={i} className="study-onboarding-progress-segment" data-complete={i <= step} />
           ))}
         </div>
-        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: 0 }}>
-          {step + 1} de 3
-        </p>
+        <p>{step + 1} de 3</p>
       </div>
 
       {/* Conteúdo */}
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 8 }}>
+      <div className="study-onboarding-body">
         <AnimatePresence mode="wait">
 
           {/* PASSO 1 — Curso */}
@@ -142,12 +130,12 @@ export default function Onboarding() {
               <h1 style={{ fontSize: 28, fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.2 }}>
                 {nomeGoogle ? `Olá, ${nomeGoogle}.` : 'Olá.'}
               </h1>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 16, margin: '0 0 28px' }}>
+              <p style={{ color: 'rgba(231,240,255,0.76)', fontSize: 16, margin: '0 0 28px' }}>
                 Qual curso você quer entrar?
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {CURSOS.map(c => (
-                  <button key={c.id} onClick={() => setCurso(c.id)} style={btnOpcao(curso === c.id)}>
+                  <button key={c.id} type="button" className="study-onboarding-choice" aria-pressed={curso === c.id} onClick={() => setCurso(c.id)} style={btnOpcao(curso === c.id)}>
                     <span style={{ fontSize: 20 }}>{c.emoji}</span>
                     {c.label}
                   </button>
@@ -179,7 +167,7 @@ export default function Onboarding() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {DIFICULDADES.map(d => (
                   <div key={d.id}>
-                    <button onClick={() => toggleDificuldade(d.id)} style={btnOpcao(dificuldades.includes(d.id))}>
+                    <button type="button" className="study-onboarding-choice" aria-pressed={dificuldades.includes(d.id)} onClick={() => toggleDificuldade(d.id)} style={btnOpcao(dificuldades.includes(d.id))}>
                       <span style={{ fontSize: 20 }}>{d.emoji}</span>
                       <span style={{ flex: 1 }}>{d.label}</span>
                       {dificuldades.includes(d.id) && (
@@ -226,7 +214,7 @@ export default function Onboarding() {
               <h1 style={{ fontSize: 28, fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.2 }}>
                 Como a Kira<br />te chama?
               </h1>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 16, margin: '0 0 32px' }}>
+              <p style={{ color: 'rgba(231,240,255,0.76)', fontSize: 16, margin: '0 0 32px' }}>
                 Pode ser apelido.
               </p>
               <input
@@ -256,7 +244,8 @@ export default function Onboarding() {
       </div>
 
       {/* Botões */}
-      <div style={{ padding: '20px 0 max(28px, calc(env(safe-area-inset-bottom, 0px) + 20px))', display: 'flex', gap: 10, flexShrink: 0 }}>
+      {erro && <p role="alert" className="study-onboarding-error">{erro}</p>}
+      <div className="study-onboarding-footer">
         {step > 0 && (
           <button onClick={() => setStep(s => s - 1)} style={{
             padding: '16px 20px', borderRadius: 14,
@@ -267,7 +256,6 @@ export default function Onboarding() {
             ←
           </button>
         )}
-        {erro && <p role="alert" className="text-rose-300 text-sm mb-2">{erro}</p>}
         <button
           onClick={() => step < 2 ? setStep(s => s + 1) : finalizar()}
           disabled={!podeAvancar || loading}
@@ -282,6 +270,7 @@ export default function Onboarding() {
           {loading ? 'Salvando...' : step < 2 ? 'Continuar' : 'Começar'}
         </button>
       </div>
-    </div>
+      </div>
+    </main>
   )
 }
