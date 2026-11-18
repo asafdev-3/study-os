@@ -84,13 +84,13 @@ export default function Onboarding() {
     (step === 2 && !!nome.trim())
 
   const container = {
+    width: '100%',
     minHeight: '100dvh',
     background: '#0a0a0a',
     display: 'flex',
     flexDirection: 'column',
-    padding: '0 20px',
-    maxWidth: 430,
-    margin: '0 auto',
+    // Full-width background with a centered, readable content column.
+    paddingInline: 'max(20px, calc((100vw - 430px) / 2))',
     boxSizing: 'border-box',
   }
 
@@ -112,7 +112,7 @@ export default function Onboarding() {
   return (
     <div style={container}>
       {/* Barra de progresso */}
-      <div style={{ paddingTop: 60, paddingBottom: 28 }}>
+      <div style={{ paddingTop: 'max(32px, calc(env(safe-area-inset-top, 0px) + 24px))', paddingBottom: 28 }}>
         <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
@@ -256,7 +256,7 @@ export default function Onboarding() {
       </div>
 
       {/* Botões */}
-      <div style={{ padding: '20px 0 48px', display: 'flex', gap: 10, flexShrink: 0 }}>
+      <div style={{ padding: '20px 0 max(28px, calc(env(safe-area-inset-bottom, 0px) + 20px))', display: 'flex', gap: 10, flexShrink: 0 }}>
         {step > 0 && (
           <button onClick={() => setStep(s => s - 1)} style={{
             padding: '16px 20px', borderRadius: 14,

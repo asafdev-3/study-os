@@ -11,7 +11,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  width: 100%;
   min-height: 100svh;
+  min-height: 100dvh;
   padding: max(28px, env(safe-area-inset-top)) 20px max(28px, env(safe-area-inset-bottom));
   overflow-x: hidden;
   overflow-y: auto;
@@ -470,7 +472,8 @@
 .study-entry.study-auth-login {
   display: grid;
   grid-template-columns: minmax(0, 470px) minmax(0, 420px);
-  align-content: center;
+  /* When the keyboard or signup fields grow, start at the top instead of clipping. */
+  align-content: safe center;
   align-items: center;
   gap: clamp(24px, 5vw, 88px);
   background: #101e2a;
