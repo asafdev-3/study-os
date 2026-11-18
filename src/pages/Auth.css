@@ -564,15 +564,33 @@
 @media (min-width: 761px) {
   .kira-stage { margin-top: -24px; }
 }
-.kira-track { display: block; width: 92%; }
+.kira-track {
+  display: block;
+  width: 92%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.kira-breath { display: block; width: 100%; }
+.kira-image-stack {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 294 / 248;
+  isolation: isolate;
+}
 .kira-frame {
   display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 312 / 264;
+  height: 100%;
   object-fit: contain;
-  filter: saturate(.78) contrast(.98);
+  filter: saturate(.81) contrast(.98);
   user-select: none;
+  -webkit-user-select: none;
 }
+.kira-frame--private { z-index: 1; pointer-events: none; }
+
 .kira-bubble {
   grid-area: bubble;
   position: relative;

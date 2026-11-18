@@ -8,9 +8,12 @@ let inFlight = null
 
 function motionDisabled() {
   return readPreferences().reduceMotion ||
-    window.matchMedia('(max-width: 767px)').matches ||
     window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
     document.documentElement.hasAttribute('data-study-keyboard')
+}
+
+function mobileNavigation() {
+  return window.matchMedia('(max-width: 767px)').matches
 }
 
 function cleanup(transition) {
@@ -21,7 +24,7 @@ function cleanup(transition) {
 
 function stableCrossfade(change) {
   // No browser snapshot support: an immediate change is better than fading into an empty screen.
-  if (motionDisabled() || typeof document.startViewTransition !== 'function') {
+  if (motionDisabled() || mobileNavigation() || typeof document.startViewTransition !== 'function') {
     change()
     return
   }
@@ -57,9 +60,11 @@ export async function transitionRoute(path, change) {
   const request = ++navigationRequest
 
   if (motionDisabled()) {
-    stableCrossfade(change)
+    change()
     return
   }
+  // On mobile too: load the next route while the old screen remains visible.
+  // Never show a lazy-loading fallback between tabs on iPhone Safari.
   // Cold lazy chunks must load while the previous screen is still fully visible.
   // This prevents Suspense's fallback from becoming the incoming snapshot.
   try {

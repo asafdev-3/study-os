@@ -19,7 +19,7 @@ try {
   }
   browser = await chromium.launch({ executablePath: process.env.STUDYOS_BROWSER_PATH || undefined, args: ['--no-sandbox'], headless: true })
   await mkdir('qa.local', { recursive: true })
-  for (const [width, height] of [[414, 896], [1280, 800]]) {
+  for (const [width, height] of [[320, 640], [375, 812], [414, 896], [1280, 800]]) {
     const page = await browser.newPage({ viewport: { width, height }, serviceWorkers: 'block' })
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
@@ -35,6 +35,24 @@ try {
     })
     assert(glass.drawn > 80, 'Glass beads canvas must be painted ' + JSON.stringify(glass))
     assert.equal(await page.locator('.kira-orbit').count(), 0, 'No orbit beneath Kira')
+    const kiraFrame = page.locator('.kira-frame:not(.kira-frame--private)')
+    const originalSrc = await kiraFrame.getAttribute('src')
+    const originalWidth = await kiraFrame.evaluate(el => el.offsetWidth)
+    for (let turn = 0; turn < 4; turn++) {
+      await page.getByRole('button', { name: 'Chamar a Kira' }).click()
+      assert.equal(await kiraFrame.getAttribute('src'), originalSrc, 'Kira source must not be replaced on tap')
+    }
+    const widthAfterTap = await kiraFrame.evaluate(el => el.offsetWidth)
+    assert.equal(widthAfterTap, originalWidth, 'Kira image layout must remain stable during spring rotation')
+    await page.locator('input[name="password"]').focus()
+    await page.waitForTimeout(340)
+    assert((await page.locator('.kira-frame--private').evaluate(el => Number(getComputedStyle(el).opacity))) > 0.9, 'Private eyes must fade into view')
+    assert.equal(await kiraFrame.getAttribute('src'), originalSrc, 'Password focus must not switch animated sprite')
+    await page.locator('input[type="email"]').focus()
+    await page.waitForTimeout(340)
+    assert((await page.locator('.kira-frame--private').evaluate(el => Number(getComputedStyle(el).opacity))) < 0.1, 'Private eyes must fade back out')
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    assert(overflow <= 2, 'Mobile login must not overflow horizontally: ' + overflow)
     assert.equal(errors.length, 0, 'Unexpected login errors: ' + errors.join(', '))
     await page.screenshot({ path: `qa.local/login-rain-${width}.png`, animations: 'disabled' })
     console.log('Rain/login', width, JSON.stringify(glass))
