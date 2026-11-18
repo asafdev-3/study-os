@@ -1,287 +1,271 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, m as motion } from 'framer-motion'
+import {
+  ArrowLeft, ArrowRight, Check, Stethoscope, Brain, Scale, Settings2,
+  Code2, BookOpen, Sigma, FlaskConical, Globe2, Languages, PencilLine,
+  Plus, Sparkles,
+} from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useStudyReducedMotion } from '../lib/motion'
+import RainWindow from '../components/RainWindow'
+import kiraBlink from '../assets/kira-blink.webp'
+import kiraStill from '../assets/kira-rest.webp'
+import './Onboarding.css'
 
-const CURSOS = [
-  { id: 'medicina',    label: 'Medicina',       emoji: '🩺' },
-  { id: 'psicologia',  label: 'Psicologia',     emoji: '🧠' },
-  { id: 'direito',     label: 'Direito',         emoji: '⚖️' },
-  { id: 'engenharia',  label: 'Engenharia',      emoji: '⚙️' },
-  { id: 'computacao',  label: 'Computação / TI', emoji: '💻' },
-  { id: 'outros',      label: 'Outro curso',     emoji: '📚' },
+// The stored IDs are preserved for existing dashboards and user profiles.
+const COURSES = [
+  { id: 'medicina', label: 'Medicina', Icon: Stethoscope },
+  { id: 'psicologia', label: 'Psicologia', Icon: Brain },
+  { id: 'direito', label: 'Direito', Icon: Scale },
+  { id: 'engenharia', label: 'Engenharia', Icon: Settings2 },
+  { id: 'computacao', label: 'Computação / TI', Icon: Code2 },
+  { id: 'outros', label: 'Outro curso', Icon: BookOpen },
 ]
 
-const DIFICULDADES = [
-  { id: 'matematica', label: 'Matemática',          emoji: '📐' },
-  { id: 'natureza',   label: 'Ciências da Natureza', emoji: '🔬' },
-  { id: 'humanas',    label: 'Ciências Humanas',     emoji: '🌍' },
-  { id: 'linguagens', label: 'Linguagens',           emoji: '📝' },
-  { id: 'redacao',    label: 'Redação',              emoji: '✍️' },
-  { id: 'outro',      label: 'Outro',                emoji: '➕' },
+const SUBJECTS = [
+  { id: 'matematica', label: 'Matemática', Icon: Sigma },
+  { id: 'natureza', label: 'Ciências da Natureza', Icon: FlaskConical },
+  { id: 'humanas', label: 'Ciências Humanas', Icon: Globe2 },
+  { id: 'linguagens', label: 'Linguagens', Icon: Languages },
+  { id: 'redacao', label: 'Redação', Icon: PencilLine },
+  { id: 'outro', label: 'Outro', Icon: Plus },
 ]
+
+const STEPS = [
+  { eyebrow: '01 / UM OBJETIVO', title: 'Onde você quer chegar?', hint: 'Escolha o curso que está no seu horizonte.' },
+  { eyebrow: '02 / SEU PONTO DE PARTIDA', title: 'O que precisa de atenção?', hint: 'Pode escolher mais de uma matéria.' },
+  { eyebrow: '03 / UM NOVO COMEÇO', title: 'Como posso te chamar?', hint: 'Um nome ou apelido. Você decide.' },
+]
+
+const motionSpring = { type: 'spring', stiffness: 360, damping: 35, mass: 0.75 }
 
 export default function Onboarding() {
   const navigate = useNavigate()
+  const reduced = useStudyReducedMotion()
   const [step, setStep] = useState(0)
-  const [nome, setNome] = useState('')
-  const [curso, setCurso] = useState('')
-  const [dificuldades, setDificuldades] = useState([])
-  const [outroDificuldade, setOutroDificuldade] = useState('')
+  const [name, setName] = useState('')
+  const [course, setCourse] = useState('')
+  const [subjects, setSubjects] = useState([])
+  const [otherSubject, setOtherSubject] = useState('')
   const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState('')
-  const [nomeGoogle, setNomeGoogle] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { navigate('/login'); return }
-      const full = user.user_metadata?.full_name || user.user_metadata?.name || ''
-      const primeiro = full.split(' ')[0]
-      setNomeGoogle(primeiro)
-      setNome(primeiro)
+    let mounted = true
+    supabase.auth.getUser().then(({ data, error: authError }) => {
+      if (!mounted) return
+      if (authError || !data?.user) {
+        navigate('/login', { replace: true })
+        return
+      }
+      const full = data.user.user_metadata?.full_name || data.user.user_metadata?.name || ''
+      const first = full.trim().split(/\s+/)[0] || ''
+      setName(current => current || first)
+    }).catch(() => {
+      if (mounted) setError('Não foi possível validar sua sessão. Tente entrar novamente.')
     })
+    return () => { mounted = false }
   }, [navigate])
 
-  function toggleDificuldade(id) {
-    setDificuldades(prev =>
-      prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]
-    )
+  const selectedCourse = COURSES.find(item => item.id === course)
+  const hasOther = subjects.includes('outro')
+  const canContinue = step === 0 ? Boolean(course)
+    : step === 1 ? subjects.length > 0 && (!hasOther || Boolean(otherSubject.trim()))
+      : Boolean(name.trim())
+  const message = step === 0
+    ? selectedCourse
+      ? `${selectedCourse.label}. Vamos construir seu caminho.`
+      : 'Primeiro, quero entender aonde você quer chegar.'
+    : step === 1
+      ? subjects.length
+        ? `${subjects.length} ${subjects.length === 1 ? 'área marcada' : 'áreas marcadas'}. Vou usar isso no seu plano.`
+        : 'Não precisa dominar tudo de uma vez.'
+      : name.trim()
+        ? `Combinado, ${name.trim().slice(0, 30)}. Vamos começar?`
+        : 'Quero que este espaço tenha a sua cara.'
+
+  const toggleSubject = id => {
+    setError('')
+    setSubjects(previous => previous.includes(id)
+      ? previous.filter(value => value !== id)
+      : [...previous, id])
   }
 
-  async function finalizar() {
-    if (!nome.trim() || !curso || dificuldades.length === 0) return
+  const advance = async event => {
+    event.preventDefault()
+    if (!canContinue || loading) return
+    setError('')
+    if (step < 2) {
+      setStep(current => current + 1)
+      return
+    }
     setLoading(true)
-
-    const dificuldadesFinais = dificuldades.map(d =>
-      d === 'outro' ? (outroDificuldade.trim() || 'outro') : d
-    )
-
-    setErro('')
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-      if (authError || !user) throw new Error('Sessão indisponível')
-      const { error } = await supabase.from('profiles').upsert({
-        id: user.id,
-        nome: nome.trim(),
-        curso_objetivo: curso,
-        area_dificuldade: JSON.stringify(dificuldadesFinais),
+      const { data, error: authError } = await supabase.auth.getUser()
+      if (authError || !data?.user) throw new Error('missing session')
+      const areas = subjects.map(id => id === 'outro' ? otherSubject.trim() : id)
+      const { error: writeError } = await supabase.from('profiles').upsert({
+        id: data.user.id,
+        nome: name.trim(),
+        curso_objetivo: course,
+        area_dificuldade: JSON.stringify(areas),
         onboarding_completo: true,
       })
-      if (error) throw error
+      if (writeError) throw writeError
       navigate('/dashboard', { replace: true })
     } catch {
-      setErro('Não foi possível salvar seu perfil. Tente novamente.')
+      setError('Não foi possível salvar suas escolhas. Verifique sua conexão e tente novamente.')
     } finally {
       setLoading(false)
     }
   }
 
-  const temOutro = dificuldades.includes('outro')
-
-  const podeAvancar =
-    (step === 0 && !!curso) ||
-    (step === 1 && dificuldades.length > 0 && (!temOutro || outroDificuldade.trim())) ||
-    (step === 2 && !!nome.trim())
-
-  const container = {
-    minHeight: '100dvh',
-    background: '#0a0a0a',
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '0 20px',
-    maxWidth: 430,
-    margin: '0 auto',
-    boxSizing: 'border-box',
-  }
-
-  const btnOpcao = (selecionado) => ({
-    display: 'flex', alignItems: 'center', gap: 14,
-    padding: '14px 18px', borderRadius: 14, cursor: 'pointer',
-    border: selecionado
-      ? '1.5px solid rgba(99,102,241,0.7)'
-      : '1.5px solid rgba(255,255,255,0.08)',
-    background: selecionado
-      ? 'rgba(99,102,241,0.12)'
-      : 'rgba(255,255,255,0.04)',
-    color: '#fff', fontSize: 16,
-    fontWeight: selecionado ? 600 : 400,
-    transition: 'all 0.2s', textAlign: 'left',
-    width: '100%',
-  })
-
   return (
-    <div style={container}>
-      {/* Barra de progresso */}
-      <div style={{ paddingTop: 60, paddingBottom: 28 }}>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
-          {[0, 1, 2].map(i => (
-            <div key={i} style={{
-              flex: 1, height: 3, borderRadius: 2,
-              background: i <= step
-                ? 'linear-gradient(90deg, #3b82f6, #8b5cf6)'
-                : 'rgba(255,255,255,0.1)',
-              transition: 'background 0.3s',
-            }} />
-          ))}
-        </div>
-        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: 0 }}>
-          {step + 1} de 3
-        </p>
-      </div>
+    <main className="welcome-page">
+      <RainWindow still={reduced} />
+      <div className="welcome-atmosphere" aria-hidden="true" />
+      <div className="welcome-shell">
+        <header className="welcome-topbar">
+          <span className="welcome-brand">StudyOS<span className="welcome-brand-dot" /></span>
+          <span className="welcome-context">SEU ESPAÇO DE ESTUDO <span aria-hidden="true">/</span> PRIMEIRO ACESSO</span>
+        </header>
 
-      {/* Conteúdo */}
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 8 }}>
-        <AnimatePresence mode="wait">
-
-          {/* PASSO 1 — Curso */}
-          {step === 0 && (
-            <motion.div key="s0"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.22 }}
-            >
-              <h1 style={{ fontSize: 28, fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.2 }}>
-                {nomeGoogle ? `Olá, ${nomeGoogle}.` : 'Olá.'}
-              </h1>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 16, margin: '0 0 28px' }}>
-                Qual curso você quer entrar?
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {CURSOS.map(c => (
-                  <button key={c.id} onClick={() => setCurso(c.id)} style={btnOpcao(curso === c.id)}>
-                    <span style={{ fontSize: 20 }}>{c.emoji}</span>
-                    {c.label}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* PASSO 2 — Dificuldades (multiselect) */}
-          {step === 1 && (
-            <motion.div key="s1"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.22 }}
-            >
-              <h1 style={{ fontSize: 28, fontWeight: 700, color: '#fff', margin: '0 0 6px', lineHeight: 1.2 }}>
-                Onde você trava?
-              </h1>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, margin: '0 0 6px' }}>
-                Pode marcar mais de uma.
-              </p>
-              {dificuldades.length > 0 && (
-                <p style={{ color: 'rgba(99,102,241,0.9)', fontSize: 13, margin: '0 0 20px' }}>
-                  {dificuldades.length} selecionada{dificuldades.length > 1 ? 's' : ''}
-                </p>
-              )}
-              {!dificuldades.length && (
-                <div style={{ marginBottom: 20 }} />
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {DIFICULDADES.map(d => (
-                  <div key={d.id}>
-                    <button onClick={() => toggleDificuldade(d.id)} style={btnOpcao(dificuldades.includes(d.id))}>
-                      <span style={{ fontSize: 20 }}>{d.emoji}</span>
-                      <span style={{ flex: 1 }}>{d.label}</span>
-                      {dificuldades.includes(d.id) && (
-                        <span style={{ fontSize: 14, color: 'rgba(99,102,241,0.9)' }}>✓</span>
-                      )}
-                    </button>
-                    {/* Campo de texto quando "Outro" está selecionado */}
-                    {d.id === 'outro' && dificuldades.includes('outro') && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        style={{ marginTop: 8 }}
-                      >
-                        <input
-                          type="text"
-                          value={outroDificuldade}
-                          onChange={e => setOutroDificuldade(e.target.value)}
-                          placeholder="Qual dificuldade?"
-                          maxLength={50}
-                          autoFocus
-                          style={{
-                            width: '100%', padding: '12px 16px', borderRadius: 12,
-                            border: '1.5px solid rgba(99,102,241,0.5)',
-                            background: 'rgba(99,102,241,0.08)',
-                            color: '#fff', fontSize: 15, outline: 'none',
-                            boxSizing: 'border-box', fontFamily: 'inherit',
-                          }}
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* PASSO 3 — Nome */}
-          {step === 2 && (
-            <motion.div key="s2"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.22 }}
-            >
-              <h1 style={{ fontSize: 28, fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.2 }}>
-                Como a Kira<br />te chama?
-              </h1>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 16, margin: '0 0 32px' }}>
-                Pode ser apelido.
-              </p>
-              <input
-                type="text"
-                value={nome}
-                onChange={e => setNome(e.target.value)}
-                placeholder="Seu nome ou apelido"
-                maxLength={30}
-                autoFocus
-                style={{
-                  width: '100%', padding: '16px 18px', borderRadius: 14,
-                  border: '1.5px solid rgba(255,255,255,0.12)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#fff', fontSize: 18, outline: 'none',
-                  boxSizing: 'border-box', fontFamily: 'inherit',
-                }}
-                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.8)'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
+        <div className="welcome-workflow">
+          <aside className="welcome-guide" aria-label="Kira, sua assistente de estudos">
+            <div className="welcome-guide-caption"><Sparkles size={12} aria-hidden="true" /> SUA JORNADA COMEÇA AQUI</div>
+            <div className="welcome-kira-figure">
+              <motion.img
+                src={reduced ? kiraStill : kiraBlink}
+                alt="Kira, assistente do StudyOS"
+                width="294" height="248" draggable="false"
+                animate={reduced ? undefined : { y: [0, -2, 0] }}
+                transition={{ duration: 5.8, repeat: Infinity, ease: 'easeInOut' }}
               />
-              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: '12px 0 0' }}>
-                A Kira vai usar esse nome em todas as conversas.
-              </p>
-            </motion.div>
-          )}
+            </div>
+            <div className="welcome-kira-message">
+              <span className="welcome-kira-label"><i /> KIRA</span>
+              <div className="welcome-kira-message-body" aria-live="polite" aria-atomic="true">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.p key={message}
+                    initial={reduced ? false : { opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduced ? undefined : { opacity: 0, y: -4 }}
+                    transition={{ duration: reduced ? 0 : 0.18 }}
+                  >{message}</motion.p>
+                </AnimatePresence>
+              </div>
+            </div>
+            <span className="welcome-guide-foot">UM PASSO DE CADA VEZ.</span>
+          </aside>
 
-        </AnimatePresence>
-      </div>
+          <section className="welcome-panel" aria-labelledby="welcome-title">
+            <div className="welcome-progress">
+              <div className="welcome-progress-top">
+                <span>PERSONALIZAÇÃO</span>
+                <span>{String(step + 1).padStart(2, '0')} <span className="welcome-progress-divider">/ 03</span></span>
+              </div>
+              <div className="welcome-progress-bars" role="progressbar" aria-label="Etapa de personalização" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step + 1}>
+                {[0, 1, 2].map(index => (
+                  <span key={index} className="welcome-progress-track">
+                    <motion.span initial={false} animate={{ scaleX: index <= step ? 1 : 0 }} style={{ originX: 0 }} transition={reduced ? { duration: 0 } : motionSpring} />
+                  </span>
+                ))}
+              </div>
+            </div>
 
-      {/* Botões */}
-      <div style={{ padding: '20px 0 48px', display: 'flex', gap: 10, flexShrink: 0 }}>
-        {step > 0 && (
-          <button onClick={() => setStep(s => s - 1)} style={{
-            padding: '16px 20px', borderRadius: 14,
-            border: '1.5px solid rgba(255,255,255,0.1)',
-            background: 'transparent', color: 'rgba(255,255,255,0.5)',
-            fontSize: 18, cursor: 'pointer',
-          }}>
-            ←
-          </button>
-        )}
-        {erro && <p role="alert" className="text-rose-300 text-sm mb-2">{erro}</p>}
-        <button
-          onClick={() => step < 2 ? setStep(s => s + 1) : finalizar()}
-          disabled={!podeAvancar || loading}
-          style={{
-            flex: 1, padding: '16px', borderRadius: 14, border: 'none',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            color: '#fff', fontSize: 16, fontWeight: 600, cursor: 'pointer',
-            opacity: (!podeAvancar || loading) ? 0.35 : 1,
-            transition: 'opacity 0.2s',
-          }}
-        >
-          {loading ? 'Salvando...' : step < 2 ? 'Continuar' : 'Começar'}
-        </button>
+            <form className="welcome-form" onSubmit={advance}>
+              <div className="welcome-stage-body">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div key={step} className="welcome-stage"
+                    initial={reduced ? false : { opacity: 0, x: 14 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={reduced ? undefined : { opacity: 0, x: -12 }}
+                    transition={reduced ? { duration: 0 } : { duration: 0.21, ease: [0.22, 1, 0.36, 1] }}>
+                    <header className="welcome-stage-heading">
+                      <span className="welcome-eyebrow">{STEPS[step].eyebrow}</span>
+                      <h1 id="welcome-title">{STEPS[step].title}</h1>
+                      <p>{STEPS[step].hint}</p>
+                    </header>
+                    {step === 0 && (
+                      <div className="welcome-options" role="group" aria-label="Curso desejado">
+                        {COURSES.map(({ id, label, Icon }) => (
+                          <motion.button type="button" key={id}
+                            className="welcome-option" data-selected={course === id}
+                            aria-pressed={course === id}
+                            onClick={() => { setCourse(id); setError('') }}
+                            whileTap={reduced ? undefined : { scale: 0.988 }}
+                            transition={motionSpring}>
+                            <span className="welcome-option-icon"><Icon size={19} strokeWidth={1.7} aria-hidden="true" /></span>
+                            <span className="welcome-option-name">{label}</span>
+                            <span className="welcome-option-check" aria-hidden="true"><Check size={15} strokeWidth={2.3} /></span>
+                          </motion.button>
+                        ))}
+                      </div>
+                    )}
+                    {step === 1 && (
+                      <>
+                        <div className="welcome-selection-count">{subjects.length ? `${subjects.length} ${subjects.length === 1 ? 'selecionada' : 'selecionadas'}` : 'Escolha pelo menos uma'}</div>
+                        <div className="welcome-options" role="group" aria-label="Matérias que precisam de atenção">
+                          {SUBJECTS.map(({ id, label, Icon }) => (
+                            <div key={id}>
+                              <motion.button type="button"
+                                className="welcome-option" data-selected={subjects.includes(id)}
+                                aria-pressed={subjects.includes(id)}
+                                onClick={() => toggleSubject(id)}
+                                whileTap={reduced ? undefined : { scale: 0.988 }}
+                                transition={motionSpring}>
+                                <span className="welcome-option-icon"><Icon size={19} strokeWidth={1.7} aria-hidden="true" /></span>
+                                <span className="welcome-option-name">{label}</span>
+                                <span className="welcome-option-check" aria-hidden="true"><Check size={15} strokeWidth={2.3} /></span>
+                              </motion.button>
+                              {id === 'outro' && hasOther && (
+                                <div className="welcome-other-field">
+                                  <label htmlFor="welcome-other">Qual matéria?</label>
+                                  <input id="welcome-other" type="text" value={otherSubject}
+                                    onChange={event => setOtherSubject(event.target.value)}
+                                    maxLength={50} autoComplete="off" placeholder="Conte para a Kira" />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {step === 2 && (
+                      <div className="welcome-name-area">
+                        <label htmlFor="welcome-name">SEU NOME</label>
+                        <input type="text" id="welcome-name" maxLength={30} value={name}
+                          onChange={event => { setName(event.target.value); setError('') }}
+                          autoComplete="given-name" enterKeyHint="done" placeholder="Como quer ser chamado?" />
+                        <p>É assim que a Kira vai se dirigir a você.</p>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              <div className="welcome-actions">
+                {error && <p className="welcome-error" role="alert">{error}</p>}
+                <div className="welcome-actions-row">
+                  {step > 0 && (
+                    <button type="button" className="welcome-back" aria-label="Voltar etapa" disabled={loading}
+                      onClick={() => { setStep(current => current - 1); setError('') }}>
+                      <ArrowLeft size={19} strokeWidth={1.7} aria-hidden="true" />
+                    </button>
+                  )}
+                  <motion.button type="submit" className="welcome-next"
+                    disabled={!canContinue || loading} whileTap={reduced || !canContinue || loading ? undefined : { scale: 0.988 }}>
+                    <span>{loading ? 'Salvando seu espaço…' : step < 2 ? 'Continuar' : 'Entrar no StudyOS'}</span>
+                    {!loading && <ArrowRight size={18} strokeWidth={1.8} aria-hidden="true" />}
+                  </motion.button>
+                </div>
+                <p className="welcome-privacy">SUAS ESCOLHAS PODEM SER ALTERADAS DEPOIS.</p>
+              </div>
+            </form>
+          </section>
+        </div>
       </div>
-    </div>
+    </main>
   )
 }
