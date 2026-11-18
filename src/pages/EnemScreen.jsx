@@ -11,7 +11,7 @@ import EnemPractice from "../components/EnemPractice";
 // Modo ENEM: prática, post-its, referências de ingresso e tutoria.
 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { ArrowUp, ChevronRight, RotateCcw } from "lucide-react";
+import { ArrowUp, BookmarkPlus, ChevronRight, RotateCcw } from "lucide-react";
 import { supabase }   from "../lib/supabase";
 import { FOCUS_SECONDS, readFocus } from "../lib/focus";
 import { notifyFocus } from "../lib/preferences";
@@ -234,6 +234,15 @@ export default function EnemScreen({ userId }) {
     if (await send(draft) && !texto) setKiraInput((current) => current === draft ? "" : current);
   }
 
+  function guardarResposta(content, index) {
+    const question = messages.slice(0, index).findLast(message => message.role === 'user')?.content;
+    navigate('/anotacoes', { state: { draft: {
+      title: (question || 'Revisão com a Kira ENEM').slice(0, 120),
+      content,
+      area: 'geral',
+    } } });
+  }
+
   const tabs = [
     [fromNfc ? "foco" : "praticar", fromNfc ? "Foco" : "Praticar"], ["postits", "Post-its"], ["corte", "Ingresso"], ["kira", "Kira"],
   ];
@@ -282,7 +291,16 @@ export default function EnemScreen({ userId }) {
           {QUICK_PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
         </div>}
         {(messages.length > 0 || loading) && <div className="study-chat-log study-enem-log" role="log">
-          {messages.map(({ role, content }, index) => <m.p key={index} {...kiraMessageMotion(role, reduced, index < restoredCount)} className={`study-message study-message--${role}`}>{content}</m.p>)}
+          {messages.map(({ role, content }, index) => (
+            <m.div key={index} {...kiraMessageMotion(role, reduced, index < restoredCount)}>
+              <p className={`study-message study-message--${role}`}>{content}</p>
+              {role === 'assistant' && <div className="study-reply-actions">
+                <button type="button" onClick={() => guardarResposta(content, index)} aria-label="Guardar resposta no caderno">
+                  <BookmarkPlus size={15} aria-hidden="true" /> Guardar no caderno
+                </button>
+              </div>}
+            </m.div>
+          ))}
           {loading && <p className="study-chat-status">Kira está preparando a resposta…</p>}
         </div>}
         </div>
