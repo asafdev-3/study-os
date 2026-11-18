@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, GraduationCap, Radio, Settings, StickyNote } from 'lucide-react'
+import { ArrowRight, BookOpen, GraduationCap, Pause, Play, Radio, Settings, StickyNote } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
 import { KiraAvatar } from '../components/KiraAvatar'
-import autumnRain from '../assets/autumn-rain.webp'
-import autumnRainMobile from '../assets/autumn-rain-mobile.webp'
+import RainWindow from '../components/RainWindow'
+import { useStudyReducedMotion } from '../lib/motion'
 import './Dashboard.css'
 
 const subjects = {
@@ -30,6 +30,15 @@ export default function Dashboard() {
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [now] = useState(Date.now)
+  const reducedMotion = useStudyReducedMotion()
+  const [rainPaused, setRainPaused] = useState(false)
+  const [rainHidden, setRainHidden] = useState(() => document.hidden)
+
+  useEffect(() => {
+    const onVisibility = () => setRainHidden(document.hidden)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -58,10 +67,9 @@ export default function Dashboard() {
 
   return (
     <main className="study-room study-page study-home-v2">
-      <picture className="study-home-picture" aria-hidden="true">
-        <source media="(max-width: 767px)" srcSet={autumnRainMobile} />
-        <img src={autumnRain} alt="" fetchPriority="high" />
-      </picture>
+      <div className="study-home-rain" aria-hidden="true">
+        <RainWindow still={reducedMotion || rainPaused || rainHidden} />
+      </div>
       <div className="study-room-shade" aria-hidden="true" />
 
       <div className="study-room-content">
@@ -71,6 +79,18 @@ export default function Dashboard() {
             <span>Study<span>OS</span><small>SUA SALA DE ESTUDO</small></span>
           </div>
           <div className="study-room-header-actions">
+            {!reducedMotion && (
+              <button
+                type="button"
+                className="study-home-rain-toggle"
+                aria-label={rainPaused ? 'Ativar animação de chuva' : 'Pausar animação de chuva'}
+                aria-pressed={!rainPaused}
+                title={rainPaused ? 'Retomar chuva' : 'Pausar chuva'}
+                onClick={() => setRainPaused(value => !value)}
+              >
+                {rainPaused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}
+              </button>
+            )}
             <StudyLink to="/nfc" className="study-room-nfc" aria-label="Abrir recursos NFC">
               <Radio size={17} aria-hidden="true" /><span>NFC</span>
             </StudyLink>
