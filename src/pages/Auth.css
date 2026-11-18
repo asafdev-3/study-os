@@ -557,7 +557,7 @@
   display: grid;
   justify-items: center;
   width: 100%;
-  padding: 22px 0 16px;
+  padding: 6px 0 4px;
   perspective: 760px;
   pointer-events: none;
 }
@@ -567,16 +567,8 @@
   width: 100%;
   aspect-ratio: 312 / 264;
   object-fit: contain;
+  filter: saturate(.84) contrast(.98);
   user-select: none;
-}
-.kira-orbit {
-  position: absolute;
-  inset: auto 1% 9px;
-  height: 23%;
-  border: 1px solid rgb(154 217 255 / .23);
-  border-radius: 50%;
-  background: radial-gradient(ellipse, #64baff3b, #597ded12 43%, transparent 70%);
-  transform: rotate(-5deg);
 }
 .kira-bubble {
   grid-area: bubble;
@@ -621,9 +613,9 @@
     grid-template-columns: minmax(90px, .65fr) minmax(0, 1fr);
     align-items: center;
     padding: 4px;
-    gap: 10px;
+    gap: 4px;
   }
-  .kira-stage { padding: 10px 0; }
+  .kira-stage { padding: 4px 0; }
   .kira-track { width: 100%; }
   .kira-bubble { width: 100%; padding: 10px 13px; border-radius: 18px 18px 18px 5px; }
   .kira-bubble::after { left: -5px; bottom: 16px; transform: rotate(135deg); }
