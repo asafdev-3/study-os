@@ -53,6 +53,8 @@ try {
       return route.abort()
     })
     await page.goto(base+'/login')
+    const inputClip = await page.locator('.study-auth-input-wrap').first().evaluate(el => getComputedStyle(el).overflow)
+    assert.equal(inputClip, 'hidden', 'Email input should remain clipped to its rounded glass border')
     await page.getByRole('button',{name:'Criar conta',exact:true}).first().click()
     await page.locator('input[type="email"]').fill('studyos-mock@example.test')
     await page.locator('#auth-password').fill('correct-password-123')
