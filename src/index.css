@@ -927,8 +927,12 @@ html[data-enem-chat],html[data-enem-chat] body { overflow:hidden; }
 @media(max-width:767px) { .study-room-dock .study-room-kira { padding-block:0; } }
 /* Apple HIG: content first, functional glass, readable text views. */
 :root { color-scheme:dark; }
-html,body,#root { min-height:100%; }
-body { min-height:100dvh; background-color:#0b1422; }
+/* Full-bleed app shell; content may still scroll when taller than the screen. */
+html, body, #root { width:100%; min-height:100%; }
+html, body { margin:0; }
+body, #root { min-height:100svh; min-height:100dvh; }
+body { background-color:#0b1422; }
+.study-loading, .study-entry { width:100%; min-height:100svh; min-height:100dvh; box-sizing:border-box; }
 body:has(.study-navigation)::before { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; background:linear-gradient(180deg,#091421a8,#091421b8),url('/images/study-room.webp') 72% center/cover; }
 body:has(.study-navigation) { isolation:isolate; }
 body:has(.study-notes-book)::before { background-position:center,60% center; background-image:linear-gradient(180deg,#11151eb0,#161a24c7),url('/images/study-room.webp'); }
