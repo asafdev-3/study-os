@@ -52,7 +52,7 @@ try{
     await page.getByRole('heading',{name:'Olá, Vitor.'}).waitFor()
     assert.equal(await page.getByRole('heading',{name:'Olá, Vitor.'}).count(),1)
     await page.getByRole('navigation').getByRole('link',{name:'Kira'}).click()
-    if (!reduced) {
+    if (!reduced && width >= 768) {
       await page.waitForFunction(() => window.studyTransitions?.includes('crossfade') === true)
       assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement, '::view-transition-old(study-screen)').animationName.includes('study-screen-away') || !document.documentElement.dataset.studyTransition), true)
     } else assert.equal(await page.evaluate(() => window.studyTransitions.includes('crossfade')), false)

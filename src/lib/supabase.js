@@ -4,6 +4,9 @@ import { createClient } from '@supabase/supabase-js'
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Expose configuration state without exposing the public key itself.
+export const authConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON && SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('SEU_PROJECT_ID'))
+
 if (!SUPABASE_URL || SUPABASE_URL.includes('SEU_PROJECT_ID')) {
   console.warn(
     '[StudyOS] Supabase não configurado.\n' +

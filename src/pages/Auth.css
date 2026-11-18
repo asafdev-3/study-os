@@ -178,6 +178,8 @@
   gap: 10px;
   padding: 0 13px;
   border-radius: 16px;
+  /* Clip the browser's autofill paint to the same rounded surface. */
+  overflow: hidden;
   /* nested glass — lighter touch */
   background: rgba(0, 0, 0, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.10);
@@ -199,16 +201,15 @@
 }
 .study-auth-input-wrap input { width:100%; min-width:0; min-height:48px; border:0; outline:0; background:transparent; color:var(--auth-text); font-size:16px; font-weight:400; box-shadow:none; }
 .study-auth-input-wrap input::placeholder { color:#8e99ad; opacity:1; }
-/* Brave/Chrome paint a solid autofill color over transparent inputs. Keep the
-   saved email/password on the same dark surface as the rest of the field. */
-.study-auth-input-wrap input:-webkit-autofill,
-.study-auth-input-wrap input:-webkit-autofill:hover,
-.study-auth-input-wrap input:-webkit-autofill:focus {
+/* Autofill should not paint an opaque, rectangular panel over rounded glass.
+   Clip the UA autofill background to text; the wrapper owns the field surface.
+   The previous 100px inset shadow produced a visible square on Chrome/Brave. */
+.study-auth-input-wrap input:is(:autofill, :-webkit-autofill) {
   -webkit-text-fill-color: var(--auth-text);
   caret-color: var(--auth-text);
-  -webkit-box-shadow: 0 0 0 100px #111e32 inset;
-  box-shadow: 0 0 0 100px #111e32 inset;
-  border-radius: 3px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  box-shadow: none;
 }
 .study-auth-input-wrap input:focus-visible { outline:none; }
 .study-auth-reveal { display:grid; place-items:center; width:44px; height:44px; flex:0 0 44px; margin-right:-8px; border-radius:50%; color:#a8b7cb; cursor:pointer; }
@@ -557,27 +558,40 @@
   display: grid;
   justify-items: center;
   width: 100%;
-  padding: 22px 0 16px;
+  padding: 6px 0 4px;
   perspective: 760px;
   pointer-events: none;
 }
-.kira-track { display: block; width: 92%; }
+@media (min-width: 761px) {
+  .kira-stage { margin-top: -24px; }
+}
+.kira-track {
+  display: block;
+  width: 92%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.kira-breath { display: block; width: 100%; }
+.kira-image-stack {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 294 / 248;
+  isolation: isolate;
+}
 .kira-frame {
   display: block;
-  width: 100%;
-  aspect-ratio: 312 / 264;
-  object-fit: contain;
-  user-select: none;
-}
-.kira-orbit {
   position: absolute;
-  inset: auto 1% 9px;
-  height: 23%;
-  border: 1px solid rgb(154 217 255 / .23);
-  border-radius: 50%;
-  background: radial-gradient(ellipse, #64baff3b, #597ded12 43%, transparent 70%);
-  transform: rotate(-5deg);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: saturate(.81) contrast(.98);
+  user-select: none;
+  -webkit-user-select: none;
 }
+.kira-frame--private { z-index: 1; pointer-events: none; }
+
 .kira-bubble {
   grid-area: bubble;
   position: relative;
@@ -621,9 +635,9 @@
     grid-template-columns: minmax(90px, .65fr) minmax(0, 1fr);
     align-items: center;
     padding: 4px;
-    gap: 10px;
+    gap: 4px;
   }
-  .kira-stage { padding: 10px 0; }
+  .kira-stage { padding: 4px 0; }
   .kira-track { width: 100%; }
   .kira-bubble { width: 100%; padding: 10px 13px; border-radius: 18px 18px 18px 5px; }
   .kira-bubble::after { left: -5px; bottom: 16px; transform: rotate(135deg); }
@@ -661,3 +675,14 @@
 @media (prefers-reduced-transparency: reduce) {
   .study-auth-login .study-auth-brand-backdrop { opacity: .25; }
 }
+
+/* Auth action appears only when a real signup requires e-mail verification. */
+.study-auth-resend {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; border: 1px solid rgba(181, 210, 240, .22);
+  border-radius: 12px; background: rgba(19, 38, 58, .45);
+  color: #d1e4fc; font-size: 12px; font-weight: 500; cursor: pointer;
+}
+.study-auth-resend:disabled { opacity: .6; cursor: wait; }
+
+.study-auth-help { margin: 0; color: rgba(226, 237, 250, .82); font-size: 12px; line-height: 1.5; }

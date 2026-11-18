@@ -32,7 +32,17 @@ export function StudyMotion({ children }) {
  * never by each new page/header (those overlapping animations caused flashes).
  */
 export function PageMotion({ children }) {
-  return <div className="study-page-enter">{children}</div>
+  const reduced = useStudyReducedMotion()
+  const mobile = window.matchMedia('(max-width: 767px)').matches
+  // Browser snapshot transitions flicker on mobile Safari. Keep the tab bar
+  // stable and fade in just the new screen after its lazy chunk has loaded.
+  return (
+    <motion.div className="study-page-enter"
+      initial={mobile && !reduced ? { opacity: 0.96 } : false}
+      animate={{ opacity: 1 }}
+      transition={mobile && !reduced ? { duration: 0.19, ease: [.22, 1, .36, 1] } : { duration: 0 }}
+    >{children}</motion.div>
+  )
 }
 
 /**

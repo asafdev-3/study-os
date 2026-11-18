@@ -11,7 +11,7 @@ const token=[Buffer.from('{"alg":"HS256","typ":"JWT"}').toString('base64url'),Bu
 let browser
 try {
  for(let i=0;i<50;i++){try{if((await fetch(base)).ok)break}catch{}await new Promise(r=>setTimeout(r,100))}
- browser=await chromium.launch({headless:true,args:['--no-sandbox']})
+ browser=await chromium.launch({headless:true,executablePath:process.env.STUDYOS_BROWSER_PATH||undefined,args:['--no-sandbox']})
  await mkdir('qa.local',{recursive:true})
  for(const width of [320,390,414,1024]) {
   const page=await browser.newPage({viewport:{width,height:844},hasTouch:width<768,serviceWorkers:'block'})
@@ -68,7 +68,8 @@ try {
   }))
   assert(metrics.navSame && metrics.stageSame,JSON.stringify(metrics))
   assert.equal(metrics.loadings,0,JSON.stringify(metrics))
-  assert(metrics.crossfades>0,JSON.stringify(metrics))
+  if(width>=768)assert(metrics.crossfades>0,JSON.stringify(metrics))
+  else assert.equal(metrics.crossfades,0,'Mobile uses Framer entrance instead of full-screen view snapshots: '+JSON.stringify(metrics))
   assert.equal(metrics.overflow,false,JSON.stringify(metrics))
   assert.equal(metrics.active,'Início')
   assert.deepEqual(errors,[])
