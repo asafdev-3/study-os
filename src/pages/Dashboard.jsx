@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, Radio, Settings, StickyNote } from 'lucide-react'
+import { ArrowRight, BookOpen, GraduationCap, Radio, Settings, StickyNote } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
 import { KiraAvatar } from '../components/KiraAvatar'
+import autumnRain from '../assets/autumn-rain.webp'
+import autumnRainMobile from '../assets/autumn-rain-mobile.webp'
+import './Dashboard.css'
 
 const subjects = {
   matematica: ['mt', 'Matemática'], natureza: ['cn', 'Ciências da Natureza'],
@@ -18,9 +21,8 @@ function mainSubject(value) {
 export default function Dashboard() {
   const navigate = useNavigate()
   useEffect(() => {
-    document.documentElement.dataset.studyHome = 'true'
+    // Keep the dashboard scrollable, including on smaller iPhones.
     window.scrollTo(0, 0)
-    return () => { delete document.documentElement.dataset.studyHome }
   }, [])
   const [profile, setProfile] = useState(null)
   const [note, setNote] = useState(null)
@@ -55,41 +57,86 @@ export default function Dashboard() {
   const notePath = note ? '/anotacoes?nota=' + encodeURIComponent(note.id) : '/anotacoes'
 
   return (
-    <main className="study-room study-page">
-      <img className="study-room-scene" src="/images/study-room.webp" alt="" width="1536" height="1024" fetchPriority="high" />
+    <main className="study-room study-page study-home-v2">
+      <picture className="study-home-picture" aria-hidden="true">
+        <source media="(max-width: 767px)" srcSet={autumnRainMobile} />
+        <img src={autumnRain} alt="" fetchPriority="high" />
+      </picture>
       <div className="study-room-shade" aria-hidden="true" />
+
       <div className="study-room-content">
         <header className="study-room-header">
-          <div className="study-room-brand"><img src="/icons/icon-192.png" alt="" width="38" height="38" /><span>Study<span>OS</span><small>SUA SALA DE ESTUDO</small></span></div>
-          <div className="study-room-header-actions"><StudyLink to="/nfc" className="study-room-nfc"><Radio size={17} aria-hidden="true" /><span>NFC</span></StudyLink><StudyLink to="/configuracoes" className="study-room-nfc" aria-label="Configurações"><Settings size={17} /></StudyLink></div>
+          <div className="study-room-brand">
+            <img src="/icons/icon-192.png" alt="" width="38" height="38" />
+            <span>Study<span>OS</span><small>SUA SALA DE ESTUDO</small></span>
+          </div>
+          <div className="study-room-header-actions">
+            <StudyLink to="/nfc" className="study-room-nfc" aria-label="Abrir recursos NFC">
+              <Radio size={17} aria-hidden="true" /><span>NFC</span>
+            </StudyLink>
+            <StudyLink to="/configuracoes" className="study-room-nfc" aria-label="Configurações">
+              <Settings size={17} aria-hidden="true" />
+            </StudyLink>
+          </div>
         </header>
 
-        <section className="study-room-welcome">
-          <p>{new Date(now).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-          <h1>{firstName ? `Olá, ${firstName}.` : 'Seu espaço de estudo.'}</h1>
-          <span>{profile?.curso_objetivo ? `A caminho de ${profile.curso_objetivo}.` : 'Seu caderno, suas ideias, seu ritmo.'}</span>
-        </section>
-        {error && <p role="alert" className="study-room-error">Não foi possível carregar seu espaço. <button onClick={() => { setError(false); setRetry(value => value + 1) }}>Tentar novamente</button></p>}
+        <div className="study-home-grid">
+          <div className="study-home-main">
+            <section className="study-room-welcome">
+              <p>{new Date(now).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+              <h1>{firstName ? `Olá, ${firstName}.` : 'Seu espaço de estudo.'}</h1>
+              <span>{profile?.curso_objetivo ? `A caminho de ${profile.curso_objetivo}.` : 'Seu caderno, suas ideias, seu ritmo.'}</span>
+            </section>
 
-        <section className="study-room-workspace" aria-label="Na sua mesa">
-          <div className="study-desk-label"><span />Na sua mesa</div>
-          <StudyLink to={notePath} className="study-desk-paper">
-            <div className="study-paper-meta"><span>{note ? 'ÚLTIMA ANOTAÇÃO' : 'CADERNO PESSOAL'}</span><BookOpen size={18} aria-hidden="true" /></div>
-            <h2>{note?.title || (noteError ? 'Abra seu caderno.' : 'Ideias que ficam.')}</h2>
-            <p>{note?.content || (noteError ? 'Consulte suas anotações e continue de onde parou.' : 'Anote o que fez sentido. Volte ao que ainda precisa entender.')}</p>
-            <span className="study-paper-link">{note ? 'Continuar leitura' : 'Abrir anotações'}<ArrowRight size={18} aria-hidden="true" /></span>
-          </StudyLink>
-          <StudyLink className="study-room-subject" to={'/anotacoes?area=' + area}>Caderno de {subject}<ArrowRight size={15} aria-hidden="true" /></StudyLink>
-        </section>
+            {error && (
+              <p role="alert" className="study-room-error">
+                Não foi possível carregar seu espaço.{' '}
+                <button onClick={() => { setError(false); setRetry(value => value + 1) }}>Tentar novamente</button>
+              </p>
+            )}
 
-        <footer className="study-room-dock">
-          <StudyLink className="study-room-kira study-room-postits" to="/lembretes"><StickyNote size={24} /><span><strong>Meus post-its</strong><small>Tarefas e lembretes de estudo</small></span><ArrowRight size={18} /></StudyLink>
-          <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>
-            <KiraAvatar size={66} />
-            <span><strong>Kira sugere</strong><small>Vamos revisar {subject}?</small></span>
-            <ArrowRight size={18} aria-hidden="true" />
-          </StudyLink>
-        </footer>
+            <StudyLink to="/enem" className="study-home-session">
+              <span className="study-home-session-icon"><GraduationCap size={22} aria-hidden="true" /></span>
+              <span className="study-home-session-copy"><strong>Começar uma sessão</strong><small>ENEM, questões e tempo de foco</small></span>
+              <ArrowRight size={19} aria-hidden="true" />
+            </StudyLink>
+
+            <section className="study-room-workspace" aria-label="Na sua mesa">
+              <div className="study-desk-label"><span />Na sua mesa</div>
+              <StudyLink to={notePath} className="study-desk-paper">
+                <div className="study-paper-meta">
+                  <span>{note ? 'ÚLTIMA ANOTAÇÃO' : 'CADERNO PESSOAL'}</span>
+                  <BookOpen size={18} aria-hidden="true" />
+                </div>
+                <h2>{note?.title || (noteError ? 'Abra seu caderno.' : 'Ideias que ficam.')}</h2>
+                <p>{note?.content || (noteError ? 'Consulte suas anotações e continue de onde parou.' : 'Anote o que fez sentido. Volte ao que ainda precisa entender.')}</p>
+                <span className="study-paper-link">
+                  {note ? 'Continuar leitura' : 'Abrir anotações'}
+                  <ArrowRight size={18} aria-hidden="true" />
+                </span>
+              </StudyLink>
+              <StudyLink className="study-room-subject" to={'/anotacoes?area=' + area}>
+                Caderno de {subject}<ArrowRight size={15} aria-hidden="true" />
+              </StudyLink>
+            </section>
+          </div>
+
+          <aside className="study-home-secondary" aria-label="Ferramentas de estudo">
+            <p className="study-home-secondary-label">À mão</p>
+            <div className="study-room-dock">
+              <StudyLink className="study-room-kira study-room-postits" to="/lembretes">
+                <StickyNote size={24} aria-hidden="true" />
+                <span><strong>Meus post-its</strong><small>Tarefas e lembretes de estudo</small></span>
+                <ArrowRight size={18} aria-hidden="true" />
+              </StudyLink>
+              <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>
+                <KiraAvatar size={66} />
+                <span><strong>Kira sugere</strong><small>Vamos revisar {subject}?</small></span>
+                <ArrowRight size={18} aria-hidden="true" />
+              </StudyLink>
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   )
