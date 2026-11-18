@@ -2,9 +2,10 @@ import { useEffect, useId, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion } from '../lib/motion'
-import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Pause, Play } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
+import RainWindow from '../components/RainWindow'
 import KiraLoginScene from '../components/KiraLoginScene'
 import studyosBackdrop from '../assets/studyos-backdrop.webp'
 import './Auth.css'
@@ -32,6 +33,8 @@ export default function Login() {
   const location = useLocation()
   const navigate = useNavigate()
   const [mode, setMode] = useState('login')
+  const [rainPaused, setRainPaused] = useState(false)
+  const [focusedField, setFocusedField] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -118,6 +121,7 @@ export default function Login() {
 
   return (
     <main className="study-entry study-auth-page study-auth-login">
+      <RainWindow still={reducedMotion || rainPaused} />
       <svg width="0" height="0" className="study-auth-glass-filter" aria-hidden="true" focusable="false">
         <defs>
           <filter id={glassFilterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
@@ -130,7 +134,7 @@ export default function Login() {
         <img src={studyosBackdrop} alt="" width="900" height="900" style={{ maskImage: `url(${studyosBackdrop})`, WebkitMaskImage: `url(${studyosBackdrop})` }} />
       </div>
 
-      <KiraLoginScene reducedMotion={reducedMotion} creating={creating} />
+      <KiraLoginScene reducedMotion={reducedMotion} creating={creating} focusedField={focusedField} />
 
       <section
         className="study-auth-card"
@@ -140,6 +144,12 @@ export default function Login() {
       >
         <header className="study-auth-login-brand">
           <span className="study-auth-login-wordmark">StudyOS</span>
+          {!reducedMotion && (
+            <button type="button" className="rain-toggle" onClick={() => setRainPaused(value => !value)}
+              aria-label={rainPaused ? 'Retomar chuva' : 'Pausar chuva'} title={rainPaused ? 'Retomar chuva' : 'Pausar chuva'}>
+              {rainPaused ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}
+            </button>
+          )}
         </header>
 
         <motion.div
@@ -158,7 +168,12 @@ export default function Login() {
           <button type="button" aria-pressed={creating} className={creating ? 'is-active' : ''} onClick={() => changeMode('signup')}>Criar conta</button>
         </div>
 
-        <form className="study-auth-form" autoComplete={creating ? 'off' : 'on'} onSubmit={handleSubmit}>
+        <form className="study-auth-form"
+          onFocusCapture={event => setFocusedField(event.target.name || null)}
+          onBlurCapture={event => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setFocusedField(null)
+          }}
+          autoComplete={creating ? 'off' : 'on'} onSubmit={handleSubmit}>
           <label className="study-auth-field">
             <span>E-mail</span>
             <span className="study-auth-input-wrap">

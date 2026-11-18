@@ -4,7 +4,7 @@ import kira from '../assets/kira-login.webp'
 
 const greetings = [
   'Oi, eu sou a Kira. Vamos estudar?',
-  'Por onde você quer começar hoje?',
+  'Chuva lá fora. O que vamos estudar?',
   'Uma dica? Transforme sua dúvida em uma pergunta.',
   'Quando entrar, me chama na aba Kira.',
 ]
@@ -12,9 +12,11 @@ const turnSpring = { stiffness: 170, damping: 25, mass: 0.7 }
 const nodSpring = { stiffness: 280, damping: 18, mass: 0.55 }
 const bubbleTransition = { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
 
-export default function KiraLoginScene({ reducedMotion, creating }) {
+export default function KiraLoginScene({ reducedMotion, creating, focusedField }) {
   const [line, setLine] = useState(0)
   const speech = line === 0 && creating ? 'Vamos preparar seu espaço de estudo?' : greetings[line]
+  const privateField = focusedField === 'password' || focusedField === 'confirmPassword'
+  const gaze = privateField ? 'away' : focusedField ? 'form' : 'free'
   const release = useRef(null)
   const turn = useSpring(0, turnSpring)
   const tilt = useSpring(0, turnSpring)
@@ -33,7 +35,10 @@ export default function KiraLoginScene({ reducedMotion, creating }) {
       turn.set((2 * event.clientX / window.innerWidth - 1) * 13)
       tilt.set((1 - 2 * event.clientY / window.innerHeight) * 6)
     }
-    if (!reducedMotion) {
+    if (gaze !== 'free' && !reducedMotion) {
+      turn.set(gaze === 'away' ? -15 : 10)
+      tilt.set(gaze === 'away' ? -4 : 2)
+    } else if (!reducedMotion) {
       window.addEventListener('pointermove', follow, { passive: true })
       window.addEventListener('blur', center)
       document.documentElement.addEventListener('pointerleave', center)
@@ -49,7 +54,7 @@ export default function KiraLoginScene({ reducedMotion, creating }) {
       tilt.jump(0)
       lift.jump(0)
     }
-  }, [turn, tilt, lift, reducedMotion])
+  }, [turn, tilt, lift, reducedMotion, gaze])
 
   function greet() {
     setLine(previous => (previous + 1) % greetings.length)
@@ -60,7 +65,7 @@ export default function KiraLoginScene({ reducedMotion, creating }) {
   }
 
   return (
-    <div className="kira-scene" data-still={reducedMotion || undefined}>
+    <div className="kira-scene" data-gaze={gaze} data-still={reducedMotion || undefined}>
       <button type="button" className="kira-actor" aria-label="Chamar a Kira" onClick={greet}>
         <span className="kira-stage" aria-hidden="true">
           <span className="kira-orbit" />

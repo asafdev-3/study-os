@@ -473,21 +473,10 @@
   align-content: center;
   align-items: center;
   gap: clamp(24px, 5vw, 88px);
-  background:
-    radial-gradient(ellipse at 28% 49%, #193b56 0%, transparent 34%),
-    radial-gradient(ellipse at 30% 77%, #312e55 0%, transparent 42%),
-    linear-gradient(150deg, #080f1c 16%, #101d31 65%, #080f1a);
+  background: #101e2a;
+  --rain-glass-blur: 42px;
 }
-.study-auth-login::before {
-  background:
-    radial-gradient(1.5px 1.5px at 14% 34%, #c3eaff 65%, transparent),
-    radial-gradient(1px 1px at 25% 21%, #bdd2ef 70%, transparent),
-    radial-gradient(1px 1px at 42% 26%, #bdd2ef 70%, transparent),
-    radial-gradient(2px 2px at 11% 62%, #b1a4df 50%, transparent),
-    radial-gradient(1px 1px at 38% 73%, #bdd2ef 70%, transparent),
-    radial-gradient(1.5px 1.5px at 84% 22%, #bdd2ef 60%, transparent),
-    radial-gradient(1px 1px at 93% 68%, #bdd2ef 70%, transparent);
-}
+.study-auth-login::before { content: none; }
 .study-auth-login .study-auth-card {
   width: 100%;
   margin: 0 auto;
@@ -508,12 +497,12 @@
   .study-auth-login .study-auth-card {
     background:
       radial-gradient(ellipse at 0% 0%, rgb(159 215 255 / .10), transparent 51%),
-      linear-gradient(135deg, rgb(187 215 243 / .05), rgb(8 19 37 / .28) 65%, rgb(125 137 192 / .08));
-    -webkit-backdrop-filter: brightness(1.03) blur(18px) saturate(130%);
-    backdrop-filter: brightness(1.03) blur(18px) saturate(130%);
+      linear-gradient(135deg, rgb(24 42 62 / .32), rgb(8 19 37 / .47) 65%, rgb(32 41 57 / .33));
+    -webkit-backdrop-filter: blur(var(--rain-glass-blur)) saturate(148%);
+    backdrop-filter: blur(var(--rain-glass-blur)) saturate(148%);
   }
   .study-auth-login .study-auth-card[data-refraction="true"] {
-    backdrop-filter: brightness(1.03) blur(18px) saturate(130%) var(--auth-glass-filter);
+    backdrop-filter: blur(var(--rain-glass-blur)) saturate(148%) var(--auth-glass-filter);
   }
 }
 @supports (mask-composite: exclude) {
@@ -540,7 +529,7 @@
 }
 
 
-.study-auth-login-brand { margin-bottom: 24px; }
+.study-auth-login-brand { display: flex; align-items: center; margin-bottom: 24px; }
 
 .kira-scene { position: relative; z-index: 1; min-width: 0; }
 .kira-actor {
@@ -588,6 +577,12 @@
   .kira-scene:not([data-still]) .kira-eye::before,
   .kira-scene:not([data-still]) .kira-eye::after { animation: kira-blink 6.4s linear -3s infinite; }
   .kira-scene:not([data-still]) .kira-face { animation: kira-hover 5.2s ease-in-out infinite; }
+}
+/* Kira turns away while either password field has focus. */
+.kira-scene[data-gaze="away"] .kira-eye::before,
+.kira-scene[data-gaze="away"] .kira-eye::after {
+  animation: none;
+  transform: scaleY(.97);
 }
 @keyframes kira-blink {
   0%, 67%, 70.8%, 100% { transform: scaleY(0); }
@@ -641,8 +636,7 @@
     grid-template-columns: minmax(0, 420px);
     gap: 12px;
     padding-block: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-bottom));
-    background: radial-gradient(ellipse at 28% 12%, #223f59, transparent 45%),
-      linear-gradient(158deg, #101a2a, #151c32 58%, #0b1423);
+    --rain-glass-blur: 30px;
   }
   .kira-actor {
     width: 100%;

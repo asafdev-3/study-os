@@ -1,0 +1,82 @@
+.rain-window {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #101e2a;
+}
+.rain-window picture, .rain-window img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.rain-window img { object-fit: cover; object-position: 58% center; }
+.rain-window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, #0613222b, transparent 60%, #09111c14),
+    linear-gradient(0deg, #0913214f, transparent 28%);
+}
+.rain-wind {
+  position: absolute;
+  inset: 0 -12%;
+  transform: skewX(-7deg);
+}
+.rain-sheet {
+  position: absolute;
+  inset: -320px 0 0;
+  background-image: url('../assets/rain-streaks.svg');
+  background-repeat: repeat;
+  animation: rain-fall linear infinite;
+}
+.rain-far {
+  --fall: 190px;
+  background-size: 224px var(--fall);
+  opacity: .36;
+  animation-duration: .93s;
+}
+.rain-near {
+  --fall: 312px;
+  background-size: 434px var(--fall);
+  background-position: 69px 93px;
+  opacity: .5;
+  animation-duration: .74s;
+}
+@keyframes rain-fall { to { transform: translateY(var(--fall)); } }
+.rain-bead {
+  position: absolute;
+  border-radius: 57% 43% 55% 45% / 69% 65% 35% 31%;
+  background: radial-gradient(ellipse at 66% 76%, #ffdca6b0, transparent 27%),
+    radial-gradient(ellipse at 27% 21%, #dcecffbf, transparent 25%),
+    linear-gradient(153deg, #95b2c34d, #111d2c94 52%, #d2ddde63);
+  box-shadow: inset .5px .7px .7px #edf6ff70, inset -.7px -.8px 1px #112133aa, 0 1px 2px #01070e80;
+}
+.rain-runner { animation: rain-slide ease-in-out infinite; }
+@keyframes rain-slide {
+  0%, 18% { opacity: 0; transform: none; }
+  26%, 46% { opacity: .88; transform: translateY(1px); }
+  59%, 72% { opacity: .88; transform: translate(1px, 15px) scaleY(1.08); }
+  90%, 100% { opacity: 0; transform: translate(-1px, 76px) scaleY(1.18); }
+}
+.rain-window[data-still] :is(.rain-sheet,.rain-runner) { animation-play-state: paused; }
+.rain-toggle {
+  margin: -10px -6px -10px auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #def0ff38;
+  border-radius: 50%;
+  color: #e7f0f6;
+  background: #152335a6;
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  .rain-window img { object-position: 81% center; }
+  .rain-far { display: none; }
+  .rain-near { background-size: 322px var(--fall); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rain-sheet,.rain-runner { animation: none; }
+}
