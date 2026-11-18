@@ -83,7 +83,7 @@ export default function Login() {
           setAwaitingVerification(true)
           setPassword('')
           setConfirmPassword('')
-          setNotice('Se este e-mail puder ser cadastrado, enviaremos um link de confirmação. Confira também o spam.')
+          setNotice('Se este e-mail ainda não tiver conta, enviaremos um link de confirmação. Se você já entrou com Google, use o botão abaixo para acessar.')
           return
         }
         setPassword('')
@@ -240,6 +240,7 @@ export default function Login() {
           </div>
 
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
+          {!creating && erro && <p className="study-auth-help">Já usou o StudyOS com Google? Entre pelo botão Google abaixo, sem criar outra conta.</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}
           {awaitingVerification && <button className="study-auth-resend" type="button" onClick={handleResend} disabled={loading || resending}>
             {resending ? 'Reenviando…' : 'Reenviar confirmação por e-mail'}

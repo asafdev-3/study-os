@@ -683,3 +683,5 @@
   color: #d1e4fc; font-size: 12px; font-weight: 500; cursor: pointer;
 }
 .study-auth-resend:disabled { opacity: .6; cursor: wait; }
+
+.study-auth-help { margin: 0; color: rgba(226, 237, 250, .82); font-size: 12px; line-height: 1.5; }

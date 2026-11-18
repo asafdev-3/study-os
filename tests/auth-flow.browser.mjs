@@ -68,6 +68,7 @@ try {
     await page.locator('#auth-password').fill('incorrect-password')
     await page.locator('button[type="submit"]',{hasText:'Entrar'}).click()
     await page.getByRole('alert').getByText('E-mail ou senha incorretos.').waitFor()
+    await page.getByText('Já usou o StudyOS com Google?', { exact: false }).waitFor()
     await page.locator('#auth-password').fill('correct-password-123')
     await page.locator('button[type="submit"]',{hasText:'Entrar'}).click()
     await page.waitForURL('**/dashboard')
