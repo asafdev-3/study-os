@@ -4,7 +4,8 @@ import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion } from '../lib/motion'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Pause, Play } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
-import { supabase } from '../lib/supabase'
+import { authConfigured, supabase } from '../lib/supabase'
+import { authMessage } from '../lib/authMessage'
 import RainWindow from '../components/RainWindow'
 import KiraLoginScene from '../components/KiraLoginScene'
 import studyosBackdrop from '../assets/studyos-backdrop.webp'
@@ -19,16 +20,6 @@ const GoogleIcon = () => (
   </svg>
 )
 
-function authMessage(error, mode) {
-  const message = error?.message?.toLowerCase() ?? ''
-  if (message.includes('invalid login credentials')) return 'E-mail ou senha incorretos.'
-  if (message.includes('already registered') || message.includes('already been registered')) return 'Este e-mail já tem cadastro. Entre na sua conta.'
-  if (message.includes('password')) return 'A senha precisa ter pelo menos 8 caracteres.'
-  if (message.includes('email not confirmed')) return 'Confirme seu e-mail pelo link enviado antes de entrar.'
-  if (message.includes('rate limit') || message.includes('too many requests')) return 'Muitas tentativas. Aguarde um pouco e tente novamente.'
-  return mode === 'signup' ? 'Não foi possível criar sua conta agora. Tente novamente.' : 'Não foi possível entrar agora. Tente novamente.'
-}
-
 export default function Login() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -42,6 +33,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [notice, setNotice] = useState('')
+  const [awaitingVerification, setAwaitingVerification] = useState(false)
+  const [resending, setResending] = useState(false)
 
   useEffect(() => { rememberDestination(location.state?.destino) }, [location.state])
 
@@ -50,12 +43,14 @@ export default function Login() {
     setErro('')
     setNotice('')
     setConfirmPassword('')
+    setAwaitingVerification(false)
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
     setErro('')
     setNotice('')
+    setAwaitingVerification(false)
     const normalizedEmail = email.trim().toLowerCase()
     if (!normalizedEmail || !password) {
       setErro('Preencha seu e-mail e sua senha.')
@@ -70,6 +65,11 @@ export default function Login() {
       return
     }
 
+    if (!authConfigured) {
+      setErro('A autenticação está indisponível neste ambiente. Tente novamente mais tarde.')
+      return
+    }
+
     setLoading(true)
     try {
       if (mode === 'signup') {
@@ -80,16 +80,24 @@ export default function Login() {
         })
         if (error) throw error
         if (!data.session) {
-          setNotice('Conta criada. Confira seu e-mail e confirme o cadastro para continuar.')
+          setAwaitingVerification(true)
+          setPassword('')
+          setConfirmPassword('')
+          setNotice('Se este e-mail puder ser cadastrado, enviaremos um link de confirmação. Confira também o spam.')
           return
         }
+        setPassword('')
+        setConfirmPassword('')
         navigate('/onboarding', { replace: true })
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
+        const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
         if (error) throw error
+        if (!data?.session) throw new Error('Session missing after login')
+        setPassword('')
         navigate('/dashboard', { replace: true })
       }
     } catch (error) {
+      if (error?.code === 'email_not_confirmed') setAwaitingVerification(true)
       setErro(authMessage(error, mode))
     } finally {
       setLoading(false)
@@ -97,17 +105,42 @@ export default function Login() {
   }
 
   async function handleGoogle() {
+    if (!authConfigured) {
+      setErro('A autenticação está indisponível neste ambiente. Tente novamente mais tarde.')
+      return
+    }
     setLoading(true)
     setErro('')
+    setNotice('')
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: `${window.location.origin}/dashboard` },
       })
       if (error) throw error
-    } catch {
-      setErro('O acesso com Google falhou. Tente novamente.')
+    } catch (error) {
+      setErro(authMessage(error, 'google'))
       setLoading(false)
+    }
+  }
+
+  async function handleResend() {
+    if (!authConfigured || !email.trim() || resending) return
+    setResending(true)
+    setErro('')
+    setNotice('')
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim().toLowerCase(),
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      })
+      if (error) throw error
+      setNotice('Solicitação enviada. Confira seu e-mail e a pasta de spam.')
+    } catch (error) {
+      setErro(authMessage(error, 'resend'))
+    } finally {
+      setResending(false)
     }
   }
 
@@ -208,6 +241,9 @@ export default function Login() {
 
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}
+          {awaitingVerification && <button className="study-auth-resend" type="button" onClick={handleResend} disabled={loading || resending}>
+            {resending ? 'Reenviando…' : 'Reenviar confirmação por e-mail'}
+          </button>}
 
           <button className="study-auth-submit" type="submit" disabled={loading}>
             {loading ? 'Aguarde…' : creating ? 'Criar conta' : 'Entrar'}

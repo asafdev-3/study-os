@@ -674,3 +674,12 @@
 @media (prefers-reduced-transparency: reduce) {
   .study-auth-login .study-auth-brand-backdrop { opacity: .25; }
 }
+
+/* Auth action appears only when a real signup requires e-mail verification. */
+.study-auth-resend {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; border: 1px solid rgba(181, 210, 240, .22);
+  border-radius: 12px; background: rgba(19, 38, 58, .45);
+  color: #d1e4fc; font-size: 12px; font-weight: 500; cursor: pointer;
+}
+.study-auth-resend:disabled { opacity: .6; cursor: wait; }
