@@ -1,7 +1,8 @@
 # StudyOS — handoff técnico completo para Claude
 
 **Atualizado em:** 21/11/2026  
-**Fonte de verdade do código:** GitHub main, commit e8f6f93a7be9b94ab1ce056a4d7ba4a0e8f7864d  
+**Código da aplicação atualmente publicado:** commit e8f6f93a7be9b94ab1ce056a4d7ba4a0e8f7864d  
+**Commit de documentação no main:** 0c4457aa12cf96f1e4c281c526f1a71c606636b3 (adiciona este handoff, sem alterar o bundle de produção)  
 **Produção:** https://study-os-three-pearl.vercel.app
 
 > Leia este documento antes de editar. Ele consolida o estado real do código publicado, as decisões de produto, os limites técnicos e as pendências. Quando este documento divergir de notas históricas, prevalecem o código atual de main e as evidências mais recentes.
@@ -72,7 +73,7 @@ Estudantes que se preparam para o ENEM. A primeira validação de uso deve ser f
 
 ## 4. Estado publicado mais recente
 
-main e a produção foram verificados no commit:
+A aplicação web em produção foi verificada no commit:
 
 e8f6f93a7be9b94ab1ce056a4d7ba4a0e8f7864d — “Add ambient rain and subtle glass to StudyOS dashboard”.
 
