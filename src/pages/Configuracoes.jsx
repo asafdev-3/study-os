@@ -121,7 +121,7 @@ export default function Configuracoes() {
           <h2>Instale no navegador</h2>
           <ol>
             <li>Abra o StudyOS no Chrome ou Edge.</li>
-            <li>Use o ícone de instalação na barra de endereço ou o menu do navegador.</li>
+            <li>Use o ícone de instalação na barra de endereço ou o menu do navegador, se essa opção estiver disponível.</li>
             <li>Confirme em <strong>Instalar</strong>.</li>
           </ol>
         </section>
