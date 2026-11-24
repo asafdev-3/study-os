@@ -43,16 +43,24 @@ export default function Login() {
   const [focusedField, setFocusedField] = useState(null)
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
+  const [resendSeconds, setResendSeconds] = useState(0)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [notice, setNotice] = useState('')
 
   useEffect(() => { rememberDestination(location.state?.destino) }, [location.state])
 
+  useEffect(() => {
+    if (phase !== 'code' || resendSeconds <= 0) return undefined
+    const timeout = window.setTimeout(() => setResendSeconds(value => Math.max(0, value - 1)), 1000)
+    return () => window.clearTimeout(timeout)
+  }, [phase, resendSeconds])
+
   function changeMode(next) {
     setMode(next)
     setPhase('email')
     setCode('')
+    setResendSeconds(0)
     setErro('')
     setNotice('')
   }
@@ -75,6 +83,7 @@ export default function Login() {
       if (error) throw error
       setEmail(normalizedEmail)
       setPhase('code')
+      setResendSeconds(30)
       setNotice(`Enviamos um código de seis dígitos para ${normalizedEmail}.`)
     } catch (error) {
       setErro(readableAuthError(error, mode, 'send'))
@@ -110,6 +119,7 @@ export default function Login() {
   }
 
   async function resendCode() {
+    if (resendSeconds > 0 || loading) return
     setCode('')
     await sendCode({ preventDefault() {} })
   }
@@ -195,7 +205,7 @@ export default function Login() {
             <>
               <div className="study-auth-otp-destination">
                 <span>{email}</span>
-                <button type="button" onClick={() => { setPhase('email'); setCode(''); setErro(''); setNotice('') }}>Alterar</button>
+                <button type="button" onClick={() => { setPhase('email'); setCode(''); setResendSeconds(0); setErro(''); setNotice('') }}>Alterar</button>
               </div>
               <label className="study-auth-field">
                 <span>Código de acesso</span>
@@ -205,8 +215,8 @@ export default function Login() {
                   onChange={event => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
                   aria-label="Código de acesso de seis dígitos" required disabled={loading} />
               </label>
-              <button className="study-auth-resend" type="button" onClick={resendCode} disabled={loading}>
-                Reenviar código
+              <button className="study-auth-resend" type="button" onClick={resendCode} disabled={loading || resendSeconds > 0}>
+                {resendSeconds > 0 ? `Reenviar em ${resendSeconds}s` : 'Reenviar código'}
               </button>
             </>
           )}
