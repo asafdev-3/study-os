@@ -235,7 +235,7 @@ export default function EnemScreen({ userId }) {
   }
 
   function guardarResposta(content, index) {
-    const question = messages.slice(0, index).findLast(message => message.role === "user")?.content;
+    const question = [...messages.slice(0, index)].reverse().find(message => message.role === "user")?.content;
     navigate("/anotacoes", { state: { draft: {
       title: (question || "Revisão com a Kira ENEM").slice(0, 120),
       content,
