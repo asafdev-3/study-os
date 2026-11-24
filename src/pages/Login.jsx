@@ -44,6 +44,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [resendSeconds, setResendSeconds] = useState(0)
+  const [lastSentEmail, setLastSentEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [notice, setNotice] = useState('')
@@ -81,6 +82,7 @@ export default function Login() {
       })
       if (error) throw error
       setEmail(normalizedEmail)
+      setLastSentEmail(normalizedEmail)
       setPhase('code')
       setResendSeconds(60)
       setNotice(`Enviamos um código de seis dígitos para ${normalizedEmail}.`)
@@ -223,8 +225,8 @@ export default function Login() {
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}
 
-          <button className="study-auth-submit" type="submit" disabled={loading}>
-            {loading ? 'Aguarde…' : phase === 'code' ? 'Validar código' : creating ? 'Enviar código' : 'Continuar'}
+          <button className="study-auth-submit" type="submit" disabled={loading || (phase === 'email' && resendSeconds > 0 && email.trim().toLowerCase() === lastSentEmail)}>
+            {loading ? 'Aguarde…' : phase === 'code' ? 'Validar código' : resendSeconds > 0 && email.trim().toLowerCase() === lastSentEmail ? `Aguarde ${resendSeconds}s` : creating ? 'Enviar código' : 'Continuar'}
             {!loading && <ArrowRight size={18} aria-hidden="true" />}
           </button>
         </form>
