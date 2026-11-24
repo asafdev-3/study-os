@@ -3,6 +3,7 @@ import { AnimatePresence, m as motion, useSpring } from 'framer-motion'
 import blink from '../assets/kira-blink.webp'
 import eyesClosed from '../assets/kira-private.webp'
 import resting from '../assets/kira-rest.webp'
+import './KiraLoginScene.css'
 
 const greetings = [
   'Oi, eu sou a Kira. Vamos estudar?',
