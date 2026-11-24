@@ -1048,3 +1048,6 @@ select option { background:#1c293b; color:#f7f9ff; }
 @media (prefers-reduced-motion: reduce) {
   .study-nfc-symbol, .study-nfc-symbol::after, .study-install-card { animation: none; }
 }
+html[data-study-motion="reduced"] .study-nfc-symbol,
+html[data-study-motion="reduced"] .study-nfc-symbol::after,
+html[data-study-motion="reduced"] .study-install-card { animation: none; }
