@@ -664,34 +664,3 @@
 @media (prefers-reduced-transparency: reduce) {
   .study-auth-login .study-auth-brand-backdrop { opacity: .25; }
 }
-
-
-/* Kira: stable layered sprite for gaze and breathing motion. */
-.kira-breath {
-  display: block;
-  width: 100%;
-}
-.kira-image-stack {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 294 / 248;
-}
-.kira-image-stack > .kira-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
-  object-fit: contain;
-}
-.kira-image-stack > .kira-frame--private {
-  pointer-events: none;
-}
-@media (prefers-reduced-transparency: reduce) {
-  .kira-note-saved {
-    background: #142131;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
