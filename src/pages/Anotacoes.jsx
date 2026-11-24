@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
 import { ArrowLeft, ArrowRight, List, Pencil, Plus, Search, Sparkles, Trash2, BookOpen } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import KiraNoteSaved from '../components/KiraNoteSaved'
 import { sendToKira } from '../lib/groq'
 
 const areas = {
@@ -128,6 +129,7 @@ export default function Anotacoes() {
     } : null
   })
   const [notice, setNotice] = useState('')
+  const [savedAnimationId, setSavedAnimationId] = useState(0)
   const [deleting, setDeleting] = useState(false)
   const deleteLock = useRef(false)
 
@@ -177,6 +179,7 @@ export default function Anotacoes() {
     setParams({}, { replace: true })
     setNotice(editor?.id ? 'Anotação atualizada.' : 'Anotação guardada no seu caderno.')
     setEditor(null)
+    setSavedAnimationId(value => value + 1)
   }
 
   async function removeNote(note) {
@@ -227,6 +230,7 @@ export default function Anotacoes() {
           <Plus size={18} aria-hidden="true" /><span>Novo caderno</span>
         </button>
       </header>
+      <KiraNoteSaved saveId={savedAnimationId} />
       {notice && <p role="status" className="study-note">{notice}</p>}
       {error && <p role="alert" className="study-note">Não foi possível carregar suas anotações.{' '}
         <button onClick={() => { setError(false); setRetry(value => value + 1) }} type="button">Tentar novamente</button></p>}
