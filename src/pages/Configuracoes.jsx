@@ -6,6 +6,7 @@ import { readPreferences, updatePreferences } from '../lib/preferences'
 
 const pages = {
   conta: ['Conta', 'Seu perfil e acesso'],
+  instalar: ['Instalar StudyOS', 'Acesse pela Tela de Início'],
   aparencia: ['Aparência', 'Movimento, transparência e leitura'],
   kira: ['Kira', 'Estilo das respostas'],
   notificacoes: ['Notificações', 'Avisos de sessão concluída'],
@@ -94,6 +95,38 @@ export default function Configuracoes() {
           </Link>
         ))}
       </section>}
+      {secao === 'instalar' && <div className="study-install-guide">
+        <section className="study-install-card">
+          <span className="study-install-kicker">IPHONE E IPAD</span>
+          <h2>Adicione à Tela de Início</h2>
+          <ol>
+            <li>Abra o StudyOS no <strong>Safari</strong>.</li>
+            <li>Toque no botão <strong>Compartilhar</strong>.</li>
+            <li>Escolha <strong>Adicionar à Tela de Início</strong>.</li>
+            <li>Confirme em <strong>Adicionar</strong>.</li>
+          </ol>
+        </section>
+        <section className="study-install-card">
+          <span className="study-install-kicker">ANDROID</span>
+          <h2>Instale pelo navegador</h2>
+          <ol>
+            <li>Abra o StudyOS no <strong>Chrome</strong>.</li>
+            <li>Abra o menu de três pontos.</li>
+            <li>Toque em <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>, se disponível.</li>
+            <li>Confirme a instalação.</li>
+          </ol>
+        </section>
+        <section className="study-install-card">
+          <span className="study-install-kicker">COMPUTADOR</span>
+          <h2>Instale no navegador</h2>
+          <ol>
+            <li>Abra o StudyOS no Chrome ou Edge.</li>
+            <li>Use o ícone de instalação na barra de endereço ou o menu do navegador, se essa opção estiver disponível.</li>
+            <li>Confirme em <strong>Instalar</strong>.</li>
+          </ol>
+        </section>
+        <p className="study-note">O StudyOS é um aplicativo web instalável (PWA), não um aplicativo nativo. A instalação cria um atalho com janela própria; recursos offline e notificações dependem do suporte do navegador e não são garantidos.</p>
+      </div>}
       {secao === 'conta' && <>
         <Link className="study-settings-row" to="/perfil">Abrir perfil</Link>
         <button type="button" className="study-settings-row" disabled={pending} onClick={signOut}>Sair da conta neste dispositivo</button>
