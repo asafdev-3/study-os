@@ -51,7 +51,7 @@ export default function Login() {
   useEffect(() => { rememberDestination(location.state?.destino) }, [location.state])
 
   useEffect(() => {
-    if (phase !== 'code' || resendSeconds <= 0) return undefined
+    if (resendSeconds <= 0) return undefined
     const timeout = window.setTimeout(() => setResendSeconds(value => Math.max(0, value - 1)), 1000)
     return () => window.clearTimeout(timeout)
   }, [phase, resendSeconds])
@@ -60,7 +60,6 @@ export default function Login() {
     setMode(next)
     setPhase('email')
     setCode('')
-    setResendSeconds(0)
     setErro('')
     setNotice('')
   }
@@ -83,7 +82,7 @@ export default function Login() {
       if (error) throw error
       setEmail(normalizedEmail)
       setPhase('code')
-      setResendSeconds(30)
+      setResendSeconds(60)
       setNotice(`Enviamos um código de seis dígitos para ${normalizedEmail}.`)
     } catch (error) {
       setErro(readableAuthError(error, mode, 'send'))
@@ -205,7 +204,7 @@ export default function Login() {
             <>
               <div className="study-auth-otp-destination">
                 <span>{email}</span>
-                <button type="button" onClick={() => { setPhase('email'); setCode(''); setResendSeconds(0); setErro(''); setNotice('') }}>Alterar</button>
+                <button type="button" onClick={() => { setPhase('email'); setCode(''); setErro(''); setNotice('') }}>Alterar</button>
               </div>
               <label className="study-auth-field">
                 <span>Código de acesso</span>
