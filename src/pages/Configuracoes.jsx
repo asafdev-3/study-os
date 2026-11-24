@@ -3,8 +3,10 @@ import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { readPreferences, updatePreferences } from '../lib/preferences'
+import { InstallAnimation } from '../components/SetupAnimations'
 
 const pages = {
+  instalar: ['Instalar StudyOS', 'Adicione o app à tela inicial'],
   conta: ['Conta', 'Seu perfil e acesso'],
   aparencia: ['Aparência', 'Movimento, transparência e leitura'],
   kira: ['Kira', 'Estilo das respostas'],
@@ -93,6 +95,15 @@ export default function Configuracoes() {
             <span><strong>{name}</strong><small>{subtitle}</small></span><ChevronRight size={17} aria-hidden="true" />
           </Link>
         ))}
+      </section>}
+      {secao === 'instalar' && <section className="study-install-guide">
+        <InstallAnimation />
+        <h2>Seu espaço de estudo, sempre à mão.</h2>
+        <p>O StudyOS é um aplicativo web instalável (PWA). Adicione-o à tela inicial sem baixar pela App Store ou Play Store.</p>
+        <div className="study-install-platform"><h3>iPhone e iPad</h3><ol><li>Abra o StudyOS no Safari.</li><li>Toque em Compartilhar.</li><li>Escolha <strong>Adicionar à Tela de Início</strong> e confirme.</li></ol></div>
+        <div className="study-install-platform"><h3>Android</h3><ol><li>Abra o StudyOS no Chrome.</li><li>Toque no menu de três pontos.</li><li>Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</li></ol></div>
+        <div className="study-install-platform"><h3>Computador</h3><ol><li>Abra o StudyOS no Chrome ou Edge.</li><li>Use o ícone de instalação na barra de endereço ou o menu do navegador.</li></ol></div>
+        <p className="study-note">A instalação cria um atalho com experiência de aplicativo. Recursos offline e notificações dependem do navegador e do dispositivo.</p>
       </section>}
       {secao === 'conta' && <>
         <Link className="study-settings-row" to="/perfil">Abrir perfil</Link>

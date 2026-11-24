@@ -33,14 +33,14 @@
 .rain-far {
   --fall: 190px;
   background-size: 224px var(--fall);
-  opacity: .31;
+  opacity: .39;
   animation-duration: .93s;
 }
 .rain-near {
   --fall: 312px;
   background-size: 434px var(--fall);
   background-position: 69px 93px;
-  opacity: .43;
+  opacity: .55;
   animation-duration: .74s;
 }
 @keyframes rain-fall { to { transform: translateY(var(--fall)); } }
@@ -91,3 +91,8 @@
 @media (prefers-reduced-motion: reduce) {
   .rain-sheet,.rain-runner { animation: none; }
 }
+
+/* Stronger rain visibility on the StudyOS room background. */
+.study-home-v2 .rain-window .rain-sheet { mix-blend-mode: screen; }
+.study-home-v2 .rain-window .rain-near { opacity: .62; filter: contrast(1.35) brightness(1.28); }
+@media (max-width: 760px) { .study-home-v2 .rain-window .rain-near { opacity: .7; filter: contrast(1.42) brightness(1.35); } }
