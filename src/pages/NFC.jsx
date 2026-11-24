@@ -5,6 +5,7 @@ import { StudyLink } from '../components/StudyLink'
 import { supabase } from '../lib/supabase'
 import { FOCUS_SECONDS, readFocus } from '../lib/focus'
 import { NFC_AREAS, nfcDestination } from '../lib/nfc'
+import { NfcAnimation } from '../components/SetupAnimations'
 
 export default function NFC() {
   const [params] = useSearchParams()
@@ -88,6 +89,7 @@ export default function NFC() {
         <button type="button" className="study-primary" disabled={busy} onClick={startFocus}>{busy ? 'Preparando…' : 'Entrar em foco'}<ArrowRight size={17} aria-hidden="true" /></button>
       </> : <>
         <div className="study-nfc-symbol"><Radio size={34} strokeWidth={1.2} aria-hidden="true" /></div>
+        <NfcAnimation />
         <p className="study-nfc-eyebrow">DO PAPEL PARA O DIGITAL</p>
         <h1>Um toque.<br /><em>Seu espaço.</em></h1>
         <p className="study-nfc-description">Uma etiqueta na mesa abre o foco. No caderno, abre a matéria. Escolha o que você quer encontrar.</p>
