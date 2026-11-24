@@ -664,3 +664,62 @@
 @media (prefers-reduced-transparency: reduce) {
   .study-auth-login .study-auth-brand-backdrop { opacity: .25; }
 }
+
+
+/* Email OTP — mantém o mesmo material visual do formulário de acesso. */
+.study-auth-otp-destination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 4px;
+  color: var(--auth-muted, #a8b1c1);
+  font-size: 13px;
+}
+.study-auth-otp-destination span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.study-auth-otp-destination button,
+.study-auth-resend {
+  border: 0;
+  padding: 7px 0;
+  color: #c4d8f5;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.study-auth-otp-input {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 16px;
+  outline: none;
+  padding: 8px 14px;
+  color: var(--auth-text, #f1f3f7);
+  background: rgba(0,0,0,.18);
+  font: inherit;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: .42em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.study-auth-otp-input:focus {
+  border-color: rgba(158,188,225,.62);
+  box-shadow: 0 0 0 3px rgba(100,160,240,.12);
+}
+.study-auth-resend {
+  justify-self: start;
+  text-align: left;
+}
+.study-auth-resend:disabled,
+.study-auth-otp-destination button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .study-auth-otp-input { background: #101722; }
+}
