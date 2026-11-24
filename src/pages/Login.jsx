@@ -1,8 +1,8 @@
 import { useEffect, useId, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion } from '../lib/motion'
-import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Pause, Play } from 'lucide-react'
+import { ArrowRight, Mail, Pause, Play } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
 import RainWindow from '../components/RainWindow'
@@ -19,26 +19,30 @@ const GoogleIcon = () => (
   </svg>
 )
 
-function authMessage(error, mode) {
+function readableAuthError(error, mode, phase) {
   const message = error?.message?.toLowerCase() ?? ''
-  if (message.includes('invalid login credentials')) return 'E-mail ou senha incorretos.'
-  if (message.includes('already registered') || message.includes('already been registered')) return 'Este e-mail já tem cadastro. Entre na sua conta.'
-  if (message.includes('password')) return 'A senha precisa ter pelo menos 8 caracteres.'
-  if (message.includes('email not confirmed')) return 'Confirme seu e-mail pelo link enviado antes de entrar.'
-  if (message.includes('rate limit') || message.includes('too many requests')) return 'Muitas tentativas. Aguarde um pouco e tente novamente.'
-  return mode === 'signup' ? 'Não foi possível criar sua conta agora. Tente novamente.' : 'Não foi possível entrar agora. Tente novamente.'
+  if (message.includes('invalid') || message.includes('expired') || message.includes('token')) {
+    return phase === 'verify' ? 'Código inválido ou expirado. Confira os seis dígitos e tente novamente.' : 'Não foi possível enviar o código. Confira o e-mail.'
+  }
+  if (message.includes('not found') || message.includes('user not found')) return 'Não existe uma conta com esse e-mail. Escolha “Criar conta”.'
+  if (message.includes('already registered') || message.includes('already been registered')) return 'Este e-mail já possui cadastro. Escolha “Entrar”.'
+  if (message.includes('rate limit') || message.includes('too many requests')) return 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.'
+  return phase === 'verify'
+    ? 'Não foi possível validar o código. Solicite outro e tente novamente.'
+    : mode === 'signup'
+      ? 'Não foi possível iniciar seu cadastro. Tente novamente.'
+      : 'Não foi possível enviar o código de acesso. Tente novamente.'
 }
 
 export default function Login() {
   const location = useLocation()
   const navigate = useNavigate()
   const [mode, setMode] = useState('login')
+  const [phase, setPhase] = useState('email')
   const [rainPaused, setRainPaused] = useState(false)
   const [focusedField, setFocusedField] = useState(null)
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [notice, setNotice] = useState('')
@@ -47,53 +51,67 @@ export default function Login() {
 
   function changeMode(next) {
     setMode(next)
+    setPhase('email')
+    setCode('')
     setErro('')
     setNotice('')
-    setConfirmPassword('')
   }
 
-  async function handleSubmit(event) {
+  async function sendCode(event) {
     event.preventDefault()
     setErro('')
     setNotice('')
     const normalizedEmail = email.trim().toLowerCase()
-    if (!normalizedEmail || !password) {
-      setErro('Preencha seu e-mail e sua senha.')
+    if (!normalizedEmail) {
+      setErro('Informe seu e-mail.')
       return
     }
-    if (mode === 'signup' && password.length < 8) {
-      setErro('Crie uma senha com pelo menos 8 caracteres.')
-      return
-    }
-    if (mode === 'signup' && password !== confirmPassword) {
-      setErro('As senhas não coincidem.')
-      return
-    }
-
     setLoading(true)
     try {
-      if (mode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-        })
-        if (error) throw error
-        if (!data.session) {
-          setNotice('Conta criada. Confira seu e-mail e confirme o cadastro para continuar.')
-          return
-        }
-        navigate('/onboarding', { replace: true })
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
-        if (error) throw error
-        navigate('/dashboard', { replace: true })
-      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: { shouldCreateUser: mode === 'signup' },
+      })
+      if (error) throw error
+      setEmail(normalizedEmail)
+      setPhase('code')
+      setNotice(`Enviamos um código de seis dígitos para ${normalizedEmail}.`)
     } catch (error) {
-      setErro(authMessage(error, mode))
+      setErro(readableAuthError(error, mode, 'send'))
     } finally {
       setLoading(false)
     }
+  }
+
+  async function verifyCode(event) {
+    event.preventDefault()
+    setErro('')
+    setNotice('')
+    const token = code.replace(/\D/g, '')
+    if (token.length !== 6) {
+      setErro('Digite os seis números do código.')
+      return
+    }
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token,
+        type: 'email',
+      })
+      if (error) throw error
+      if (!data.session) throw new Error('Sessão não criada após validação do código.')
+      navigate(mode === 'signup' ? '/onboarding' : '/dashboard', { replace: true })
+    } catch (error) {
+      setErro(readableAuthError(error, mode, 'verify'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function resendCode() {
+    setCode('')
+    await sendCode({ preventDefault() {} })
   }
 
   async function handleGoogle() {
@@ -112,10 +130,8 @@ export default function Login() {
   }
 
   const glassFilterId = useId().replace(/[^a-zA-Z0-9_-]/g, '')
-  // SVG backdrop filters are an enhancement for desktop Chromium only.
   const refractiveGlass = /Chrome\//.test(navigator.userAgent)
     && !/Android|Mobile|iPhone|iPad/.test(navigator.userAgent)
-
   const creating = mode === 'signup'
   const reducedMotion = useStudyReducedMotion()
 
@@ -136,12 +152,8 @@ export default function Login() {
 
       <KiraLoginScene reducedMotion={reducedMotion} creating={creating} focusedField={focusedField} />
 
-      <section
-        className="study-auth-card"
-        data-refraction={refractiveGlass}
-        style={{ '--auth-glass-filter': 'url(#' + glassFilterId + ')' }}
-        aria-labelledby="auth-title"
-      >
+      <section className="study-auth-card" data-refraction={refractiveGlass}
+        style={{ '--auth-glass-filter': 'url(#' + glassFilterId + ')' }} aria-labelledby="auth-title">
         <header className="study-auth-login-brand">
           <span className="study-auth-login-wordmark">StudyOS</span>
           {!reducedMotion && (
@@ -152,15 +164,11 @@ export default function Login() {
           )}
         </header>
 
-        <motion.div
-          key={mode}
-          className="study-auth-heading"
+        <motion.div key={mode + phase} className="study-auth-heading"
           initial={reducedMotion ? false : { opacity: 0.55, y: 7 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <h1 id="auth-title">{creating ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</h1>
-          <p>{creating ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</p>
+          animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
+          <h1 id="auth-title">{phase === 'code' ? 'Confira seu e-mail.' : creating ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</h1>
+          <p>{phase === 'code' ? 'Digite o código de seis dígitos para continuar.' : creating ? 'Crie sua conta com seu e-mail.' : 'Entre e continue de onde parou.'}</p>
         </motion.div>
 
         <div className="study-auth-switch" data-creating={creating} role="group" aria-label="Acesso à conta">
@@ -168,49 +176,46 @@ export default function Login() {
           <button type="button" aria-pressed={creating} className={creating ? 'is-active' : ''} onClick={() => changeMode('signup')}>Criar conta</button>
         </div>
 
-        <form className="study-auth-form"
+        <form className="study-auth-form" onSubmit={phase === 'email' ? sendCode : verifyCode}
           onFocusCapture={event => setFocusedField(event.target.name || null)}
           onBlurCapture={event => {
             if (!event.currentTarget.contains(event.relatedTarget)) setFocusedField(null)
-          }}
-          autoComplete={creating ? 'off' : 'on'} onSubmit={handleSubmit}>
-          <label className="study-auth-field">
-            <span>E-mail</span>
-            <span className="study-auth-input-wrap">
-              <Mail size={18} aria-hidden="true" />
-              <input type="email" autoComplete={creating ? 'off' : 'email'} inputMode="email" name={creating ? 'registration-contact' : 'email'} placeholder="voce@email.com" value={email} onChange={event => setEmail(event.target.value)} required />
-            </span>
-          </label>
-          <div className="study-auth-field">
-            <div className="study-auth-field-heading">
-              <label htmlFor="auth-password">Senha</label>
-              {!creating && <Link to="/esqueci-senha">Esqueceu a senha?</Link>}
-            </div>
-            <span className="study-auth-input-wrap">
-              <LockKeyhole size={18} aria-hidden="true" />
-              <input type={showPassword ? 'text' : 'password'} autoComplete={creating ? 'off' : 'current-password'} name="password" id="auth-password" placeholder={creating ? 'Mínimo de 8 caracteres' : 'Sua senha'} value={password} onChange={event => setPassword(event.target.value)} required />
-              <button className="study-auth-reveal" type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword(value => !value)}>
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </span>
-          </div>
-          <div className="study-auth-confirm" data-open={creating} inert={!creating}>
-            <div className="study-auth-confirm-clip">
+          }} autoComplete="off">
+          {phase === 'email' ? (
+            <label className="study-auth-field">
+              <span>E-mail</span>
+              <span className="study-auth-input-wrap">
+                <Mail size={18} aria-hidden="true" />
+                <input type="email" autoComplete="email" inputMode="email" name="email"
+                  placeholder="voce@email.com" value={email} onChange={event => setEmail(event.target.value)}
+                  required disabled={loading} />
+              </span>
+            </label>
+          ) : (
+            <>
+              <div className="study-auth-otp-destination">
+                <span>{email}</span>
+                <button type="button" onClick={() => { setPhase('email'); setCode(''); setErro(''); setNotice('') }}>Alterar</button>
+              </div>
               <label className="study-auth-field">
-                <span>Confirmar senha</span>
-                <span className="study-auth-input-wrap">
-                  <LockKeyhole size={18} aria-hidden="true" />
-                  <input type={showPassword ? 'text' : 'password'} autoComplete="off" name="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} disabled={!creating} required={creating} />
-                </span>
+                <span>Código de acesso</span>
+                <input className="study-auth-otp-input" type="text" name="otp" inputMode="numeric"
+                  autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} minLength={6}
+                  placeholder="000000" value={code}
+                  onChange={event => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                  aria-label="Código de acesso de seis dígitos" required disabled={loading} />
               </label>
-            </div>
-          </div>
+              <button className="study-auth-resend" type="button" onClick={resendCode} disabled={loading}>
+                Reenviar código
+              </button>
+            </>
+          )}
 
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}
 
           <button className="study-auth-submit" type="submit" disabled={loading}>
-            {loading ? 'Aguarde…' : creating ? 'Criar conta' : 'Entrar'}
+            {loading ? 'Aguarde…' : phase === 'code' ? 'Validar código' : creating ? 'Enviar código' : 'Continuar'}
             {!loading && <ArrowRight size={18} aria-hidden="true" />}
           </button>
         </form>
@@ -219,7 +224,6 @@ export default function Login() {
         <button className="study-auth-google" type="button" onClick={handleGoogle} disabled={loading}>
           <GoogleIcon /> Continuar com Google
         </button>
-
       </section>
     </main>
   )
