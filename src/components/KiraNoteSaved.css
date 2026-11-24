@@ -22,3 +22,11 @@
 .kira-note-saved span { font-size: 13px; font-weight: 550; }
 @keyframes kira-note-enter { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 @media (prefers-reduced-motion: reduce) { .kira-note-saved { animation: none; } }
+
+@media (prefers-reduced-transparency: reduce) {
+  .kira-note-saved {
+    background: #142131;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
