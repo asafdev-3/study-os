@@ -1,267 +1,344 @@
-/* StudyOS surface language — iOS-inspired, product-specific.
-   One floating functional glass layer; tactile study content remains opaque. */
+/* StudyOS surface language — iOS 27 Liquid Glass across Mobile & Desktop */
 :root {
-  --ios27-glass-rgb: 18, 32, 52;
-  --ios27-border: rgba(233,242,255,.21);
-  --ios27-specular: rgba(255,255,255,.28);
-  --ios27-muted: #c4cfe0;
-  --ios27-accent: #c3daff;
-  --study-elevated: #202d3f;
-  --study-hairline: rgba(221,235,255,.10);
+  --ios27-glass-rgb: 18, 30, 50;
+  --ios27-border: rgba(233, 242, 255, .22);
+  --ios27-specular: rgba(255, 255, 255, .30);
+  --ios27-muted: #c2cfe2;
+  --ios27-accent: #9ec5ff;
+  --study-elevated: #1c2b42;
+  --study-hairline: rgba(221, 235, 255, .12);
   --study-round-outer: 28px;
   --study-round-inner: 20px;
 }
-html,body,#root { min-height:100%; }
-body { background-color:#09111d; }
-:where(.study-page,.study-dashboard,.study-notes,.study-enem,.study-chat,.study-postits) {
-  color:#f5f8fc;
-}
-:where(.study-page) :is(input,textarea,select) { accent-color:#a6caff; }
-:where(.study-page) :is(input,textarea,select)::placeholder { color:#a5b2c6; }
-:where(.study-page) :is(input,textarea,select):focus-visible { outline-color:#b8d5ff; }
-:where(.study-page) :is(button,a) { -webkit-tap-highlight-color:transparent; }
 
-/* A true-looking glass edge needs several layers, not increasingly large blur. */
+html, body, #root { min-height: 100%; }
+body { background-color: #08121e; }
+
+:where(.study-page, .study-dashboard, .study-notes, .study-enem, .study-chat, .study-postits) {
+  color: #f5f8fc;
+}
+:where(.study-page) :is(input, textarea, select) { accent-color: #9ec5ff; }
+:where(.study-page) :is(input, textarea, select)::placeholder { color: #9db0ca; }
+:where(.study-page) :is(input, textarea, select):focus-visible { outline-color: #b8d5ff; }
+:where(.study-page) :is(button, a) { -webkit-tap-highlight-color: transparent; }
+
+/* ─── Cápsula de Navegação (Bottom Bar no Mobile / Dock Lateral no Desktop) ─── */
 .study-navigation-inner {
-  position:relative;
+  position: relative;
   background:
-    linear-gradient(148deg,rgba(255,255,255,.15),rgba(255,255,255,.018) 36%,transparent 65%),
-    rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
-  border:1px solid rgba(226,239,255,.26);
-  -webkit-backdrop-filter:var(--ios27-filter);
-  backdrop-filter:var(--ios27-filter);
+    linear-gradient(150deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .02) 38%, transparent 68%),
+    rgba(var(--ios27-glass-rgb), var(--ios27-glass-alpha));
+  border: 1px solid rgba(226, 239, 255, .26);
+  -webkit-backdrop-filter: var(--ios27-filter);
+  backdrop-filter: var(--ios27-filter);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.34),
-    inset 0 -1px 0 rgba(255,255,255,.055),
-    0 10px 28px rgba(1,5,14,.22),
-    0 1px 0 rgba(255,255,255,.045);
-  isolation:isolate;
+    inset 0 1px 0 rgba(255, 255, 255, .34),
+    inset 0 -1px 0 rgba(255, 255, 255, .06),
+    0 14px 36px rgba(1, 5, 14, .30);
+  isolation: isolate;
 }
 .study-navigation-inner::before {
-  content:"";position:absolute;inset:1px;border-radius:inherit;
-  pointer-events:none;z-index:0;
-  border:1px solid transparent;
-  background:linear-gradient(165deg,rgba(255,255,255,.22),transparent 36%,rgba(255,255,255,.04) 86%) border-box;
-  -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  border: 1px solid transparent;
+  background: linear-gradient(165deg, rgba(255, 255, 255, .24), transparent 36%, rgba(255, 255, 255, .05) 86%) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
-.study-navigation-inner > :is(a,img) { position:relative;z-index:1; }
-.study-tab { color:#b4c5d9; font-weight:500; }
-.study-tab > svg { stroke-width:1.85px; }
-.study-tab[aria-current="page"] { color:#f9fbff; }
+.study-navigation-inner > :is(a, img) { position: relative; z-index: 1; }
+
+.study-tab {
+  color: #a9bdd8;
+  font-weight: 500;
+  transition: color 140ms ease, transform 140ms cubic-bezier(.32, .72, 0, 1);
+}
+.study-tab[aria-current="page"] { color: #f9fbff; }
 .study-tab-indicator {
-  background:linear-gradient(152deg,rgba(239,246,255,.27),rgba(128,165,208,.14) 65%);
-  border:1px solid rgba(255,255,255,.24);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.19),0 2px 7px rgba(4,13,26,.18);
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(152deg, rgba(220, 236, 255, .28), rgba(125, 168, 235, .15) 68%);
+  border: 1px solid rgba(255, 255, 255, .28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .26), 0 4px 12px rgba(4, 13, 26, .20);
 }
-.study-navigation { isolation:isolate; }
+
+.study-navigation { isolation: isolate; }
 .study-navigation::before {
-  content:"";position:absolute;inset:auto 0 0;
-  height:calc(39px + env(safe-area-inset-bottom,0px));
-  background:linear-gradient(transparent,rgba(7,13,24,.40));
-  z-index:-1;pointer-events:none;
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(39px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(transparent, rgba(7, 13, 24, .42));
+  z-index: -1;
+  pointer-events: none;
 }
 
-/* On smaller iPhones, only the small navigation glass samples the backdrop. */
-@media(max-width:767px) {
-  :root { --ios27-filter:blur(18px) saturate(165%); }
-  .study-room-dock {
-    -webkit-backdrop-filter:none;backdrop-filter:none;
-    background:#152339ec;
-    border-color:rgba(226,238,255,.14);
-    box-shadow:inset 0 1px rgba(255,255,255,.07);
+/* ─── Layout Desktop Widescreen (>= 768px) ─── */
+@media (min-width: 768px) {
+  .study-navigation::before { display: none; }
+  .study-navigation-inner {
+    border-radius: 30px;
+    padding: 8px;
+    box-shadow:
+      inset 0 1.5px 0 rgba(255, 255, 255, .36),
+      inset 0 -1px 0 rgba(255, 255, 255, .08),
+      0 20px 50px rgba(0, 6, 18, .42);
   }
-  .study-composer-field { -webkit-backdrop-filter:blur(14px) saturate(150%);backdrop-filter:blur(14px) saturate(150%); }
-}
-@media(min-width:768px) {
-  .study-navigation::before { display:none; }
-  .study-navigation-inner { border-radius:28px; }
-}
-.study-topbar a {
-  background:linear-gradient(145deg,rgba(255,255,255,.13),transparent 55%),
-    rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
-  border-color:rgba(240,247,255,.20);
-  box-shadow:inset 0 1px rgba(255,255,255,.31),0 4px 16px #0002;
+  .study-tab {
+    border-radius: 20px;
+    min-height: 58px;
+  }
+  :where(.study-dashboard, .study-enem, .study-notes, .study-postits) {
+    max-width: 1080px;
+    margin-inline: auto;
+  }
+  .study-enem-tabs {
+    max-width: 560px;
+  }
+  .study-enem-scholarships-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .study-chat {
+    max-width: 920px;
+    margin-inline: auto;
+  }
 }
 
-/* Keep StudyOS's own desk, paper and Kira identity: Apple chrome, StudyOS content. */
-.study-room {
-  background:#0a1320;
+.study-topbar a {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .15), transparent 55%),
+    rgba(var(--ios27-glass-rgb), var(--ios27-glass-alpha));
+  border-color: rgba(240, 247, 255, .22);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .32), 0 6px 18px rgba(0, 0, 0, .2);
 }
+
+/* ─── Sala de Estudos (Dashboard) ─── */
+.study-room { background: #08121e; }
 .study-room-shade {
   background:
-    linear-gradient(90deg,rgba(6,13,24,.78),rgba(6,13,24,.20) 87%),
-    linear-gradient(0deg,#09111c 0%,rgba(6,14,27,.25) 43%,rgba(9,17,29,.12) 85%),
-    linear-gradient(180deg,rgba(6,13,23,.24),transparent 26%);
+    linear-gradient(90deg, rgba(6, 13, 24, .78), rgba(6, 13, 24, .20) 87%),
+    linear-gradient(0deg, #08121e 0%, rgba(6, 14, 27, .25) 43%, rgba(9, 17, 29, .12) 85%),
+    linear-gradient(180deg, rgba(6, 13, 23, .24), transparent 26%);
 }
-.study-room-content { padding-bottom:24px; }
-.study-room-welcome h1 { font-weight:660;letter-spacing:-.045em; }
-.study-room-welcome > span { color:#e0e7f0; }
-.study-room-brand > span { font-weight:610; }
-.study-room-brand small { letter-spacing:.12em;color:#d2dce9; }
-.study-room-dock { border-radius:25px; }
-.study-room-kira { min-height:74px; }
-.study-room-kira > svg:last-child { color:#d6e5f9; }
-.study-room-kira strong { font-weight:600; }
-.study-room-kira small { color:#c2cddd;line-height:1.4; }
-.study-desk-paper {
-  border-radius:5px 17px 17px 5px;
-  background:linear-gradient(125deg,#f7f4e9,#eae6d9);
-  border-left-color:#858c9c;
-  box-shadow:0 2px 0 #c4c5bf,0 5px 0 #888f95,0 15px 28px rgba(0,0,0,.21);
-}
-.study-desk-paper h2 { color:#2b303b; }
-.study-desk-paper p { color:#58606d; }
+.study-room-content { padding-bottom: 24px; }
+.study-room-welcome h1 { font-weight: 660; letter-spacing: -.045em; }
+.study-room-welcome > span { color: #e0e7f0; }
+.study-room-brand > span { font-weight: 610; }
+.study-room-brand small { letter-spacing: .12em; color: #d2dce9; }
+.study-room-dock { border-radius: 26px; }
+.study-room-kira { min-height: 74px; }
+.study-room-kira > svg:last-child { color: #d6e5f9; }
+.study-room-kira strong { font-weight: 600; }
+.study-room-kira small { color: #c2cddd; line-height: 1.4; }
 
-/* Native-style segmented navigation: spring indicator, stable group. */
+.study-desk-paper {
+  border-radius: 5px 17px 17px 5px;
+  background: linear-gradient(125deg, #f7f4e9, #eae6d9);
+  border-left-color: #858c9c;
+  box-shadow: 0 2px 0 #c4c5bf, 0 5px 0 #888f95, 0 15px 28px rgba(0, 0, 0, .21);
+}
+.study-desk-paper h2 { color: #2b303b; }
+.study-desk-paper p { color: #58606d; }
+
+/* ─── Seletor Segmentado Estilo Apple (ENEM) ─── */
 .study-enem-tabs {
-  position:relative;
-  border-radius:999px;
-  background:#1b293b;
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.065);
+  position: relative;
+  border-radius: 999px;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .02)),
+    rgba(16, 26, 44, .72);
+  border: 1px solid rgba(226, 240, 255, .18);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 8px 24px rgba(0, 0, 0, .2);
 }
 .study-enem-tabs .study-enem-segment {
-  position:relative;
-  isolation:isolate;
-  border:0;
-  background:transparent !important;
-  box-shadow:none !important;
-  color:#b8c6da;
-  font-size:12px;
-  font-weight:550;
-  overflow:hidden;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #b4c5dc;
+  font-size: 13px;
+  font-weight: 560;
+  overflow: hidden;
+  transition: color 140ms ease;
 }
 .study-enem-tabs .study-enem-segment[aria-pressed="true"] {
-  color:#fff;font-weight:650;border:0;
+  color: #fff;
+  font-weight: 650;
 }
-.study-enem-segment > span:not(.study-enem-segment-active) { position:relative;z-index:2; }
+.study-enem-segment > span:not(.study-enem-segment-active) { position: relative; z-index: 2; }
 .study-enem-segment-active {
-  position:absolute;inset:0;z-index:0;border-radius:999px;
-  background:linear-gradient(135deg,#526980b8,#314b68b8);
-  border:1px solid rgba(223,237,255,.23);
-  box-shadow:inset 0 1px rgba(255,255,255,.19),0 2px 5px rgba(0,0,0,.13);
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(164, 202, 255, .30), rgba(86, 132, 214, .22));
+  border: 1px solid rgba(226, 240, 255, .28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 3px 10px rgba(0, 0, 0, .18);
 }
 
-/* Study fields should be approachable, even with iOS's virtual keyboard. */
+.study-enem-scholarship {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 18px;
+  border-radius: 20px;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .02)),
+    rgba(20, 32, 52, .68);
+  border: 1px solid rgba(226, 240, 255, .16);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16);
+  color: #f4f8ff;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+/* ─── Composer & Mensagens Kira ─── */
 .study-composer-field {
-  background:linear-gradient(160deg,rgba(255,255,255,.08),transparent 45%),
-    rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
-  border-color:rgba(238,247,255,.24);
-  box-shadow:inset 0 1px rgba(255,255,255,.18),0 6px 17px #0002;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, .10), transparent 45%),
+    rgba(var(--ios27-glass-rgb), var(--ios27-glass-alpha));
+  border-color: rgba(238, 247, 255, .24);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .22), 0 8px 22px rgba(0, 0, 0, .2);
 }
 .study-composer-field:focus-within {
-  border-color:#bbd7ff9e;
-  box-shadow:inset 0 1px rgba(255,255,255,.21),0 0 0 3px rgba(150,191,245,.085);
+  border-color: rgba(147, 197, 253, .65);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .25), 0 0 0 3px rgba(96, 165, 250, .15);
 }
-.study-composer-field .study-prompt-text { font-size:16px;line-height:1.48; }
-.study-chat-header { background:#111e30e0; }
-.study-message--user { background:#274c79; }
-.study-message--assistant { background:#1e2e42; }
+.study-composer-field .study-prompt-text { font-size: 16px; line-height: 1.48; }
+.study-chat-header {
+  background: rgba(14, 24, 40, .72);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
+}
+.study-message--user {
+  background: linear-gradient(145deg, #2b588c, #214570);
+  border: 1px solid rgba(190, 220, 255, .22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+.study-message--assistant {
+  background: rgba(22, 35, 56, .74);
+  border: 1px solid rgba(226, 240, 255, .14);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
+}
 
-/* Grouped settings inspired by iOS preferences, without dividers hanging outside cells. */
+/* ─── Settings & Appearance ─── */
 .study-settings-group {
-  overflow:hidden;
-  margin-bottom:18px;
-  border:1px solid var(--study-hairline);
-  border-radius:23px;
-  background:#1a2738;
+  overflow: hidden;
+  margin-bottom: 18px;
+  border: 1px solid rgba(226, 240, 255, .16);
+  border-radius: 23px;
+  background: rgba(18, 29, 48, .72);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
 }
-.study-settings-group .study-settings-row {
-  margin:0 16px; padding:14px 0; min-height:64px;
-}
-.study-settings-group .study-settings-row:last-child { border-bottom:0; }
-.study-settings-row > svg { color:#9fb3cd;flex:0 0 auto; }
+.study-settings-group .study-settings-row { margin: 0 16px; padding: 14px 0; min-height: 64px; }
+.study-settings-group .study-settings-row:last-child { border-bottom: 0; }
+.study-settings-row > svg { color: #9fb3cd; flex: 0 0 auto; }
 .study-appearance-slider {
-  border:1px solid var(--study-hairline);
-  border-radius:23px;
-  padding:18px 20px 20px;
-  margin:16px 0;
-  background:#1b293c;
+  border: 1px solid rgba(226, 240, 255, .16);
+  border-radius: 23px;
+  padding: 18px 20px 20px;
+  margin: 16px 0;
+  background: rgba(18, 29, 48, .72);
+  -webkit-backdrop-filter: var(--ios27-filter-subtle);
+  backdrop-filter: var(--ios27-filter-subtle);
 }
 .study-appearance-sample {
-  background:rgba(var(--ios27-glass-rgb),var(--ios27-glass-alpha));
-  border:1px solid rgba(243,247,255,.22);
-  -webkit-backdrop-filter:var(--ios27-filter);backdrop-filter:var(--ios27-filter);
+  background: rgba(var(--ios27-glass-rgb), var(--ios27-glass-alpha));
+  border: 1px solid rgba(243, 247, 255, .24);
+  -webkit-backdrop-filter: var(--ios27-filter);
+  backdrop-filter: var(--ios27-filter);
 }
 
-/* Paper objects must look like paper, not translucent panes. */
+/* ─── Post-its (Papel tátil) ─── */
 .study-paper-postit {
   background:
-    linear-gradient(160deg,rgba(255,255,255,.28),transparent 60%),
-    color-mix(in srgb,var(--postit-color,#f1df9d) 86%,#fffaf0);
-  border:1px solid rgba(53,57,68,.12);
-  color:#30313a;
-  -webkit-backdrop-filter:none;backdrop-filter:none;
-  box-shadow:0 2px 2px #0002,3px 7px 11px -6px #0005,inset 0 1px rgba(255,255,255,.46);
+    linear-gradient(160deg, rgba(255, 255, 255, .28), transparent 60%),
+    color-mix(in srgb, var(--postit-color, #f1df9d) 86%, #fffaf0);
+  border: 1px solid rgba(53, 57, 68, .12);
+  color: #30313a;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 2px 2px #0002, 3px 7px 11px -6px #0005, inset 0 1px rgba(255, 255, 255, .46);
 }
-.study-paper-postit :is(p,p.text-\[10px\]) { color:#353944; }
-.study-postit-footer { border-top-color:rgba(56,62,75,.16); }
-.study-postit-footer .study-postit-complete { color:#2c3542; }
-.study-postit-complete > span { border-color:#333d5280; }
+.study-paper-postit :is(p, p.text-\[10px\]) { color: #353944; }
+.study-postit-footer { border-top-color: rgba(56, 62, 75, .16); }
+.study-postit-footer .study-postit-complete { color: #2c3542; }
+.study-postit-complete > span { border-color: #333d5280; }
 
-/* Modal layering, controls and accessibility stay stable across each screen. */
-.study-note-overlay section,.study-paywall {
-  background:#19273a;border-radius:28px;
-  border:1px solid rgba(222,239,255,.19);
-  box-shadow:0 20px 54px rgba(2,8,19,.37),inset 0 1px rgba(255,255,255,.14);
+/* ─── Modais & Overlays ─── */
+.study-note-overlay section, .study-paywall {
+  background: rgba(18, 30, 50, .82);
+  border-radius: 28px;
+  border: 1px solid rgba(222, 239, 255, .22);
+  -webkit-backdrop-filter: var(--ios27-filter);
+  backdrop-filter: var(--ios27-filter);
+  box-shadow: 0 24px 60px rgba(2, 8, 19, .45), inset 0 1px rgba(255, 255, 255, .20);
 }
-.study-note-overlay { -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px); }
-.study-notebook-actions button, .study-primary { font-weight:640; }
-.study-settings-row input[type="checkbox"] { background:#566578; }
-.study-settings-row input[type="checkbox"]:checked { background:#3f9a72; }
-.study-settings-row input[type="checkbox"]::before { box-shadow:0 1px 3px #0003; }
-@media(hover:hover) and (pointer:fine) {
-  :is(.study-tab,.study-enem-segment,.study-settings-row,.study-room-kira):hover {
-    color:#fff;
+.study-note-overlay { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.study-notebook-actions button, .study-primary { font-weight: 640; }
+.study-settings-row input[type="checkbox"] { background: #566578; }
+.study-settings-row input[type="checkbox"]:checked { background: #3f9a72; }
+.study-settings-row input[type="checkbox"]::before { box-shadow: 0 1px 3px #0003; }
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.study-tab, .study-enem-segment, .study-settings-row, .study-room-kira, .study-enem-scholarship):hover {
+    color: #fff;
   }
-  .study-room-kira:hover { background:rgba(255,255,255,.025); }
-}
-@media(prefers-reduced-transparency:reduce),(prefers-contrast:more) {
-  .study-navigation-inner,.study-topbar a,.study-composer-field {
-    background:#1a2b42;
-    -webkit-backdrop-filter:none;backdrop-filter:none;
-    border-color:#a3bfdf;
+  .study-room-kira:hover, .study-enem-scholarship:hover {
+    background: rgba(255, 255, 255, .06);
   }
-  .study-navigation-inner::before { display:none; }
 }
 
-/* Dashboard: the room remains the backdrop; glass belongs to controls. */
+/* Dashboard dock: Liquid Glass no iOS e Desktop */
 .study-room .study-room-dock {
-  background:linear-gradient(145deg,rgba(200,226,255,.075),rgba(15,31,51,.30) 52%,rgba(9,21,37,.39));
-  border:1px solid rgba(231,242,255,.27);
-  border-radius:28px;
-  -webkit-backdrop-filter:blur(22px) saturate(170%);
-  backdrop-filter:blur(22px) saturate(170%);
-  box-shadow:inset 0 1px rgba(255,255,255,.20),0 8px 28px rgba(0,0,0,.12);
+  background: linear-gradient(145deg, rgba(200, 226, 255, .11), rgba(15, 31, 51, .45) 52%, rgba(9, 21, 37, .55));
+  border: 1px solid rgba(231, 242, 255, .26);
+  border-radius: 28px;
+  -webkit-backdrop-filter: blur(22px) saturate(175%);
+  backdrop-filter: blur(22px) saturate(175%);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .24), 0 10px 30px rgba(0, 0, 0, .18);
 }
 .study-room .study-room-nfc {
-  background:rgba(23,42,65,.34);
-  -webkit-backdrop-filter:blur(18px) saturate(160%);
-  backdrop-filter:blur(18px) saturate(160%);
+  background: rgba(23, 42, 65, .44);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
+  backdrop-filter: blur(18px) saturate(165%);
 }
-@media(max-width:767px) {
-  .study-room .study-room-dock {
-    -webkit-backdrop-filter:blur(12px) saturate(150%);
-    backdrop-filter:blur(12px) saturate(150%);
-  }
-}
-@media(prefers-reduced-transparency:reduce),(prefers-contrast:more) {
-  .study-room .study-room-dock,.study-room .study-room-nfc {
-    background:#1b2d44;
-    -webkit-backdrop-filter:none;
-    backdrop-filter:none;
-  }
-}
-@media(prefers-reduced-motion:no-preference) {
-  html:not([data-study-motion="reduced"]) .study-room-welcome,
-  html:not([data-study-motion="reduced"]) .study-room-workspace,
-  html:not([data-study-motion="reduced"]) .study-room-dock {
-    animation:study-room-reveal 420ms cubic-bezier(.22,1,.36,1) both;
-  }
-  html:not([data-study-motion="reduced"]) .study-room-workspace {animation-delay:65ms;}
-  html:not([data-study-motion="reduced"]) .study-room-dock {animation-delay:115ms;}
-  @keyframes study-room-reveal {
-    from {opacity:.35;transform:translateY(7px);}
-    to {opacity:1;transform:translateY(0);}
-  }
+
+/* Android Lite */
+html.is-android .study-navigation-inner,
+html.is-android .study-topbar a,
+html.is-android .study-enem-tabs,
+html.is-android .study-enem-scholarship,
+html.is-android .study-composer-field,
+html.is-android .study-chat-header,
+html.is-android .study-message--assistant,
+html.is-android .study-settings-group,
+html.is-android .study-appearance-slider,
+html.is-android .study-note-overlay section,
+html.is-android .study-paywall,
+html.is-android .study-room .study-room-dock,
+html.is-android .study-room .study-room-nfc {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(16, 25, 42, .94) !important;
 }
