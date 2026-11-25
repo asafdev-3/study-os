@@ -4,16 +4,16 @@ import PromptField from '../components/PromptField'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion, cardSpring, pageSpring, softTransition } from '../lib/motion'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUp, BookmarkPlus, Check, ChevronRight, Copy } from 'lucide-react'
+import { ArrowUp, BookmarkPlus, BookOpen, Check, ChevronRight, Copy, PenTool, Sparkles } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { KiraAvatar } from '../components/KiraAvatar'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 import { useKira } from '../lib/useKira'
 
 const prompts = [
-  { emoji: '📖', label: 'Explique um assunto', text: 'Me ajude a entender um assunto do ENEM. Pergunte qual é e explique com um exemplo.' },
-  { emoji: '✏️', label: 'Pratique uma questão', text: 'Crie uma questão no estilo ENEM. Pergunte qual área eu quero praticar.' },
-  { emoji: '✍️', label: 'Corrija minha redação', text: 'Quero treinar redação do ENEM. Me dê um tema atual e explique como estruturar a introdução.' },
+  { Icon: BookOpen, color: '#60a5fa', label: 'Explique um assunto', subtitle: 'Conceito claro com exemplo prático', text: 'Me ajude a entender um assunto do ENEM. Pergunte qual é e explique com um exemplo.' },
+  { Icon: Sparkles, color: '#a78bfa', label: 'Pratique uma questão', subtitle: 'Simulado rápido estilo ENEM', text: 'Crie uma questão no estilo ENEM. Pergunte qual área eu quero praticar.' },
+  { Icon: PenTool, color: '#34d399', label: 'Treine redação', subtitle: 'Tema atual e estrutura nota 1000', text: 'Quero treinar redação do ENEM. Me dê um tema atual e explique como estruturar a introdução.' },
 ]
 
 const fadeUp = (delay = 0, reduced = false) => ({
@@ -140,11 +140,11 @@ export default function Chat({ userId }) {
         <KiraAvatar />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
-            fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+            fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
             color: '#9ec5ff', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600,
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22D3A0', flexShrink: 0 }} />
-            Kira · Online
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
+            Kira · IA Educacional
           </p>
           <h1 style={{ fontSize: 16, fontWeight: 620, letterSpacing: '-0.02em', lineHeight: 1.2, color: '#f3f7ff' }}>
             Tutora do StudyOS
@@ -152,10 +152,10 @@ export default function Chat({ userId }) {
         </div>
         {remaining !== null && (
           <span aria-live="polite" aria-label={`${remaining} mensagens restantes hoje`} style={{
-            fontSize: 11, color: '#bfd2ec', flexShrink: 0,
-            padding: '5px 10px', borderRadius: 999,
-            background: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid rgba(215, 232, 255, 0.14)',
+            fontSize: 11, color: '#c8daf4', flexShrink: 0,
+            padding: '5px 11px', borderRadius: 999,
+            background: 'rgba(255, 255, 255, 0.07)',
+            border: '1px solid rgba(215, 232, 255, 0.16)',
             fontVariantNumeric: 'tabular-nums',
           }}>
             {remaining}/{KIRA_DAILY_LIMIT} hoje
@@ -173,42 +173,67 @@ export default function Chat({ userId }) {
         }}
       >
         {messages.length === 0 && (
-          <section className="study-chat-empty">
-            <KiraAvatar size={146} hero />
-            <motion.h2 {...fadeUp(0.04, reduced)} style={{ lineHeight: 1.1, color: '#f4f8ff', letterSpacing: '-0.03em' }}>
-              O que vamos estudar?
+          <section
+            className="study-chat-empty"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '100%',
+              paddingBlock: '12px',
+            }}
+          >
+            <div
+              style={{
+                padding: '18px 24px 10px',
+                borderRadius: '32px',
+                background: 'radial-gradient(circle at 50% 40%, rgba(96, 165, 250, 0.18), rgba(14, 24, 42, 0.45))',
+                border: '1px solid rgba(215, 232, 255, 0.14)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 16px 36px rgba(0, 0, 0, 0.25)',
+                marginBottom: '16px',
+              }}
+            >
+              <KiraAvatar size={126} hero />
+            </div>
+
+            <motion.h2 {...fadeUp(0.04, reduced)} style={{ fontSize: '26px', fontWeight: 680, lineHeight: 1.12, color: '#f5f9ff', letterSpacing: '-0.035em', textAlign: 'center' }}>
+              O que vamos estudar hoje?
             </motion.h2>
-            <motion.p {...fadeUp(0.1, reduced)} style={{ color: '#bfd0e8', fontSize: 15, margin: '8px 0 22px' }}>
-              Traga uma dúvida, cole um enunciado ou pratique para o ENEM.
+            <motion.p {...fadeUp(0.08, reduced)} style={{ color: '#b4c7e2', fontSize: 14, margin: '6px 0 20px', textAlign: 'center', maxWidth: '300px' }}>
+              Escolha um caminho abaixo ou envie sua dúvida para começar.
             </motion.p>
 
-            <div className="study-chat-starters" style={{ display: 'grid', gap: 10 }}>
-              {prompts.map(({ emoji, label, text }, i) => (
+            <div className="study-chat-starters" style={{ width: '100%', display: 'grid', gap: 10 }}>
+              {prompts.map(({ Icon, color, label, subtitle, text }, i) => (
                 <motion.button
                   key={label}
                   type="button"
                   onClick={() => choose(text)}
-                  {...fadeUp(0.14 + i * 0.06, reduced)}
+                  {...fadeUp(0.12 + i * 0.05, reduced)}
                   style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 14px', borderRadius: 18,
-                    background: 'linear-gradient(145deg, rgba(24, 39, 64, 0.68), rgba(13, 23, 40, 0.78))',
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 13,
+                    padding: '12px 15px', borderRadius: 20,
+                    background: 'linear-gradient(145deg, rgba(24, 39, 64, 0.74), rgba(13, 23, 40, 0.84))',
                     border: '1px solid rgba(215, 232, 255, 0.16)',
                     boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.12)',
                     cursor: 'pointer', textAlign: 'left',
                   }}
                 >
                   <div style={{
-                    width: 38, height: 38, borderRadius: 12, flexShrink: 0,
-                    background: 'rgba(130, 175, 255, 0.12)',
-                    border: '1px solid rgba(180, 210, 255, 0.18)',
+                    width: 40, height: 40, borderRadius: 13, flexShrink: 0,
+                    background: `${color}22`,
+                    border: `1px solid ${color}44`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 17,
+                    color,
                   }}>
-                    {emoji}
+                    <Icon size={19} strokeWidth={2} />
                   </div>
-                  <span style={{ flex: 1, fontSize: 14, fontWeight: 520, color: '#eef5ff' }}>{label}</span>
-                  <ChevronRight size={16} style={{ color: '#8ea8cc' }} />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <strong style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#f0f6ff' }}>{label}</strong>
+                    <small style={{ display: 'block', fontSize: 12, color: '#9eb3d1', marginTop: 2 }}>{subtitle}</small>
+                  </span>
+                  <ChevronRight size={16} style={{ color: '#8ea8cc', flexShrink: 0 }} />
                 </motion.button>
               ))}
             </div>
@@ -262,14 +287,14 @@ export default function Chat({ userId }) {
           className="study-composer-field"
           style={{
             display: 'flex', alignItems: 'flex-end', gap: 8,
-            background: 'rgba(20, 32, 52, 0.88)',
+            background: 'rgba(20, 32, 52, 0.92)',
             border: '1px solid rgba(210, 230, 255, 0.22)',
             borderRadius: 26,
             padding: '10px 10px 10px 16px',
             boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.14)',
             transition: 'border-color 0.15s',
           }}
-          onFocusCapture={(e) => e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.55)'}
+          onFocusCapture={(e) => e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.65)'}
           onBlurCapture={(e) => e.currentTarget.style.borderColor = 'rgba(210, 230, 255, 0.22)'}
         >
           <PromptField
@@ -282,7 +307,7 @@ export default function Chat({ userId }) {
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
               color: '#f4f7ff', fontSize: 16, lineHeight: 1.5,
-              caretColor: '#8B5CF6',
+              caretColor: '#60a5fa',
             }}
           />
           <button
@@ -292,7 +317,7 @@ export default function Chat({ userId }) {
             style={{
               width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: input.trim() && !loading ? 'linear-gradient(135deg, #2b7de9, #635bff)' : 'rgba(255, 255, 255, 0.08)',
+              background: input.trim() && !loading ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'rgba(255, 255, 255, 0.08)',
               border: 'none', cursor: 'pointer',
               color: '#fff',
               transition: 'background 0.2s, opacity 0.2s',

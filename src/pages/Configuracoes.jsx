@@ -1,20 +1,50 @@
 import { useState } from 'react'
-import { ArrowLeft, ChevronRight } from 'lucide-react'
+import {
+  ArrowLeft,
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Download,
+  FileDown,
+  Fingerprint,
+  Info,
+  Palette,
+  Sparkles,
+  User,
+} from 'lucide-react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { readPreferences, updatePreferences } from '../lib/preferences'
 import { InstallAnimation } from '../components/SetupAnimations'
 
-const pages = {
-  instalar: ['Instalar StudyOS', 'Adicione o app à tela inicial'],
-  conta: ['Conta', 'Seu perfil e acesso'],
-  aparencia: ['Aparência', 'Movimento, transparência e leitura'],
-  kira: ['Kira', 'Estilo das respostas'],
-  notificacoes: ['Notificações', 'Avisos de sessão concluída'],
-  entrada: ['Tela de bloqueio', 'Impressão digital na tela de retorno'],
-  dados: ['Seus dados', 'Exportar suas anotações'],
-  assinatura: ['Assinatura', 'Planos do StudyOS'],
-  sobre: ['Sobre', 'StudyOS para o ENEM'],
+const GROUPS = [
+  [
+    { id: 'instalar', name: 'Instalar StudyOS', subtitle: 'Adicione o app à tela inicial', Icon: Download, bg: '#2563eb' },
+    { id: 'conta', name: 'Conta', subtitle: 'Seu perfil e acesso', Icon: User, bg: '#4f46e5' },
+  ],
+  [
+    { id: 'aparencia', name: 'Aparência', subtitle: 'Movimento, transparência e leitura', Icon: Palette, bg: '#0ea5e9' },
+    { id: 'kira', name: 'Kira', subtitle: 'Tom e estilo das respostas', Icon: Sparkles, bg: '#8b5cf6' },
+    { id: 'notificacoes', name: 'Notificações', subtitle: 'Avisos de sessão concluída', Icon: Bell, bg: '#ef4444' },
+    { id: 'entrada', name: 'Tela de bloqueio', subtitle: 'Impressão digital ao retornar', Icon: Fingerprint, bg: '#10b981' },
+  ],
+  [
+    { id: 'dados', name: 'Seus dados', subtitle: 'Exportar suas anotações', Icon: FileDown, bg: '#f59e0b' },
+    { id: 'assinatura', name: 'Assinatura', subtitle: 'Planos do StudyOS', Icon: CreditCard, bg: '#6366f1' },
+    { id: 'sobre', name: 'Sobre', subtitle: 'StudyOS para o ENEM', Icon: Info, bg: '#64748b' },
+  ],
+]
+
+const pages = Object.fromEntries(
+  GROUPS.flat().map(({ id, name, subtitle }) => [id, [name, subtitle]])
+)
+
+const cardStyle = {
+  borderRadius: '22px',
+  background: 'linear-gradient(155deg, rgba(22, 36, 58, 0.76), rgba(11, 21, 37, 0.86))',
+  border: '1px solid rgba(215, 232, 255, 0.16)',
+  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 28px rgba(0, 0, 0, 0.18)',
+  overflow: 'hidden',
 }
 
 export default function Configuracoes() {
@@ -25,8 +55,12 @@ export default function Configuracoes() {
   const [pending, setPending] = useState(false)
 
   function change(patch) {
-    try { setPreferences(updatePreferences(patch)); setNotice('Preferência salva neste dispositivo.') }
-    catch { setNotice('O dispositivo bloqueou o armazenamento das preferências.') }
+    try {
+      setPreferences(updatePreferences(patch))
+      setNotice('Preferência salva neste dispositivo.')
+    } catch {
+      setNotice('O dispositivo bloqueou o armazenamento das preferências.')
+    }
   }
 
   async function toggleAlerts() {
@@ -39,7 +73,9 @@ export default function Configuracoes() {
       const allowed = await Notification.requestPermission()
       if (allowed === 'granted') change({ focusAlerts: true })
       else setNotice('Permissão de notificação não concedida.')
-    } catch { setNotice('Não foi possível solicitar a permissão neste dispositivo.') }
+    } catch {
+      setNotice('Não foi possível solicitar a permissão neste dispositivo.')
+    }
   }
 
   async function signOut() {
@@ -48,8 +84,11 @@ export default function Configuracoes() {
       const { error } = await supabase.auth.signOut({ scope: 'local' })
       if (error) throw error
       navigate('/login', { replace: true })
-    } catch { setNotice('Não foi possível sair. Tente novamente.') }
-    finally { setPending(false) }
+    } catch {
+      setNotice('Não foi possível sair. Tente novamente.')
+    } finally {
+      setPending(false)
+    }
   }
 
   async function exportNotes() {
@@ -76,82 +115,208 @@ export default function Configuracoes() {
       link.click()
       setTimeout(() => URL.revokeObjectURL(url), 1000)
       setNotice('Exportação preparada.')
-    } catch { setNotice('Não foi possível exportar suas anotações.') }
-    finally { setPending(false) }
+    } catch {
+      setNotice('Não foi possível exportar suas anotações.')
+    } finally {
+      setPending(false)
+    }
   }
 
   if (secao && !Object.hasOwn(pages, secao)) return <Navigate to="/configuracoes" replace />
 
   return (
-    <main className="study-page study-dashboard">
-      <header className="study-home-header">
-        {secao && <Link className="study-settings-row" to="/configuracoes"><ArrowLeft size={17} /> Configurações</Link>}
-        <h1>{secao ? pages[secao][0] : 'Configurações'}</h1>
-        {secao && <p>{pages[secao][1]}</p>}
-      </header>
-      {!secao && <section className="study-settings-group" aria-label="Categorias das configurações">
-        {Object.entries(pages).map(([id, [name, subtitle]]) => (
-          <Link key={id} className="study-settings-row" to={'/configuracoes/' + id}>
-            <span><strong>{name}</strong><small>{subtitle}</small></span><ChevronRight size={17} aria-hidden="true" />
+    <main
+      className="study-page study-dashboard"
+      style={{
+        width: 'min(100%, 640px)',
+        marginInline: 'auto',
+        padding: 'max(22px, calc(env(safe-area-inset-top, 0px) + 16px)) 18px calc(var(--study-nav-space, 90px) + 32px)',
+      }}
+    >
+      <header style={{ marginBottom: '20px' }}>
+        {secao && (
+          <Link
+            to="/configuracoes"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              minHeight: '38px',
+              padding: '0 12px',
+              marginBottom: '12px',
+              borderRadius: '999px',
+              background: 'rgba(22, 36, 58, 0.72)',
+              border: '1px solid rgba(215, 232, 255, 0.16)',
+              color: '#dbeafe',
+              fontSize: '13px',
+              fontWeight: 550,
+              textDecoration: 'none',
+            }}
+          >
+            <ArrowLeft size={16} /> Ajustes
           </Link>
-        ))}
-      </section>}
-      {secao === 'instalar' && <section className="study-install-guide">
-        <InstallAnimation />
-        <h2>Seu espaço de estudo, sempre à mão.</h2>
-        <p>O StudyOS é um aplicativo web instalável (PWA). Adicione-o à tela inicial sem baixar pela App Store ou Play Store.</p>
-        <div className="study-install-platform"><h3>iPhone e iPad</h3><ol><li>Abra o StudyOS no Safari.</li><li>Toque em Compartilhar.</li><li>Escolha <strong>Adicionar à Tela de Início</strong> e confirme.</li></ol></div>
-        <div className="study-install-platform"><h3>Android</h3><ol><li>Abra o StudyOS no Chrome.</li><li>Toque no menu de três pontos.</li><li>Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</li></ol></div>
-        <div className="study-install-platform"><h3>Computador</h3><ol><li>Abra o StudyOS no Chrome ou Edge.</li><li>Use o ícone de instalação na barra de endereço ou o menu do navegador.</li></ol></div>
-        <p className="study-note">A instalação cria um atalho com experiência de aplicativo. Recursos offline e notificações dependem do navegador e do dispositivo.</p>
-      </section>}
-      {secao === 'conta' && <>
-        <Link className="study-settings-row" to="/perfil">Abrir perfil</Link>
-        <button type="button" className="study-settings-row" disabled={pending} onClick={signOut}>Sair da conta neste dispositivo</button>
-      </>}
-      {secao === 'aparencia' && <>
-        <label className="study-settings-row">Reduzir movimento
-          <input type="checkbox" checked={preferences.reduceMotion} onChange={(event) => change({ reduceMotion: event.target.checked })} />
-        </label>
-        <section className="study-appearance-slider">
-          <div>
-            <label htmlFor="study-glass-opacity">Intensidade do vidro</label>
-            <output htmlFor="study-glass-opacity">{Math.round((preferences.glassOpacity ?? .67) * 100)}%</output>
-          </div>
-          <input id="study-glass-opacity" type="range" min="42" max="92" step="1"
-            value={Math.round((preferences.glassOpacity ?? .67) * 100)}
-            onChange={event => change({ glassOpacity: Number(event.target.value) / 100 })} />
-          <div className="ios27-glass study-appearance-sample">Visualização do Liquid Glass</div>
-          <p>O ajuste afeta barras e controles, sem diminuir o contraste dos textos e cadernos.</p>
+        )}
+        <h1 style={{ fontSize: 'clamp(28px, 7vw, 34px)', fontWeight: 700, letterSpacing: '-0.035em', color: '#f4f8ff', margin: 0 }}>
+          {secao ? pages[secao][0] : 'Ajustes'}
+        </h1>
+        {secao && <p style={{ margin: '6px 0 0', fontSize: '14px', color: '#a8bddb' }}>{pages[secao][1]}</p>}
+      </header>
+
+      {!secao && (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          {GROUPS.map((group, groupIndex) => (
+            <section key={groupIndex} style={cardStyle}>
+              {group.map(({ id, name, subtitle, Icon, bg }, rowIndex) => (
+                <Link
+                  key={id}
+                  to={'/configuracoes/' + id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '13px',
+                    minHeight: '60px',
+                    padding: '12px 16px',
+                    textDecoration: 'none',
+                    color: '#f2f7ff',
+                    borderTop: rowIndex > 0 ? '1px solid rgba(215, 232, 255, 0.1)' : 'none',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '34px',
+                      height: '34px',
+                      borderRadius: '10px',
+                      background: bg,
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: '#fff',
+                      flexShrink: 0,
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35)',
+                    }}
+                  >
+                    <Icon size={18} strokeWidth={2} />
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <strong style={{ display: 'block', fontSize: '15px', fontWeight: 600 }}>{name}</strong>
+                    <small style={{ display: 'block', fontSize: '12px', color: '#a2b7d4', marginTop: '2px' }}>{subtitle}</small>
+                  </span>
+                  <ChevronRight size={17} style={{ color: '#7f97b8', flexShrink: 0 }} aria-hidden="true" />
+                </Link>
+              ))}
+            </section>
+          ))}
+        </div>
+      )}
+
+      {secao === 'instalar' && (
+        <section className="study-install-guide" style={{ ...cardStyle, padding: '20px' }}>
+          <InstallAnimation />
+          <h2>Seu espaço de estudo, sempre à mão.</h2>
+          <p>O StudyOS é um aplicativo web instalável (PWA). Adicione-o à tela inicial sem baixar pela App Store ou Play Store.</p>
+          <div className="study-install-platform"><h3>iPhone e iPad</h3><ol><li>Abra o StudyOS no Safari.</li><li>Toque em Compartilhar.</li><li>Escolha <strong>Adicionar à Tela de Início</strong> e confirme.</li></ol></div>
+          <div className="study-install-platform"><h3>Android</h3><ol><li>Abra o StudyOS no Chrome.</li><li>Toque no menu de três pontos.</li><li>Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</li></ol></div>
+          <p className="study-note">A instalação cria um atalho com experiência de aplicativo.</p>
         </section>
-      </>}
-      {secao === 'kira' && <fieldset className="study-tone-picker"><legend>Tom das respostas</legend>{[['amigo','Amigável','Uma conversa próxima e acolhedora.'],['formal','Formal','Explicações com linguagem mais formal.'],['seco','Direto','Respostas objetivas, sem rodeios.']].map(([value,label,description]) => <label key={value}><span><strong>{label}</strong><small>{description}</small></span><input type="radio" name="kira-tone" value={value} checked={preferences.kiraTone === value} onChange={() => change({ kiraTone:value })} /></label>)}</fieldset>}
-      {secao === 'notificacoes' && <>
-        <button type="button" className="study-settings-row" onClick={toggleAlerts}>
-          {preferences.focusAlerts ? 'Desativar aviso de foco' : 'Ativar aviso de foco'}
-        </button>
-        <label className="study-settings-row">Silenciar entre 02h e 07h
-          <input type="checkbox" checked={preferences.quiet} onChange={(event) => change({ quiet: event.target.checked })} />
-        </label>
-        <p className="study-note">O aviso aparece quando o app registra uma sessão. Lembretes agendados com o app fechado ainda não estão disponíveis.</p>
-      </>}
-      {secao === 'entrada' && <>
-        <label className="study-settings-row">Mostrar lock ao voltar
-          <input type="checkbox" checked={preferences.lock} onChange={(event) => change({ lock: event.target.checked })} />
-        </label>
-        <p className="study-note">A impressão digital é a animação de entrada do StudyOS. O acesso à conta continua protegido pelo login Google.</p>
-      </>}
-      {secao === 'dados' && <button type="button" className="study-settings-row" disabled={pending} onClick={exportNotes}>Baixar anotações em Markdown</button>}
-      {secao === 'assinatura' && <Link className="study-settings-row" to="/upgrade">Ver planos</Link>}
-      {secao === 'sobre' && <section className="study-about">
-        <h2>Um espaço para aprender, no seu ritmo.</h2>
-        <p>O StudyOS reúne caderno, tarefas, sessões de estudo e a Kira para ajudar você a organizar ideias e compreender o que está aprendendo.</p>
-        <h2>Quem constrói o StudyOS</h2>
-        <ul>{['Vitor', 'Ketlin', 'Maria Sara', 'Ana Marcela', 'Júlia', 'Pablo'].map(name => <li key={name}>{name}</li>)}</ul>
-        <p>Desenvolvido pela equipe StudyOS · VZP Solutions.</p>
-        <p>A Kira usa inteligência artificial e pode errar. Confira informações importantes e use as explicações para construir seu próprio raciocínio.</p>
-      </section>}
-      {notice && <p role="status" className="study-note">{notice}</p>}
+      )}
+
+      {secao === 'conta' && (
+        <section style={cardStyle}>
+          <Link className="study-settings-row" style={{ paddingInline: '16px' }} to="/perfil">
+            <span><strong>Abrir perfil</strong><small>Nome, curso e área de foco</small></span>
+            <ChevronRight size={17} />
+          </Link>
+          <button
+            type="button"
+            className="study-settings-row"
+            style={{ paddingInline: '16px', color: '#fda4af', borderBottom: 0 }}
+            disabled={pending}
+            onClick={signOut}
+          >
+            <strong>Sair da conta neste dispositivo</strong>
+          </button>
+        </section>
+      )}
+
+      {secao === 'aparencia' && (
+        <section style={{ ...cardStyle, padding: '16px' }}>
+          <label className="study-settings-row" style={{ borderBottom: '1px solid rgba(215, 232, 255, 0.1)' }}>
+            <span><strong>Reduzir movimento</strong><small>Desativa animações suaves</small></span>
+            <input type="checkbox" checked={preferences.reduceMotion} onChange={(event) => change({ reduceMotion: event.target.checked })} />
+          </label>
+          <div className="study-appearance-slider" style={{ paddingTop: '14px' }}>
+            <div>
+              <label htmlFor="study-glass-opacity">Intensidade do vidro</label>
+              <output htmlFor="study-glass-opacity">{Math.round((preferences.glassOpacity ?? .67) * 100)}%</output>
+            </div>
+            <input id="study-glass-opacity" type="range" min="42" max="92" step="1"
+              value={Math.round((preferences.glassOpacity ?? .67) * 100)}
+              onChange={event => change({ glassOpacity: Number(event.target.value) / 100 })} />
+          </div>
+        </section>
+      )}
+
+      {secao === 'kira' && (
+        <fieldset className="study-tone-picker" style={{ ...cardStyle, padding: '16px' }}>
+          <legend style={{ paddingInline: '6px', color: '#cfe0f8', fontWeight: 600 }}>Tom das respostas</legend>
+          {[['amigo', 'Amigável', 'Uma conversa próxima e acolhedora.'], ['formal', 'Formal', 'Explicações com linguagem mais formal.'], ['seco', 'Direto', 'Respostas objetivas, sem rodeios.']].map(([value, label, description]) => (
+            <label key={value} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 4px', borderBottom: '1px solid rgba(215, 232, 255, 0.08)' }}>
+              <span><strong>{label}</strong><small style={{ display: 'block', color: '#a2b7d4' }}>{description}</small></span>
+              <input type="radio" name="kira-tone" value={value} checked={preferences.kiraTone === value} onChange={() => change({ kiraTone: value })} />
+            </label>
+          ))}
+        </fieldset>
+      )}
+
+      {secao === 'notificacoes' && (
+        <section style={{ ...cardStyle, padding: '16px' }}>
+          <button type="button" className="study-settings-row" onClick={toggleAlerts}>
+            <strong>{preferences.focusAlerts ? 'Desativar aviso de foco' : 'Ativar aviso de foco'}</strong>
+          </button>
+          <label className="study-settings-row" style={{ borderBottom: 0 }}>
+            <span><strong>Silenciar entre 02h e 07h</strong></span>
+            <input type="checkbox" checked={preferences.quiet} onChange={(event) => change({ quiet: event.target.checked })} />
+          </label>
+        </section>
+      )}
+
+      {secao === 'entrada' && (
+        <section style={{ ...cardStyle, padding: '16px' }}>
+          <label className="study-settings-row" style={{ borderBottom: 0 }}>
+            <span><strong>Mostrar biometria ao voltar</strong><small>Tela de bloqueio rápida</small></span>
+            <input type="checkbox" checked={preferences.lock} onChange={(event) => change({ lock: event.target.checked })} />
+          </label>
+        </section>
+      )}
+
+      {secao === 'dados' && (
+        <section style={{ ...cardStyle, padding: '16px' }}>
+          <button type="button" className="study-settings-row" style={{ borderBottom: 0 }} disabled={pending} onClick={exportNotes}>
+            <span><strong>Baixar anotações em Markdown</strong><small>Arquivo .md com todo o seu caderno</small></span>
+            <ChevronRight size={17} />
+          </button>
+        </section>
+      )}
+
+      {secao === 'assinatura' && (
+        <section style={{ ...cardStyle, padding: '16px' }}>
+          <Link className="study-settings-row" style={{ borderBottom: 0 }} to="/upgrade">
+            <span><strong>Ver planos do StudyOS</strong><small>Compare recursos disponíveis</small></span>
+            <ChevronRight size={17} />
+          </Link>
+        </section>
+      )}
+
+      {secao === 'sobre' && (
+        <section className="study-about" style={{ ...cardStyle, padding: '20px' }}>
+          <h2>Um espaço para aprender, no seu ritmo.</h2>
+          <p>O StudyOS reúne caderno, tarefas, sessões de estudo e a Kira para ajudar você a organizar ideias e compreender o que está aprendendo.</p>
+          <h2>Quem constrói o StudyOS</h2>
+          <ul>{['Vitor', 'Ketlin', 'Maria Sara', 'Ana Marcela', 'Júlia', 'Pablo'].map(name => <li key={name}>{name}</li>)}</ul>
+          <p>Desenvolvido pela equipe StudyOS · VZP Solutions.</p>
+        </section>
+      )}
+
+      {notice && <p role="status" className="study-note" style={{ marginTop: '14px' }}>{notice}</p>}
     </main>
   )
 }
