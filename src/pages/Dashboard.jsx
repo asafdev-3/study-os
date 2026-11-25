@@ -1,17 +1,37 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, Flame, GraduationCap, Pause, Play, Radio, Settings, StickyNote } from 'lucide-react'
+import { ArrowRight, BookOpen, Flame, GraduationCap, Radio, Settings, StickyNote } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
 import { KiraAvatar } from '../components/KiraAvatar'
 import RainWindow from '../components/RainWindow'
+import InstallPwaModal from '../components/InstallPwaModal'
 import { useStudyReducedMotion } from '../lib/motion'
 import './Dashboard.css'
 
 const subjects = {
-  matematica: ['mt', 'Matemática'], natureza: ['cn', 'Ciências da Natureza'],
-  humanas: ['ch', 'Ciências Humanas'], linguagens: ['lc', 'Linguagens'], redacao: ['red', 'Redação'],
+  matematica: ['mt', 'Matemática'],
+  natureza: ['cn', 'Ciências da Natureza'],
+  humanas: ['ch', 'Ciências Humanas'],
+  linguagens: ['lc', 'Linguagens'],
+  redacao: ['red', 'Redação'],
 }
+
+const COURSE_LABELS = {
+  medicina: 'Medicina',
+  psicologia: 'Psicologia',
+  direito: 'Direito',
+  engenharia: 'Engenharia',
+  computacao: 'Computação / TI',
+  outros: 'seu curso',
+}
+
+function formatCourse(value) {
+  if (!value) return null
+  const key = value.trim().toLowerCase()
+  return COURSE_LABELS[key] || value
+}
+
 function mainSubject(value) {
   let keys = value
   if (typeof value === 'string') { try { keys = JSON.parse(value) } catch { /* Single subject. */ } }
@@ -33,11 +53,10 @@ export default function Dashboard() {
   const [now] = useState(Date.now)
   const android = isAndroidDevice()
   const reducedMotion = useStudyReducedMotion() || android
-  const [rainPaused, setRainPaused] = useState(() => android)
-  const [rainHidden, setRainHidden] = useState(() => document.hidden)
+  const [hidden, setHidden] = useState(() => document.hidden)
 
   useEffect(() => {
-    const onVisibility = () => setRainHidden(document.hidden)
+    const onVisibility = () => setHidden(document.hidden)
     document.addEventListener('visibilitychange', onVisibility)
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
@@ -65,15 +84,17 @@ export default function Dashboard() {
   const [area, subject] = mainSubject(profile?.area_dificuldade) ?? ['mt', 'Matemática']
   const prompt = `Me ajude a revisar ${subject} para o ENEM. Comece com uma questão simples.`
   const firstName = profile?.nome?.trim().split(/\s+/)[0]
+  const courseName = formatCourse(profile?.curso_objetivo)
   const notePath = note ? '/anotacoes?nota=' + encodeURIComponent(note.id) : '/anotacoes'
 
   return (
     <main className="study-room study-page study-home-v2">
-      {!android && (
-        <div className="study-home-rain" aria-hidden="true">
-          <RainWindow still={reducedMotion || rainPaused || rainHidden} />
-        </div>
-      )}
+      <InstallPwaModal />
+
+      {/* Fundo da sala sem chuva caindo, mantendo apenas as gotas de condensação no vidro */}
+      <div className="study-home-rain" aria-hidden="true">
+        <RainWindow still={reducedMotion || hidden} showRain={false} showDrops={!android} />
+      </div>
       <div className="study-room-shade" aria-hidden="true" />
 
       <div className="study-room-content">
@@ -83,18 +104,6 @@ export default function Dashboard() {
             <span>Study<span>OS</span><small>SUA SALA DE ESTUDO</small></span>
           </div>
           <div className="study-room-header-actions">
-            {!reducedMotion && !android && (
-              <button
-                type="button"
-                className="study-home-rain-toggle"
-                aria-label={rainPaused ? 'Ativar animação de chuva' : 'Pausar animação de chuva'}
-                aria-pressed={!rainPaused}
-                title={rainPaused ? 'Retomar chuva' : 'Pausar chuva'}
-                onClick={() => setRainPaused(value => !value)}
-              >
-                {rainPaused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}
-              </button>
-            )}
             <StudyLink to="/nfc" className="study-room-nfc" aria-label="Abrir recursos NFC">
               <Radio size={17} aria-hidden="true" /><span>NFC</span>
             </StudyLink>
@@ -109,7 +118,7 @@ export default function Dashboard() {
             <section className="study-room-welcome">
               <p>{new Date(now).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
               <h1>{firstName ? `Olá, ${firstName}.` : 'Seu espaço de estudo.'}</h1>
-              <span>{profile?.curso_objetivo ? `A caminho de ${profile.curso_objetivo}.` : 'Seu caderno, suas ideias, seu ritmo.'}</span>
+              <span>{courseName ? `A caminho de ${courseName}.` : 'Seu caderno, suas ideias, seu ritmo.'}</span>
             </section>
 
             {error && (
