@@ -43,6 +43,32 @@
   }
 }
 
+/* Mobile Keyboard & Anti-Zoom (iOS Safari + Android Chrome) */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1rem) !important;
+  }
+
+  html[data-mobile-keyboard="open"] .study-navigation,
+  html[data-mobile-keyboard="open"] .study-note-fab,
+  html[data-mobile-keyboard="open"] .study-postits-add {
+    display: none !important;
+  }
+
+  html[data-mobile-keyboard="open"] .study-entry,
+  html[data-mobile-keyboard="open"] .study-page,
+  html[data-mobile-keyboard="open"] .study-onboarding {
+    padding-bottom: calc(var(--keyboard-offset, 0px) + 36px) !important;
+    scroll-padding-bottom: calc(var(--keyboard-offset, 0px) + 48px);
+  }
+
+  html[data-mobile-keyboard="open"] .study-entry.study-auth-login {
+    align-content: start !important;
+  }
+}
+
 /* Android Lite Mode: zero backdrop-filter, zero box-shadow bloat, crisp dark surfaces */
 html.is-android .study-navigation-inner,
 html.is-android .study-tab-indicator,
@@ -54,6 +80,9 @@ html.is-android .study-nfc-buttons .study-primary,
 html.is-android .study-nfc-write,
 html.is-android .study-paper-postit,
 html.is-android .study-area-options,
+html.is-android .study-auth-card,
+html.is-android .study-auth-login .study-auth-card,
+html.is-android .study-auth-login .study-auth-card[data-refraction="true"],
 html.is-android .glass,
 html.is-android .glass-deep,
 html.is-android .glass-raised,
@@ -62,6 +91,12 @@ html.is-android .glass-sidebar,
 html.is-android .glass-toast {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+}
+
+html.is-android .study-auth-login .study-auth-card,
+html.is-android .study-auth-login .study-auth-card[data-refraction="true"] {
+  background: #111c30 !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45) !important;
 }
 
 html.is-android .study-navigation-inner {
