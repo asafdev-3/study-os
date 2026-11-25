@@ -32,6 +32,7 @@ const NFC = lazy(loadStudyRoute['/nfc'])
 const NovaAnotacao = lazy(() => import('./pages/NovaAnotacao'))
 const EnemScreen = lazy(loadStudyRoute['/enem'])
 const Onboarding = lazy(() => import('./pages/Onboarding'))
+const Caverna = lazy(() => import('./pages/Caverna'))
 
 const oauthReturn = new URLSearchParams(window.location.search).has('code')
   || new URLSearchParams(window.location.hash.slice(1)).has('access_token')
@@ -43,7 +44,7 @@ function TelaCarregando() {
 const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/esqueci-senha', '/native-session']
 
 // Rotas sem sidebar desktop (públicas + onboarding)
-const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock', '/native-session']
+const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock', '/native-session', '/caverna']
 
 function PageWrapper({ children }) {
   return <PageMotion>{children}</PageMotion>
@@ -90,6 +91,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
       <Route path="/nova-anotacao" element={<NovaAnotacao />} />
       <Route path="/enem" element={<PageWrapper><EnemScreen key={location.search} userId={sessao?.user.id} /></PageWrapper>} />
       <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/caverna" element={<Caverna />} />
     </Routes>
   )
 }
@@ -108,7 +110,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
       {comSidebar && <FoldableTransition screen={location.pathname} />}
-      {comSidebar && <PaywallModal />}
+      {!!sessao && <PaywallModal />}
       <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />
