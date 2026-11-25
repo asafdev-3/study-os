@@ -7,10 +7,13 @@ import { FOCUS_SECONDS, readFocus } from '../lib/focus'
 import { NFC_AREAS, nfcDestination } from '../lib/nfc'
 import { NfcAnimation } from '../components/SetupAnimations'
 
+const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
+
 export default function NFC() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const [type, setType] = useState('foco')
+  const android = isAndroidDevice()
+  const [type, setType] = useState('caverna')
   const [area, setArea] = useState('mt')
   const [noteId, setNoteId] = useState('')
   const [notes, setNotes] = useState(null)
@@ -70,7 +73,6 @@ export default function NFC() {
       if (error || !user) throw new Error()
       const key = `studyos:focus:${user.id}`
       const existing = readFocus(key)
-      // Never replace an active, paused, or completed session through an external link.
       if (!existing) localStorage.setItem(key, JSON.stringify({
         id: crypto.randomUUID(), areaId: targetArea, seconds: FOCUS_SECONDS, deadline: Date.now() + FOCUS_SECONDS * 1000,
       }))
@@ -89,21 +91,35 @@ export default function NFC() {
         <button type="button" className="study-primary" disabled={busy} onClick={startFocus}>{busy ? 'Preparando…' : 'Entrar em foco'}<ArrowRight size={17} aria-hidden="true" /></button>
       </> : <>
         <div className="study-nfc-symbol"><Radio size={34} strokeWidth={1.2} aria-hidden="true" /></div>
-        <NfcAnimation />
+        {!android && <NfcAnimation />}
         <p className="study-nfc-eyebrow">DO PAPEL PARA O DIGITAL</p>
         <h1>Um toque.<br /><em>Seu espaço.</em></h1>
-        <p className="study-nfc-description">Uma etiqueta na mesa abre o foco. No caderno, abre a matéria. Escolha o que você quer encontrar.</p>
+        <p className="study-nfc-description">Uma etiqueta na mesa abre o Modo Caverna. No caderno, abre a matéria. Escolha o que você quer encontrar.</p>
         {action && <p role="alert" className="study-note">Este atalho não é válido. Crie um novo destino abaixo.</p>}
         <section className="study-nfc-builder" aria-label="Configurar etiqueta NFC">
-          <label>Ação da etiqueta<select aria-label="Ação da etiqueta" value={type} disabled={busy} onChange={event => { setType(event.target.value); setCopied(false); setStatus('') }}>
-            <option value="foco">Sessão de foco</option><option value="materia">Caderno de uma matéria</option><option value="nota">Uma anotação</option>
-          </select></label>
-          {type === 'nota' ? <label>Anotação<select aria-label="Anotação" value={noteId} disabled={busy || !notes} onChange={event => { setNoteId(event.target.value); setCopied(false); setStatus('') }}>
-            <option value="">Selecione uma anotação</option>
-            {notes?.map(note => <option key={note.id} value={note.id}>{note.title || 'Sem título'}</option>)}
-          </select></label> : <label>Matéria<select aria-label="Matéria" value={area} disabled={busy} onChange={event => { setArea(event.target.value); setCopied(false); setStatus('') }}>
-            {Object.entries(NFC_AREAS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-          </select></label>}
+          <label className={type === 'caverna' ? 'study-nfc-url' : ''}>
+            Ação da etiqueta
+            <select aria-label="Ação da etiqueta" value={type} disabled={busy} onChange={event => { setType(event.target.value); setCopied(false); setStatus('') }}>
+              <option value="caverna">Modo Caverna (Imersão 25 min)</option>
+              <option value="foco">Sessão de foco ENEM</option>
+              <option value="materia">Caderno de uma matéria</option>
+              <option value="nota">Uma anotação</option>
+            </select>
+          </label>
+          {type === 'nota' ? (
+            <label>Anotação
+              <select aria-label="Anotação" value={noteId} disabled={busy || !notes} onChange={event => { setNoteId(event.target.value); setCopied(false); setStatus('') }}>
+                <option value="">Selecione uma anotação</option>
+                {notes?.map(note => <option key={note.id} value={note.id}>{note.title || 'Sem título'}</option>)}
+              </select>
+            </label>
+          ) : type !== 'caverna' ? (
+            <label>Matéria
+              <select aria-label="Matéria" value={area} disabled={busy} onChange={event => { setArea(event.target.value); setCopied(false); setStatus('') }}>
+                {Object.entries(NFC_AREAS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+              </select>
+            </label>
+          ) : null}
           {type === 'nota' && <p className="study-note">{noteError ? 'Não foi possível carregar. Selecione outra ação e tente novamente.' : !notes ? 'Carregando anotações…' : notes.length === 0 ? 'Crie sua primeira anotação no caderno para vinculá-la.' : 'A anotação continua privada e exige login na sua conta.'}</p>}
           <label className="study-nfc-url">Endereço da etiqueta<input ref={urlInput} aria-label="Endereço da etiqueta" readOnly value={url} placeholder="Escolha o destino acima" onFocus={event => event.target.select()} /></label>
           <div className="study-nfc-buttons">

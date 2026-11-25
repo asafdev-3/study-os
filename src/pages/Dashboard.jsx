@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, GraduationCap, Pause, Play, Radio, Settings, StickyNote } from 'lucide-react'
+import { ArrowRight, BookOpen, Flame, GraduationCap, Pause, Play, Radio, Settings, StickyNote } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
@@ -148,6 +148,11 @@ export default function Dashboard() {
           <aside className="study-home-secondary" aria-label="Ferramentas de estudo">
             <p className="study-home-secondary-label">À mão</p>
             <div className="study-room-dock">
+              <StudyLink className="study-room-kira" to="/caverna">
+                <Flame size={24} aria-hidden="true" style={{ color: '#a78bfa' }} />
+                <span><strong>Modo Caverna</strong><small>Imersão total de 25 min sem distrações</small></span>
+                <ArrowRight size={18} aria-hidden="true" />
+              </StudyLink>
               <StudyLink className="study-room-kira study-room-postits" to="/lembretes">
                 <StickyNote size={24} aria-hidden="true" />
                 <span><strong>Meus post-its</strong><small>Tarefas e lembretes de estudo</small></span>

@@ -43,7 +43,7 @@ function TelaCarregando() {
 
 const ROTAS_PUBLICAS = ['/', '/login', '/upgrade', '/esqueci-senha', '/native-session']
 
-// Rotas sem sidebar desktop (públicas + onboarding)
+// Rotas sem sidebar desktop (públicas + onboarding + foco fullscreen)
 const SEM_SIDEBAR = ['/', '/login', '/upgrade', '/sucesso', '/esqueci-senha', '/onboarding', '/lock', '/native-session', '/caverna']
 
 function PageWrapper({ children }) {
@@ -100,6 +100,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
   const userId = sessao?.user.id
   useEffect(() => {
     if (!userId || bloqueado) return
+    if (document.documentElement.classList.contains('is-android')) return
     return warmStudyRoutes()
   }, [userId, bloqueado])
   const location = useLocation()
@@ -110,7 +111,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
       {comSidebar && <FoldableTransition screen={location.pathname} />}
-      {!!sessao && <PaywallModal />}
+      {comSidebar && <PaywallModal />}
       <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />

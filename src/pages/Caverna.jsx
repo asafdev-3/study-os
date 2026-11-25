@@ -5,6 +5,7 @@ import { Play, Pause, RotateCcw } from 'lucide-react'
 const FOCO_TOTAL = 25 * 60
 const PAUSA_TOTAL = 5 * 60
 const SEGMENTOS = 32
+const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
 
 function lerp(a, b, t) { return a + (b - a) * t }
 function hexToRgb(hex) {
@@ -24,51 +25,70 @@ function corSegmento(index, total) {
 
 function Caverna() {
   const navigate = useNavigate()
+  const android = isAndroidDevice()
   const [modo, setModo] = useState('foco')
   const [segundos, setSegundos] = useState(FOCO_TOTAL)
   const [rodando, setRodando] = useState(false)
   const [concluido, setConcluido] = useState(false)
   const [piscando, setPiscando] = useState(false)
-  const intervalRef = useRef(null)
+  const [ciclos, setCiclos] = useState(0)
+  const deadlineRef = useRef(null)
 
   const total = modo === 'foco' ? FOCO_TOTAL : PAUSA_TOTAL
   const progresso = 1 - segundos / total
   const segmentosAtivos = Math.floor(progresso * SEGMENTOS)
 
   useEffect(() => {
-    if (rodando) {
-      intervalRef.current = setInterval(() => {
-        setSegundos(prev => {
-          if (prev <= 1) {
-            clearInterval(intervalRef.current)
-            setRodando(false)
-            setConcluido(true)
-            let count = 0
-            const pisca = setInterval(() => {
-              setPiscando(p => !p)
-              count++
-              if (count >= 6) clearInterval(pisca)
-            }, 300)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    } else {
-      clearInterval(intervalRef.current)
+    if (!rodando) {
+      deadlineRef.current = null
+      return
     }
-    return () => clearInterval(intervalRef.current)
-  }, [rodando])
+    deadlineRef.current = Date.now() + segundos * 1000
+    let blinkTimer = null
+
+    const tick = () => {
+      if (!deadlineRef.current) return
+      const restante = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000))
+      setSegundos(restante)
+
+      if (restante <= 0) {
+        clearInterval(interval)
+        deadlineRef.current = null
+        setRodando(false)
+        setConcluido(true)
+        if (modo === 'foco') setCiclos(c => Math.min(4, c + 1))
+
+        let count = 0
+        blinkTimer = setInterval(() => {
+          setPiscando(p => !p)
+          count++
+          if (count >= 6) clearInterval(blinkTimer)
+        }, 300)
+      }
+    }
+
+    const interval = setInterval(tick, 250)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      clearInterval(interval)
+      if (blinkTimer) clearInterval(blinkTimer)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [rodando, modo])
 
   function resetar() {
-    clearInterval(intervalRef.current)
-    setRodando(false); setConcluido(false); setPiscando(false)
+    deadlineRef.current = null
+    setRodando(false)
+    setConcluido(false)
+    setPiscando(false)
     setSegundos(modo === 'foco' ? FOCO_TOTAL : PAUSA_TOTAL)
   }
 
   function alternarModo(novoModo) {
-    clearInterval(intervalRef.current)
-    setRodando(false); setConcluido(false); setPiscando(false)
+    deadlineRef.current = null
+    setRodando(false)
+    setConcluido(false)
+    setPiscando(false)
     setModo(novoModo)
     setSegundos(novoModo === 'foco' ? FOCO_TOTAL : PAUSA_TOTAL)
   }
@@ -90,18 +110,20 @@ function Caverna() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-between max-w-sm mx-auto" style={{background:'#000'}}>
+    <div className="fixed inset-0 flex flex-col items-center justify-between max-w-sm mx-auto" style={{ background: '#000' }}>
       <div className="w-full flex items-center justify-between px-6 pt-14 pb-4">
-        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors">
-          <span style={{fontSize:'20px'}}>←</span>
-          <span style={{fontFamily:'Geist,sans-serif',fontSize:'13px',letterSpacing:'0.05em'}}>SAIR</span>
+        <button type="button" onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors min-h-[44px]">
+          <span style={{ fontSize: '20px' }}>←</span>
+          <span style={{ fontFamily: 'Geist,sans-serif', fontSize: '13px', letterSpacing: '0.05em' }}>SAIR</span>
         </button>
-        <div className="flex gap-1 p-1 rounded-full" style={{background:'#0a0a0c',border:'1px solid #26262e'}}>
-          {['foco','pausa'].map(m => (
-            <button key={m} onClick={() => alternarModo(m)} className="px-4 py-1.5 rounded-full transition-all duration-300"
-              style={{fontFamily:'Geist,sans-serif',fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',
-                background: modo===m ? 'linear-gradient(135deg,#8B5CF6,#22D3A0)' : 'transparent',
-                color: modo===m ? '#fff' : '#a1a1aa'}}>
+        <div className="flex gap-1 p-1 rounded-full" style={{ background: '#0a0a0c', border: '1px solid #26262e' }}>
+          {['foco', 'pausa'].map(m => (
+            <button key={m} type="button" onClick={() => alternarModo(m)} className="px-4 py-1.5 rounded-full transition-all duration-300"
+              style={{
+                fontFamily: 'Geist,sans-serif', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase',
+                background: modo === m ? 'linear-gradient(135deg,#8B5CF6,#22D3A0)' : 'transparent',
+                color: modo === m ? '#fff' : '#a1a1aa'
+              }}>
               {m}
             </button>
           ))}
@@ -109,51 +131,58 @@ function Caverna() {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
-        <div style={{position:'relative',width:320,height:320}}>
+        <div style={{ position: 'relative', width: 320, height: 320 }}>
           <svg width="320" height="320" viewBox="0 0 320 320">
-            {Array.from({length:SEGMENTOS}).map((_,i) => {
+            {Array.from({ length: SEGMENTOS }).map((_, i) => {
               const ativo = i < segmentosAtivos
               const mostrarCor = ativo || (concluido && piscando)
               return (
                 <path key={i} d={segmentoPath(i)}
                   fill={mostrarCor ? corSegmento(i, SEGMENTOS) : '#1a1a1a'}
                   opacity={mostrarCor ? 1 : 0.4}
-                  style={{transition:'fill 0.4s ease, opacity 0.4s ease',
-                    filter: mostrarCor ? `drop-shadow(0 0 4px ${corSegmento(i,SEGMENTOS)}99)` : 'none'}}
+                  style={{
+                    transition: android ? 'none' : 'fill 0.4s ease, opacity 0.4s ease',
+                    filter: !android && mostrarCor ? `drop-shadow(0 0 4px ${corSegmento(i, SEGMENTOS)}99)` : 'none'
+                  }}
                 />
               )
             })}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span style={{fontFamily:'Geist Mono,monospace',fontSize:'52px',fontWeight:'300',
-              letterSpacing:'-2px',color:concluido?'#22D3A0':'#f4f4f5',transition:'color 0.3s ease'}}>
+            <span style={{
+              fontFamily: 'Geist Mono,monospace', fontSize: '52px', fontWeight: '300',
+              letterSpacing: '-2px', color: concluido ? '#22D3A0' : '#f4f4f5', transition: 'color 0.3s ease'
+            }}>
               {min}:{sec}
             </span>
-            <span style={{fontFamily:'Geist,sans-serif',fontSize:'10px',letterSpacing:'0.2em',color:'#a1a1aa',marginTop:'4px'}}>
-              {concluido ? 'SESSÃO CONCLUÍDA' : modo==='foco' ? 'MODO CAVERNA' : 'PAUSA ATIVA'}
+            <span style={{ fontFamily: 'Geist,sans-serif', fontSize: '10px', letterSpacing: '0.2em', color: '#a1a1aa', marginTop: '4px' }}>
+              {concluido ? 'SESSÃO CONCLUÍDA' : modo === 'foco' ? 'MODO CAVERNA' : 'PAUSA ATIVA'}
             </span>
           </div>
         </div>
-        <div className="flex gap-2">
-          {[1,2,3,4].map(i => (
+        <div className="flex gap-2" aria-label={`${ciclos} de 4 ciclos concluídos`}>
+          {[1, 2, 3, 4].map(i => (
             <div key={i} className="w-2 h-2 rounded-full"
-              style={{background: i===1 ? 'linear-gradient(135deg,#8B5CF6,#22D3A0)' : '#26262e'}} />
+              style={{ background: i <= Math.max(1, ciclos) ? 'linear-gradient(135deg,#8B5CF6,#22D3A0)' : '#26262e' }} />
           ))}
         </div>
       </div>
 
       <div className="w-full flex items-center justify-center gap-6 px-6 pb-16">
-        <button onClick={resetar} className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{background:'#0a0a0c',border:'1px solid #26262e'}}>
+        <button type="button" onClick={resetar} aria-label="Resetar cronômetro" className="w-12 h-12 rounded-full flex items-center justify-center"
+          style={{ background: '#0a0a0c', border: '1px solid #26262e' }}>
           <RotateCcw size={18} className="text-zinc-500" />
         </button>
-        <button onClick={() => concluido ? resetar() : setRodando(r => !r)}
+        <button type="button" onClick={() => concluido ? resetar() : setRodando(r => !r)}
+          aria-label={rodando ? 'Pausar' : 'Iniciar'}
           className="w-20 h-20 rounded-full flex items-center justify-center"
-          style={{background:'linear-gradient(135deg,#8B5CF6,#22D3A0)',
-            boxShadow: rodando ? '0 0 32px rgba(139,92,246,0.5)' : 'none',transition:'box-shadow 0.3s ease'}}>
+          style={{
+            background: 'linear-gradient(135deg,#8B5CF6,#22D3A0)',
+            boxShadow: !android && rodando ? '0 0 32px rgba(139,92,246,0.5)' : 'none', transition: 'box-shadow 0.3s ease'
+          }}>
           {concluido ? <RotateCcw size={28} className="text-white" />
             : rodando ? <Pause size={28} className="text-white" />
-            : <Play size={28} className="text-white" style={{marginLeft:'3px'}} />}
+              : <Play size={28} className="text-white" style={{ marginLeft: '3px' }} />}
         </button>
         <div className="w-12 h-12" />
       </div>

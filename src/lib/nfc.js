@@ -4,6 +4,7 @@ export const NFC_AREAS = {
 }
 
 export function nfcDestination(type, area, note) {
+  if (type === 'caverna') return '/caverna'
   if (type === 'nota') return note ? '/anotacoes?nota=' + encodeURIComponent(note) : null
   if (!Object.hasOwn(NFC_AREAS, area)) return null
   return type === 'foco' ? '/nfc?acao=foco&area=' + area
@@ -15,7 +16,7 @@ export function safeDestination(value) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return null
   try {
     const url = new URL(value, window.location.origin)
-    return url.origin === window.location.origin && ['/nfc', '/anotacoes', '/enem'].includes(url.pathname)
+    return url.origin === window.location.origin && ['/nfc', '/anotacoes', '/enem', '/caverna'].includes(url.pathname)
       ? url.pathname + url.search : null
   } catch { return null }
 }

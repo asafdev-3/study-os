@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m as motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import './Onboarding.css'
 
@@ -61,17 +61,34 @@ export default function Onboarding() {
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       if (authError || !user) throw new Error('Sessão indisponível')
-      const { error } = await supabase.from('profiles').upsert({
+
+      const payload = {
         id: user.id,
         nome: nome.trim(),
         curso_objetivo: curso,
         area_dificuldade: JSON.stringify(dificuldadesFinais),
         onboarding_completo: true,
-      })
-      if (error) throw error
+      }
+
+      const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+      if (error) {
+        // Fallback caso a tabela já tenha a linha criada pelo trigger e RLS permita apenas update
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            nome: payload.nome,
+            curso_objetivo: payload.curso_objetivo,
+            area_dificuldade: payload.area_dificuldade,
+            onboarding_completo: true,
+          })
+          .eq('id', user.id)
+        if (updateError) throw updateError
+      }
+
       navigate('/dashboard', { replace: true })
-    } catch {
-      setErro('Não foi possível salvar seu perfil. Tente novamente.')
+    } catch (err) {
+      console.error('[StudyOS Onboarding]', err)
+      setErro(`Não foi possível salvar seu perfil (${err?.message || 'tente novamente'}).`)
     } finally {
       setLoading(false)
     }
@@ -107,7 +124,6 @@ export default function Onboarding() {
         <strong>StudyOS</strong>
         <span className="study-onboarding-caption">Seu espaço de estudo</span>
       </div>
-      {/* Barra de progresso */}
       <div className="study-onboarding-progress" aria-label={`Etapa ${step + 1} de 3`}>
         <div className="study-onboarding-progress-track" aria-hidden="true">
           {[0, 1, 2].map(i => (
@@ -117,11 +133,8 @@ export default function Onboarding() {
         <p>{step + 1} de 3</p>
       </div>
 
-      {/* Conteúdo */}
       <div className="study-onboarding-body">
         <AnimatePresence mode="wait">
-
-          {/* PASSO 1 — Curso */}
           {step === 0 && (
             <motion.div key="s0"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
@@ -144,7 +157,6 @@ export default function Onboarding() {
             </motion.div>
           )}
 
-          {/* PASSO 2 — Dificuldades (multiselect) */}
           {step === 1 && (
             <motion.div key="s1"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
@@ -174,7 +186,6 @@ export default function Onboarding() {
                         <span style={{ fontSize: 14, color: 'rgba(99,102,241,0.9)' }}>✓</span>
                       )}
                     </button>
-                    {/* Campo de texto quando "Outro" está selecionado */}
                     {d.id === 'outro' && dificuldades.includes('outro') && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -205,7 +216,6 @@ export default function Onboarding() {
             </motion.div>
           )}
 
-          {/* PASSO 3 — Nome */}
           {step === 2 && (
             <motion.div key="s2"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
@@ -239,11 +249,9 @@ export default function Onboarding() {
               </p>
             </motion.div>
           )}
-
         </AnimatePresence>
       </div>
 
-      {/* Botões */}
       {erro && <p role="alert" className="study-onboarding-error">{erro}</p>}
       <div className="study-onboarding-footer">
         {step > 0 && (

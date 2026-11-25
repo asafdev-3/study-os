@@ -10,6 +10,8 @@ import KiraLoginScene from '../components/KiraLoginScene'
 import studyosBackdrop from '../assets/studyos-backdrop.webp'
 import './Auth.css'
 
+const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
+
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
     <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -22,18 +24,27 @@ const GoogleIcon = () => (
 function authMessage(error, mode) {
   const message = error?.message?.toLowerCase() ?? ''
   if (message.includes('invalid login credentials')) return 'E-mail ou senha incorretos.'
-  if (message.includes('already registered') || message.includes('already been registered')) return 'Este e-mail já tem cadastro. Entre na sua conta.'
+  if (message.includes('already registered') || message.includes('already been registered') || message.includes('user already exists')) {
+    return 'Este e-mail já tem cadastro. Clique em "Entrar" acima.'
+  }
   if (message.includes('password')) return 'A senha precisa ter pelo menos 8 caracteres.'
   if (message.includes('email not confirmed')) return 'Confirme seu e-mail pelo link enviado antes de entrar.'
-  if (message.includes('rate limit') || message.includes('too many requests')) return 'Muitas tentativas. Aguarde um pouco e tente novamente.'
-  return mode === 'signup' ? 'Não foi possível criar sua conta agora. Tente novamente.' : 'Não foi possível entrar agora. Tente novamente.'
+  if (message.includes('rate limit') || message.includes('too many requests') || message.includes('email rate limit exceeded')) {
+    return 'Limite de envio de e-mails atingido no servidor. Tente entrar com Google ou aguarde alguns minutos.'
+  }
+  if (message.includes('signups not allowed')) return 'Novos cadastros estão temporariamente desativados no servidor.'
+  if (message.includes('invalid email')) return 'Digite um endereço de e-mail válido.'
+  return mode === 'signup'
+    ? `Não foi possível criar sua conta (${error?.message || 'erro de conexão'}).`
+    : 'Não foi possível entrar agora. Tente novamente.'
 }
 
 export default function Login() {
   const location = useLocation()
   const navigate = useNavigate()
+  const android = isAndroidDevice()
   const [mode, setMode] = useState('login')
-  const [rainPaused, setRainPaused] = useState(false)
+  const [rainPaused, setRainPaused] = useState(() => android)
   const [focusedField, setFocusedField] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -76,11 +87,26 @@ export default function Login() {
         const { data, error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/onboarding`,
+          },
         })
         if (error) throw error
+
+        // Supabase retorna user com identities vazio quando o e-mail já existe e confirmação está ativa
+        if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          setErro('Este e-mail já está cadastrado. Use a aba "Entrar".')
+          return
+        }
+
         if (!data.session) {
-          setNotice('Conta criada. Confira seu e-mail e confirme o cadastro para continuar.')
+          // Tenta login imediato caso a confirmação de e-mail tenha sido desligada no painel
+          const signInFallback = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
+          if (signInFallback.data?.session) {
+            navigate('/onboarding', { replace: true })
+            return
+          }
+          setNotice('Conta criada! Abra seu e-mail e clique no link de confirmação para ativar o acesso.')
           return
         }
         navigate('/onboarding', { replace: true })
@@ -90,6 +116,7 @@ export default function Login() {
         navigate('/dashboard', { replace: true })
       }
     } catch (error) {
+      console.error('[StudyOS Auth]', error)
       setErro(authMessage(error, mode))
     } finally {
       setLoading(false)
@@ -105,31 +132,34 @@ export default function Login() {
         options: { redirectTo: `${window.location.origin}/dashboard` },
       })
       if (error) throw error
-    } catch {
+    } catch (error) {
+      console.error('[StudyOS Google Auth]', error)
       setErro('O acesso com Google falhou. Tente novamente.')
       setLoading(false)
     }
   }
 
   const glassFilterId = useId().replace(/[^a-zA-Z0-9_-]/g, '')
-  // SVG backdrop filters are an enhancement for desktop Chromium only.
-  const refractiveGlass = /Chrome\//.test(navigator.userAgent)
+  const refractiveGlass = !android
+    && /Chrome\//.test(navigator.userAgent)
     && !/Android|Mobile|iPhone|iPad/.test(navigator.userAgent)
 
   const creating = mode === 'signup'
-  const reducedMotion = useStudyReducedMotion()
+  const reducedMotion = useStudyReducedMotion() || android
 
   return (
     <main className="study-entry study-auth-page study-auth-login">
-      <RainWindow still={reducedMotion || rainPaused} />
-      <svg width="0" height="0" className="study-auth-glass-filter" aria-hidden="true" focusable="false">
-        <defs>
-          <filter id={glassFilterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="2" seed="8" result="turbulence" />
-            <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
+      {!android && <RainWindow still={reducedMotion || rainPaused} />}
+      {!android && (
+        <svg width="0" height="0" className="study-auth-glass-filter" aria-hidden="true" focusable="false">
+          <defs>
+            <filter id={glassFilterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+              <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="2" seed="8" result="turbulence" />
+              <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+        </svg>
+      )}
       <div className="study-auth-watermark study-auth-brand-backdrop" aria-hidden="true">
         <img src={studyosBackdrop} alt="" width="900" height="900" style={{ maskImage: `url(${studyosBackdrop})`, WebkitMaskImage: `url(${studyosBackdrop})` }} />
       </div>
@@ -139,12 +169,12 @@ export default function Login() {
       <section
         className="study-auth-card"
         data-refraction={refractiveGlass}
-        style={{ '--auth-glass-filter': 'url(#' + glassFilterId + ')' }}
+        style={refractiveGlass ? { '--auth-glass-filter': 'url(#' + glassFilterId + ')' } : undefined}
         aria-labelledby="auth-title"
       >
         <header className="study-auth-login-brand">
           <span className="study-auth-login-wordmark">StudyOS</span>
-          {!reducedMotion && (
+          {!reducedMotion && !android && (
             <button type="button" className="rain-toggle" onClick={() => setRainPaused(value => !value)}
               aria-label={rainPaused ? 'Retomar chuva' : 'Pausar chuva'} title={rainPaused ? 'Retomar chuva' : 'Pausar chuva'}>
               {rainPaused ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}
