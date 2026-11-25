@@ -1,31 +1,37 @@
 import { useEffect } from 'react'
-import { m as motion, MotionConfig, LazyMotion } from 'framer-motion'
+import { m as motion, MotionConfig, LazyMotion, domAnimation } from 'framer-motion'
 import { pageSpring, softTransition, useStudyReducedMotion } from '../lib/motion'
 import { readPreferences } from '../lib/preferences'
 import { installFoldBlur } from '../lib/foldBlur'
 
-const loadFeatures = () => import('../lib/motionFeatures').then(module => module.default)
 const isAndroid = () => document.documentElement.classList.contains('is-android')
+const isMobileViewport = () => window.matchMedia('(max-width: 767px)').matches
 
-/** Provider raiz — wrap em App.jsx. Define spring como padrão global (desativado no Android). */
 export function StudyMotion({ children }) {
   const systemReduced = useStudyReducedMotion()
   const android = isAndroid()
   const reduced = systemReduced || android
 
   useEffect(() => {
-    if (android) return
+    // Ativa foldBlur apenas em desktop para não causar repaints em telas móveis
+    if (android || isMobileViewport()) return
     return installFoldBlur()
   }, [android])
 
   useEffect(() => {
-    document.documentElement.dataset.studyMotion = reduced ? 'reduced' : 'system'
-    const opacity = Number(readPreferences().glassOpacity)
-    document.documentElement.style.setProperty('--ios27-glass-alpha', String(Number.isFinite(opacity) ? Math.max(.42, Math.min(.92, opacity)) : .67))
+    const syncPrefs = () => {
+      document.documentElement.dataset.studyMotion = reduced ? 'reduced' : 'system'
+      const opacity = Number(readPreferences().glassOpacity)
+      const alpha = Number.isFinite(opacity) ? Math.max(.42, Math.min(.92, opacity)) : .64
+      document.documentElement.style.setProperty('--ios27-glass-alpha', String(alpha))
+    }
+    syncPrefs()
+    window.addEventListener('studyos:preferences', syncPrefs)
+    return () => window.removeEventListener('studyos:preferences', syncPrefs)
   }, [reduced])
 
   return (
-    <LazyMotion features={loadFeatures}>
+    <LazyMotion features={domAnimation} strict>
       <MotionConfig
         reducedMotion={reduced ? 'always' : 'never'}
         transition={reduced ? { duration: 0 } : pageSpring}
@@ -36,18 +42,10 @@ export function StudyMotion({ children }) {
   )
 }
 
-/**
-- Stable content layer. Page transitions are owned by the route shell,
-- never by each new page/header (those overlapping animations caused flashes).
- */
 export function PageMotion({ children }) {
   return <div className="study-page-enter">{children}</div>
 }
 
-/**
-- Variante atmosférica — só opacity, sem posição.
-- Usar em conteúdo que não deve "subir" (ex: fundo, imagem de sala).
- */
 export function FadeMotion({ children, delay = 0 }) {
   const systemReduced = useStudyReducedMotion()
   const reduced = systemReduced || isAndroid()
