@@ -1,8 +1,8 @@
 import { transitionTo, transitionRoute } from '../lib/routeTransition';
-import { m } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { useViewportSpring } from '../lib/useViewportSpring';
 import { kiraMessageMotion } from '../lib/kiraMotion';
-import { useStudyReducedMotion } from '../lib/motion';
+import { useStudyReducedMotion, pageSpring, cardSpring, softTransition } from '../lib/motion';
 import PromptField from '../components/PromptField';
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Lembretes from "./Lembretes";
@@ -245,9 +245,32 @@ export default function EnemScreen({ userId }) {
     ["kira", "Kira"],
   ];
 
+  const paneMotion = reduced
+    ? { initial: false, animate: { opacity: 1 } }
+    : {
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -6 },
+        transition: cardSpring,
+      };
+
   return (
-    <main ref={page} data-chat-active={tab === "kira" || undefined} className="study-page study-enem" data-switched={switched || undefined}>
-      <header className="study-enem-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+    <motion.main
+      ref={page}
+      data-chat-active={tab === "kira" || undefined}
+      className="study-page study-enem"
+      data-switched={switched || undefined}
+      initial={reduced ? false : { opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={reduced ? { duration: 0 } : { y: pageSpring, opacity: softTransition }}
+    >
+      <motion.header
+        className="study-enem-header"
+        initial={reduced ? false : { opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={reduced ? { duration: 0 } : { ...cardSpring, delay: 0.03 }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}
+      >
         <div>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 650, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9ec5ff', marginBottom: '4px' }}>
             <GraduationCap size={14} /> Preparação Oficial
@@ -255,7 +278,7 @@ export default function EnemScreen({ userId }) {
           <h1>Modo ENEM</h1>
           <p>Simulados TRI, mural de revisão e notas de corte.</p>
         </div>
-      </header>
+      </motion.header>
 
       <div className="study-enem-tabs" role="group" aria-label="Seções do modo ENEM">
         {tabs.map(([id, label]) => {
@@ -268,77 +291,102 @@ export default function EnemScreen({ userId }) {
               aria-pressed={active}
               onClick={() => { if (!active) transitionTo(() => { setSwitched(true); setTab(id); }); }}
             >
-              {active && <span className="study-enem-segment-active" aria-hidden="true" />}
+              {active && (
+                <motion.span
+                  layoutId="enem-active-pill"
+                  className="study-enem-segment-active"
+                  aria-hidden="true"
+                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 480, damping: 38, mass: 0.65 }}
+                />
+              )}
               <span>{label}</span>
             </button>
           );
         })}
       </div>
 
-      {tab === "praticar" && <EnemPractice key={userId} userId={userId} />}
-      {fromNfc && <div className="study-enem-pane" hidden={tab !== "foco"}><SessaoFoco key={userId} userId={userId} /></div>}
-      {tab === "postits" && <div className="study-enem-pane"><Lembretes key={userId} userId={userId} /></div>}
-      {tab === "corte" && (
-        <section className="study-enem-pane" aria-label="Notas de corte e bolsas">
-          <EnemAdmissions key={userId} userId={userId} />
-          <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>
-          <div className="study-enem-scholarships-grid">
-            {BOLSAS.map((bolsa) => (
-              <a className="study-enem-scholarship" key={bolsa.id} href={bolsa.url} target="_blank" rel="noreferrer">
-                <span>
-                  <strong style={{ display: 'block', fontSize: '15px' }}>{bolsa.nome}</strong>
-                  <small style={{ display: 'block', fontSize: '12px', color: '#a2b7d4', marginTop: '2px' }}>{bolsa.detalhe}</small>
-                </span>
-                <ChevronRight size={17} aria-hidden="true" />
-              </a>
-            ))}
-          </div>
-          <p className="study-note">Consulte requisitos, prazos e ofertas no site de cada programa.</p>
-        </section>
-      )}
-      {tab === "kira" && (
-        <section className="study-enem-pane study-enem-chat" aria-label="Kira no modo ENEM">
-          <div className="study-enem-kira-title">
-            <div><h2>Kira ENEM</h2>{remaining !== null && <p>{remaining}/{KIRA_DAILY_LIMIT} mensagens hoje</p>}</div>
-            <button type="button" onClick={() => { void transitionRoute("/chat", () => navigate("/chat", { state: { expanded: true } })); }}>Expandir</button>
-            {messages.length > 0 && <button type="button" onClick={clear} disabled={loading}>Limpar</button>}
-          </div>
-          <div className="study-enem-conversation" ref={log}>
-            {messages.length === 0 && !loading && (
-              <div className="study-enem-prompts">
-                {QUICK_PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
-              </div>
-            )}
-            {(messages.length > 0 || loading) && (
-              <div className="study-chat-log study-enem-log" role="log">
-                {messages.map(({ role, content }, index) => (
-                  <m.div key={index} {...kiraMessageMotion(role, reduced, index < restoredCount)}>
-                    <p className={`study-message study-message--${role}`}>{content}</p>
-                    {role === "assistant" && (
-                      <div className="study-reply-actions">
-                        <button type="button" onClick={() => guardarResposta(content, index)} aria-label="Guardar resposta no caderno">
-                          <BookmarkPlus size={15} aria-hidden="true" /> Guardar no caderno
-                        </button>
-                      </div>
-                    )}
-                  </m.div>
-                ))}
-                {loading && <p className="study-chat-status">Kira está preparando a resposta…</p>}
-              </div>
-            )}
-          </div>
-          <form className="study-composer" onSubmit={(event) => { event.preventDefault(); void enviar(); }}>
-            {error && <p role="alert" className="study-chat-error">{error}</p>}
-            <div className="study-composer-field">
-              <PromptField aria-label="Mensagem para a Kira" placeholder="Mensagem para a Kira" value={kiraInput}
-                onChange={(event) => setKiraInput(event.target.value)} maxLength={2000} />
-              <button type="submit" aria-label="Enviar mensagem" disabled={loading || !kiraInput.trim()}>
-                <ArrowUp size={20} aria-hidden="true" />
-              </button>
+      <AnimatePresence mode="wait" initial={false}>
+        {tab === "praticar" && (
+          <motion.div key="praticar" {...paneMotion}>
+            <EnemPractice key={userId} userId={userId} />
+          </motion.div>
+        )}
+
+        {fromNfc && tab === "foco" && (
+          <motion.div key="foco" className="study-enem-pane" {...paneMotion}>
+            <SessaoFoco key={userId} userId={userId} />
+          </motion.div>
+        )}
+
+        {tab === "postits" && (
+          <motion.div key="postits" className="study-enem-pane" {...paneMotion}>
+            <Lembretes key={userId} userId={userId} />
+          </motion.div>
+        )}
+
+        {tab === "corte" && (
+          <motion.section key="corte" className="study-enem-pane" aria-label="Notas de corte e bolsas" {...paneMotion}>
+            <EnemAdmissions key={userId} userId={userId} />
+            <h2 className="study-enem-subtitle">Bolsas e financiamentos</h2>
+            <div className="study-enem-scholarships-grid">
+              {BOLSAS.map((bolsa) => (
+                <a className="study-enem-scholarship" key={bolsa.id} href={bolsa.url} target="_blank" rel="noreferrer">
+                  <span>
+                    <strong style={{ display: 'block', fontSize: '15px' }}>{bolsa.nome}</strong>
+                    <small style={{ display: 'block', fontSize: '12px', color: '#a2b7d4', marginTop: '2px' }}>{bolsa.detalhe}</small>
+                  </span>
+                  <ChevronRight size={17} aria-hidden="true" />
+                </a>
+              ))}
             </div>
-          </form>
-        </section>
-      )}
-    </main>
+            <p className="study-note">Consulte requisitos, prazos e ofertas no site de cada programa.</p>
+          </motion.section>
+        )}
+
+        {tab === "kira" && (
+          <motion.section key="kira" className="study-enem-pane study-enem-chat" aria-label="Kira no modo ENEM" {...paneMotion}>
+            <div className="study-enem-kira-title">
+              <div><h2>Kira ENEM</h2>{remaining !== null && <p>{remaining}/{KIRA_DAILY_LIMIT} mensagens hoje</p>}</div>
+              <button type="button" onClick={() => { void transitionRoute("/chat", () => navigate("/chat", { state: { expanded: true } })); }}>Expandir</button>
+              {messages.length > 0 && <button type="button" onClick={clear} disabled={loading}>Limpar</button>}
+            </div>
+            <div className="study-enem-conversation" ref={log}>
+              {messages.length === 0 && !loading && (
+                <div className="study-enem-prompts">
+                  {QUICK_PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
+                </div>
+              )}
+              {(messages.length > 0 || loading) && (
+                <div className="study-chat-log study-enem-log" role="log">
+                  {messages.map(({ role, content }, index) => (
+                    <motion.div key={index} {...kiraMessageMotion(role, reduced, index < restoredCount)}>
+                      <p className={`study-message study-message--${role}`}>{content}</p>
+                      {role === "assistant" && (
+                        <div className="study-reply-actions">
+                          <button type="button" onClick={() => guardarResposta(content, index)} aria-label="Guardar resposta no caderno">
+                            <BookmarkPlus size={15} aria-hidden="true" /> Guardar no caderno
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                  {loading && <p className="study-chat-status">Kira está preparando a resposta…</p>}
+                </div>
+              )}
+            </div>
+            <form className="study-composer" onSubmit={(event) => { event.preventDefault(); void enviar(); }}>
+              {error && <p role="alert" className="study-chat-error">{error}</p>}
+              <div className="study-composer-field">
+                <PromptField aria-label="Mensagem para a Kira" placeholder="Mensagem para a Kira" value={kiraInput}
+                  onChange={(event) => setKiraInput(event.target.value)} maxLength={2000} />
+                <button type="submit" aria-label="Enviar mensagem" disabled={loading || !kiraInput.trim()}>
+                  <ArrowUp size={20} aria-hidden="true" />
+                </button>
+              </div>
+            </form>
+          </motion.section>
+        )}
+      </AnimatePresence>
+    </motion.main>
   );
 }

@@ -17,7 +17,7 @@ const prompts = [
 ]
 
 const fadeUp = (delay = 0, reduced = false) => ({
-  initial: reduced ? false : { opacity: 0.94, y: 6 },
+  initial: reduced ? false : { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
   transition: reduced ? { duration: 0 } : { ...cardSpring, delay },
 })
@@ -27,6 +27,7 @@ export default function Chat({ userId }) {
   const navigate = useNavigate()
   const [activity, setActivity] = useState(false)
   const [copyStatus, setCopyStatus] = useState(null)
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
   const reduced = useStudyReducedMotion()
   const [input, setInput] = useState(() => location.state?.prompt ?? '')
   const { messages, remaining, loading, error, send } = useKira(true, userId ? `studyos:chat:${userId}` : null)
@@ -36,6 +37,12 @@ export default function Chat({ userId }) {
   const page = useRef(null)
   const follow = useRef(true)
   const updateViewport = useViewportSpring(page, 'chat')
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   useEffect(() => {
     if (location.state?.prompt) navigate(location.pathname + location.search, { replace: true, state: null })
@@ -135,9 +142,23 @@ export default function Chat({ userId }) {
       initial={reduced ? false : { opacity: 0.96, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={reduced ? { duration: 0 } : { y: pageSpring, opacity: softTransition }}
+      style={{
+        width: '100%',
+        maxWidth: isDesktop ? '980px' : '100%',
+        marginInline: 'auto',
+        borderInline: 'none',
+        background: 'transparent',
+      }}
     >
-      <header className="study-chat-header" style={{ gap: 12 }}>
-        <KiraAvatar />
+      <header
+        className="study-chat-header"
+        style={{
+          gap: 12,
+          borderRadius: isDesktop ? '0 0 24px 24px' : 0,
+          borderInline: isDesktop ? '1px solid rgba(226, 240, 255, 0.14)' : 'none',
+        }}
+      >
+        <KiraAvatar size={46} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
@@ -153,9 +174,9 @@ export default function Chat({ userId }) {
         {remaining !== null && (
           <span aria-live="polite" aria-label={`${remaining} mensagens restantes hoje`} style={{
             fontSize: 11, color: '#c8daf4', flexShrink: 0,
-            padding: '5px 11px', borderRadius: 999,
-            background: 'rgba(255, 255, 255, 0.07)',
-            border: '1px solid rgba(215, 232, 255, 0.16)',
+            padding: '5px 12px', borderRadius: 999,
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(215, 232, 255, 0.18)',
             fontVariantNumeric: 'tabular-nums',
           }}>
             {remaining}/{KIRA_DAILY_LIMIT} hoje
@@ -181,59 +202,79 @@ export default function Chat({ userId }) {
               alignItems: 'center',
               justifyContent: 'center',
               minHeight: '100%',
-              paddingBlock: '12px',
+              paddingBlock: isDesktop ? '24px' : '12px',
+              maxWidth: isDesktop ? '860px' : '100%',
+              marginInline: 'auto',
             }}
           >
-            <div
+            <motion.div
+              animate={reduced ? undefined : { y: [0, -5, 0] }}
+              transition={reduced ? undefined : { duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
               style={{
-                padding: '18px 24px 10px',
-                borderRadius: '32px',
-                background: 'radial-gradient(circle at 50% 40%, rgba(96, 165, 250, 0.18), rgba(14, 24, 42, 0.45))',
-                border: '1px solid rgba(215, 232, 255, 0.14)',
-                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 16px 36px rgba(0, 0, 0, 0.25)',
-                marginBottom: '16px',
+                padding: isDesktop ? '22px 32px 12px' : '18px 24px 10px',
+                borderRadius: '34px',
+                background: 'radial-gradient(circle at 50% 40%, rgba(96, 165, 250, 0.22), rgba(14, 24, 42, 0.52))',
+                border: '1px solid rgba(215, 232, 255, 0.18)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 18px 42px rgba(0, 0, 0, 0.28)',
+                marginBottom: '18px',
               }}
             >
-              <KiraAvatar size={126} hero />
-            </div>
+              <KiraAvatar size={isDesktop ? 142 : 124} hero />
+            </motion.div>
 
-            <motion.h2 {...fadeUp(0.04, reduced)} style={{ fontSize: '26px', fontWeight: 680, lineHeight: 1.12, color: '#f5f9ff', letterSpacing: '-0.035em', textAlign: 'center' }}>
+            <motion.h2 {...fadeUp(0.04, reduced)} style={{ fontSize: isDesktop ? '32px' : '26px', fontWeight: 680, lineHeight: 1.12, color: '#f5f9ff', letterSpacing: '-0.035em', textAlign: 'center' }}>
               O que vamos estudar hoje?
             </motion.h2>
-            <motion.p {...fadeUp(0.08, reduced)} style={{ color: '#b4c7e2', fontSize: 14, margin: '6px 0 20px', textAlign: 'center', maxWidth: '300px' }}>
+            <motion.p {...fadeUp(0.08, reduced)} style={{ color: '#b4c7e2', fontSize: isDesktop ? 15 : 14, margin: '8px 0 24px', textAlign: 'center', maxWidth: '420px' }}>
               Escolha um caminho abaixo ou envie sua dúvida para começar.
             </motion.p>
 
-            <div className="study-chat-starters" style={{ width: '100%', display: 'grid', gap: 10 }}>
+            <div
+              className="study-chat-starters"
+              style={{
+                width: '100%',
+                display: 'grid',
+                gridTemplateColumns: isDesktop ? 'repeat(3, minmax(0, 1fr))' : '1fr',
+                gap: isDesktop ? 14 : 10,
+              }}
+            >
               {prompts.map(({ Icon, color, label, subtitle, text }, i) => (
                 <motion.button
                   key={label}
                   type="button"
                   onClick={() => choose(text)}
+                  whileHover={reduced ? undefined : { y: -2, scale: 1.01 }}
+                  whileTap={reduced ? undefined : { scale: 0.98 }}
                   {...fadeUp(0.12 + i * 0.05, reduced)}
                   style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 13,
-                    padding: '12px 15px', borderRadius: 20,
-                    background: 'linear-gradient(145deg, rgba(24, 39, 64, 0.74), rgba(13, 23, 40, 0.84))',
-                    border: '1px solid rgba(215, 232, 255, 0.16)',
-                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.12)',
-                    cursor: 'pointer', textAlign: 'left',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: isDesktop ? 'column' : 'row',
+                    alignItems: isDesktop ? 'flex-start' : 'center',
+                    gap: isDesktop ? 12 : 13,
+                    padding: isDesktop ? '18px' : '12px 15px',
+                    borderRadius: 22,
+                    background: 'linear-gradient(150deg, rgba(26, 42, 68, 0.72), rgba(13, 23, 40, 0.84))',
+                    border: '1px solid rgba(215, 232, 255, 0.18)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 26px rgba(0, 0, 0, 0.2)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
                   }}
                 >
                   <div style={{
-                    width: 40, height: 40, borderRadius: 13, flexShrink: 0,
+                    width: 42, height: 42, borderRadius: 14, flexShrink: 0,
                     background: `${color}22`,
-                    border: `1px solid ${color}44`,
+                    border: `1px solid ${color}48`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color,
                   }}>
-                    <Icon size={19} strokeWidth={2} />
+                    <Icon size={20} strokeWidth={2} />
                   </div>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <strong style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#f0f6ff' }}>{label}</strong>
-                    <small style={{ display: 'block', fontSize: 12, color: '#9eb3d1', marginTop: 2 }}>{subtitle}</small>
+                    <strong style={{ display: 'block', fontSize: 15, fontWeight: 620, color: '#f0f6ff' }}>{label}</strong>
+                    <small style={{ display: 'block', fontSize: 12.5, color: '#9eb3d1', marginTop: 3, lineHeight: 1.35 }}>{subtitle}</small>
                   </span>
-                  <ChevronRight size={16} style={{ color: '#8ea8cc', flexShrink: 0 }} />
+                  {!isDesktop && <ChevronRight size={16} style={{ color: '#8ea8cc', flexShrink: 0 }} />}
                 </motion.button>
               ))}
             </div>
@@ -274,7 +315,7 @@ export default function Chat({ userId }) {
         )}
       </div>
 
-      <form onSubmit={submit} className="study-composer">
+      <form onSubmit={submit} className="study-composer" style={{ maxWidth: isDesktop ? '860px' : '100%', width: '100%', marginInline: 'auto' }}>
         <button type="button" className="study-activity-toggle" aria-pressed={activity} onClick={() => setActivity(value => !value)}>
           Resolver atividade
         </button>
@@ -287,15 +328,15 @@ export default function Chat({ userId }) {
           className="study-composer-field"
           style={{
             display: 'flex', alignItems: 'flex-end', gap: 8,
-            background: 'rgba(20, 32, 52, 0.92)',
-            border: '1px solid rgba(210, 230, 255, 0.22)',
+            background: 'rgba(20, 32, 52, 0.85)',
+            border: '1px solid rgba(210, 230, 255, 0.24)',
             borderRadius: 26,
             padding: '10px 10px 10px 16px',
-            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.14)',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 28px rgba(0, 0, 0, 0.22)',
             transition: 'border-color 0.15s',
           }}
           onFocusCapture={(e) => e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.65)'}
-          onBlurCapture={(e) => e.currentTarget.style.borderColor = 'rgba(210, 230, 255, 0.22)'}
+          onBlurCapture={(e) => e.currentTarget.style.borderColor = 'rgba(210, 230, 255, 0.24)'}
         >
           <PromptField
             fieldRef={field}

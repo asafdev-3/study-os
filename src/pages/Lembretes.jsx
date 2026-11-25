@@ -1,49 +1,42 @@
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Check, X } from 'lucide-react'
+import { m as motion, AnimatePresence } from 'framer-motion'
+import { Plus, Check, X, Trash2, StickyNote } from 'lucide-react'
+import { cardSpring, useStudyReducedMotion } from '../lib/motion'
 
 const filtros = ['Todos', 'Hoje', 'Semana', 'Sem prazo']
-const materiasForm = ['Química', 'Cálculo', 'História', 'Inglês', 'Física', 'Vida']
+const materiasForm = ['Química', 'Cálculo', 'História', 'Inglês', 'Física', 'Redação', 'Vida']
 
 const coresMaterias = {
   Química: '#A8D8D8',
   História: '#F5D08A',
   Inglês: '#C5B8E8',
   Cálculo: '#C8E6A0',
+  Física: '#93C5FD',
+  Redação: '#FBCFE8',
   Vida: '#F4A8A8',
-  Física: '#F4A8A8',
 }
-
-
 
 function ModalNovoPostit({ onClose, onSalvar }) {
   const [texto, setTexto] = useState('')
   const [materia, setMateria] = useState(null)
   const [prazo, setPrazo] = useState('')
   const [visivel, setVisivel] = useState(false)
-
   const textoRef = useRef(null)
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      setVisivel(true)
-    })
-
-    setTimeout(() => {
-      textoRef.current?.focus()
-    }, 300)
+    requestAnimationFrame(() => setVisivel(true))
+    const t = setTimeout(() => textoRef.current?.focus(), 220)
+    return () => clearTimeout(t)
   }, [])
 
   function fechar() {
     setVisivel(false)
-
-    setTimeout(() => {
-      onClose()
-    }, 180)
+    setTimeout(onClose, 180)
   }
 
   function handleSalvar() {
     if (!texto.trim()) return
-    onSalvar({ texto, materia, prazo })
+    onSalvar({ texto: texto.trim(), materia, prazo })
     fechar()
   }
 
@@ -52,176 +45,81 @@ function ModalNovoPostit({ onClose, onSalvar }) {
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-      style={{
-        opacity: visivel ? 1 : 0,
-        transition: 'opacity 180ms ease',
-      }}
+      style={{ opacity: visivel ? 1 : 0, transition: 'opacity 180ms ease' }}
     >
-      {/* BACKDROP */}
       <div
         className="absolute inset-0"
         onClick={fechar}
         style={{
-          background: 'rgba(0,0,0,0.68)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-          zIndex: 0,
+          background: 'rgba(4, 10, 20, 0.72)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
         }}
       />
 
-      {/* GLOW */}
       <div
-        className="absolute w-[260px] h-[260px] rounded-full pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(139,92,246,.13), transparent 68%)',
-          filter: 'blur(25px)',
-          zIndex: 1,
-        }}
-      />
-
-      {/* MODAL */}
-      <div
-        className="
-          relative
-          w-full
-          max-w-[370px]
-          rounded-[28px]
-          border border-white/[0.08]
-          overflow-hidden
-        "
+        className="relative w-full max-w-[400px] rounded-[28px] overflow-hidden"
         style={{
           zIndex: 10,
-          pointerEvents: 'auto',
-
-          background: 'rgba(22,30,44,0.78)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-
-          boxShadow:
-            '0 1px 1px rgba(255,255,255,.08) inset',
-
-          opacity: visivel ? 1 : 0,
-
-          transform: visivel
-            ? 'translateY(0) scale(1)'
-            : 'translateY(12px) scale(.965)',
-
-          transition:
-            'opacity 220ms cubic-bezier(.22,1,.36,1), transform 260ms cubic-bezier(.22,1,.36,1)',
+          background: 'linear-gradient(155deg, rgba(28, 44, 70, 0.84), rgba(13, 23, 40, 0.92))',
+          border: '1px solid rgba(226, 240, 255, 0.22)',
+          backdropFilter: 'blur(24px) saturate(185%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(185%)',
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 24px 60px rgba(0, 0, 0, 0.45)',
+          transform: visivel ? 'translateY(0) scale(1)' : 'translateY(14px) scale(0.96)',
+          transition: 'transform 240ms cubic-bezier(.22,1,.36,1)',
         }}
       >
-
-        {/* HEADER */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4">
           <div>
-            <p className="text-sm font-medium text-white">
-              Novo post-it
-            </p>
-
-            <p className="text-[10px] text-zinc-600 mt-1">
-              algo que você não pode esquecer
-            </p>
+            <p className="text-[15px] font-semibold text-white">Novo post-it</p>
+            <p className="text-[12px] text-[#9eb3d1] mt-0.5">Fixe um lembrete rápido no seu mural</p>
           </div>
-
           <button
             type="button"
             onClick={fechar}
-            className="
-              w-8 h-8
-              rounded-full
-              flex items-center justify-center
-              bg-white/[0.04]
-              border border-white/[0.06]
-              text-zinc-500
-            "
+            aria-label="Fechar"
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-white/[0.08] border border-white/[0.14] text-[#c8daf4]"
           >
-            <X size={15} />
+            <X size={16} />
           </button>
         </div>
 
-        <div className="h-px bg-white/[0.05]" />
-
-        {/* PREVIEW */}
-        <div className="px-5 pt-5">
+        <div className="px-5 pt-1">
           <div
-            className="rounded-[20px] p-4 min-h-[110px]"
+            className="rounded-[20px] p-4 min-h-[104px]"
             style={{
-              background: materia
-                ? `${coresMaterias[materia]}12`
-                : 'rgba(255,255,255,.025)',
-
-              border: `1px solid ${
-                materia
-                  ? `${coresMaterias[materia]}30`
-                  : 'rgba(255,255,255,.055)'
-              }`,
+              background: materia ? `${coresMaterias[materia]}18` : 'rgba(255, 255, 255, 0.04)',
+              border: `1px solid ${materia ? `${coresMaterias[materia]}45` : 'rgba(226, 240, 255, 0.14)'}`,
             }}
           >
             {materia && (
-              <p
-                className="text-[9px] tracking-[0.18em] uppercase mb-2"
-                style={{
-                  color: coresMaterias[materia],
-                }}
-              >
+              <p className="text-[10px] font-semibold tracking-[0.14em] uppercase mb-1.5" style={{ color: coresMaterias[materia] }}>
                 ● {materia}
               </p>
             )}
-
             <p className="text-[15px] text-white leading-relaxed">
-              {texto || (
-                <span className="text-zinc-700">
-                  seu lembrete aparece aqui...
-                </span>
-              )}
+              {texto || <span className="text-[#7b90b0]">Seu lembrete aparece aqui…</span>}
             </p>
-
-            {prazo && (
-              <p className="text-[10px] text-zinc-500 mt-4">
-                {formatarPrazo(prazo)}
-              </p>
-            )}
+            {prazo && <p className="text-[11px] text-[#9eb3d1] mt-3">{formatarPrazo(prazo)}</p>}
           </div>
         </div>
 
-        {/* MATÉRIA */}
         <div className="px-5 pt-4">
-          <p className="text-[9px] text-zinc-600 tracking-[0.18em] uppercase mb-2">
-            Matéria
-          </p>
-
-          <div className="flex gap-2 overflow-x-auto scrollbar-none">
-            {materiasForm.map(m => {
+          <p className="text-[10px] font-semibold text-[#9eb3d1] tracking-[0.14em] uppercase mb-2">Matéria</p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {materiasForm.map((m) => {
               const selecionada = materia === m
-
               return (
                 <button
                   type="button"
                   key={m}
-                  onClick={() =>
-                    setMateria(selecionada ? null : m)
-                  }
-                  className="
-                    flex-shrink-0
-                    px-3 py-1.5
-                    rounded-full
-                    text-[11px]
-                  "
+                  onClick={() => setMateria(selecionada ? null : m)}
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition"
                   style={{
-                    background: selecionada
-                      ? `${coresMaterias[m]}16`
-                      : 'rgba(255,255,255,.025)',
-
-                    border: `1px solid ${
-                      selecionada
-                        ? `${coresMaterias[m]}65`
-                        : 'rgba(255,255,255,.06)'
-                    }`,
-
-                    color: selecionada
-                      ? coresMaterias[m]
-                      : '#71717a',
+                    background: selecionada ? `${coresMaterias[m]}26` : 'rgba(255, 255, 255, 0.05)',
+                    border: `1px solid ${selecionada ? `${coresMaterias[m]}80` : 'rgba(226, 240, 255, 0.12)'}`,
+                    color: selecionada ? coresMaterias[m] : '#b4c7e2',
                   }}
                 >
                   {m}
@@ -231,101 +129,47 @@ function ModalNovoPostit({ onClose, onSalvar }) {
           </div>
         </div>
 
-        {/* INPUT */}
-        <div className="px-5 pt-4">
+        <div className="px-5 pt-3">
           <textarea
             ref={textoRef}
             value={texto}
-            onChange={e => setTexto(e.target.value)}
-            placeholder="O que precisa lembrar?"
-            className="
-              w-full
-              h-[82px]
-              resize-none
-              rounded-2xl
-              bg-white/[0.025]
-              border border-white/[0.06]
-              px-4 py-3
-              text-[16px]
-              text-white
-              outline-none
-              placeholder:text-zinc-700
-              focus:border-violet-500/40
-              transition
-            "
-            style={{
-              WebkitAppearance: 'none',
-              touchAction: 'manipulation',
-            }}
+            maxLength={160}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder="O que você não pode esquecer?"
+            className="w-full h-[82px] resize-none rounded-2xl bg-white/[0.05] border border-white/[0.14] px-4 py-3 text-[16px] text-white outline-none placeholder:text-[#7b90b0]"
           />
-
-          <div className="flex justify-end mt-1.5">
-            <span className="text-[9px] text-zinc-700">
-              {texto.length}/160
-            </span>
+          <div className="flex justify-end mt-1">
+            <span className="text-[10px] text-[#8ea5c6]">{texto.length}/160</span>
           </div>
         </div>
 
-        {/* PRAZO */}
         <div className="px-5 pt-2">
           <input
             type="datetime-local"
             value={prazo}
-            onChange={e => setPrazo(e.target.value)}
-            className="
-              w-full
-              rounded-2xl
-              bg-white/[0.025]
-              border border-white/[0.06]
-              px-4 py-3.5
-              text-[16px]
-              text-zinc-300
-              outline-none
-              focus:border-violet-500/40
-              transition
-            "
-            style={{
-              colorScheme: 'dark',
-              WebkitAppearance: 'none',
-              touchAction: 'manipulation',
-            }}
+            onChange={(e) => setPrazo(e.target.value)}
+            className="w-full rounded-2xl bg-white/[0.05] border border-white/[0.14] px-4 py-3 text-[15px] text-[#dce8fa] outline-none"
+            style={{ colorScheme: 'dark' }}
           />
         </div>
 
-        {/* AÇÕES */}
-        <div className="grid grid-cols-[1fr_1.35fr] gap-2.5 px-5 pt-5 pb-5">
+        <div className="grid grid-cols-[1fr_1.35fr] gap-2.5 px-5 pt-4 pb-5">
           <button
             type="button"
             onClick={fechar}
-            className="
-              h-11
-              rounded-2xl
-              border border-white/[0.06]
-              bg-white/[0.025]
-              text-sm
-              text-zinc-500
-            "
+            className="h-11 rounded-full border border-white/[0.14] bg-white/[0.05] text-sm font-medium text-[#b4c7e2]"
           >
             Cancelar
           </button>
-
           <button
             type="button"
             onClick={handleSalvar}
             disabled={!habilitado}
-            className="
-              h-11
-              rounded-2xl
-              text-sm
-              font-medium
-              transition
-            "
+            className="h-11 rounded-full text-sm font-semibold transition"
             style={{
-              color: habilitado ? '#fff' : '#52525b',
-
-              background: habilitado
-                ? 'linear-gradient(135deg,#7C3AED,#6366F1,#20B98B)'
-                : 'rgba(255,255,255,.035)',
+              color: habilitado ? '#0d1b30' : '#7185a3',
+              background: habilitado ? 'linear-gradient(145deg, #eef5ff, #c2dafc)' : 'rgba(255, 255, 255, 0.06)',
+              boxShadow: habilitado ? 'inset 0 1px 0 rgba(255,255,255,0.85), 0 8px 20px rgba(59,130,246,0.28)' : 'none',
             }}
           >
             Colar post-it
@@ -341,11 +185,11 @@ const PRAZO_SEMANA = ['amanhã', 'segunda', 'terça', 'quarta', 'quinta', 'sexta
 
 function formatarPrazo(prazo) {
   if (!prazo?.trim()) return 'sem prazo'
-  // Se é datetime-local (ex: 2026-10-10T23:00)
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(prazo)) {
     const d = new Date(prazo)
     const hoje = new Date()
-    const amanha = new Date(hoje); amanha.setDate(hoje.getDate() + 1)
+    const amanha = new Date(hoje)
+    amanha.setDate(hoje.getDate() + 1)
     const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     if (d.toDateString() === hoje.toDateString()) return `hoje · ${hora}`
     if (d.toDateString() === amanha.toDateString()) return `amanhã · ${hora}`
@@ -357,53 +201,55 @@ function formatarPrazo(prazo) {
 function matchFiltro(prazo, filtro) {
   if (filtro === 'Todos') return true
   const p = (prazo || '').toLowerCase()
-
-  // datetime-local ISO
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(prazo)) {
     const d = new Date(prazo)
     const hoje = new Date()
-    const fimSemana = new Date(hoje); fimSemana.setDate(hoje.getDate() + 7)
+    const fimSemana = new Date(hoje)
+    fimSemana.setDate(hoje.getDate() + 7)
     if (filtro === 'Hoje') return d.toDateString() === hoje.toDateString()
     if (filtro === 'Semana') return d >= hoje && d <= fimSemana
     if (filtro === 'Sem prazo') return false
   }
-
-  if (filtro === 'Hoje') return PRAZO_HOJE.some(k => p.includes(k))
-  if (filtro === 'Semana') return PRAZO_SEMANA.some(k => p.includes(k))
+  if (filtro === 'Hoje') return PRAZO_HOJE.some((k) => p.includes(k))
+  if (filtro === 'Semana') return PRAZO_SEMANA.some((k) => p.includes(k))
   if (filtro === 'Sem prazo') return !p || p === 'quando der' || p === '-' || p === 'sem prazo'
   return true
 }
 
 function Lembretes({ userId }) {
   const storageKey = `studyos:postits:${userId}`
+  const reduced = useStudyReducedMotion()
   const [ativo, setAtivo] = useState('Todos')
   const [itens, setItens] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey))
       return Array.isArray(saved) ? saved : []
-    } catch { return [] }
+    } catch {
+      return []
+    }
   })
-  useEffect(() => {
-    try { localStorage.setItem(storageKey, JSON.stringify(itens)) } catch { /* Storage unavailable. */ }
-  }, [storageKey, itens])
-  const [sheetAberto, setSheetAberto] = useState(false)
 
-  const itensFiltrados = itens.filter(i => matchFiltro(i.prazo, ativo))
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(itens))
+    } catch { /* Storage unavailable. */ }
+  }, [storageKey, itens])
+
+  const [sheetAberto, setSheetAberto] = useState(false)
+  const itensFiltrados = itens.filter((i) => matchFiltro(i.prazo, ativo))
+  const abertosCount = itens.filter((i) => !i.feito).length
 
   function toggleFeito(id) {
-    setItens(prev =>
-      prev.map(p =>
-        p.id === id
-          ? { ...p, feito: !p.feito }
-          : p
-      )
-    )
+    setItens((prev) => prev.map((p) => (p.id === id ? { ...p, feito: !p.feito } : p)))
+  }
+
+  function removerPostit(id) {
+    setItens((prev) => prev.filter((p) => p.id !== id))
   }
 
   function adicionarPostit({ texto, materia, prazo }) {
     const cor = materia ? coresMaterias[materia] : '#C5B8E8'
-    setItens(prev => [
-      ...prev,
+    setItens((prev) => [
       {
         id: crypto.randomUUID(),
         materia: (materia || 'GERAL').toUpperCase(),
@@ -412,146 +258,228 @@ function Lembretes({ userId }) {
         prazo: prazo?.trim() || 'sem prazo',
         feito: false,
       },
+      ...prev,
     ])
   }
 
   return (
-    <div className="study-postits text-white">
-      <div className="flex items-end justify-between pt-12 pb-1">
-        <div>
-          <h1 className="text-3xl font-semibold">
-            Post-its
-          </h1>
-
-          <p
-            style={{ fontFamily: 'Instrument Serif, serif' }}
-            className="text-[#a1a1aa] text-sm italic mt-0.5"
-          >
-            Uma ideia por vez.
-          </p>
-        </div>
-
-        <span className="text-[#a1a1aa] text-xs mb-1">
-          {itens.filter(i => !i.feito).length} abertos
-        </span>
-      </div>
-
-      <div className="flex gap-2 mt-4 mb-5">
-        {filtros.map(f => (
-          <button
-            key={f}
-            onClick={() => setAtivo(f)}
-            className={`
-              px-3 py-1.5
-              rounded-full
-              text-xs
-              border
-              transition
-              ${
-                ativo === f
-                  ? 'bg-white text-black border-white'
-                  : 'text-[#a1a1aa] border-[#26262e]'
-              }
-            `}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      {itensFiltrados.length === 0 && (
-        <p className="study-postits-empty">
-          Sua mesa está livre. Use + para guardar uma tarefa.
-        </p>
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        {itensFiltrados.map(
-          ({ id, materia, cor, texto, prazo, feito }) => (
-            <div
-              key={id}
-              className="study-paper-postit relative p-4 flex flex-col justify-between min-h-[160px]"
-              style={{
-                '--postit-color': cor,
-                '--postit-radius': `${16 + (itens.findIndex(item => item.id === id) % 4) * 2}px`,
-                transform: `rotate(${
-                  (itens.findIndex(item => item.id === id) % 5) - 2
-                }deg)`,
-              }}
-            >
-              <span className="study-postit-pin" aria-hidden="true" />
-
-              <div>
-                <p className="text-[10px] tracking-widest text-black/50 uppercase mb-2">
-                  {materia}
-                </p>
-
-                <p
-                  className={`
-                    text-sm
-                    font-medium
-                    text-black
-                    leading-snug
-                    ${
-                      feito
-                        ? 'line-through opacity-50'
-                        : ''
-                    }
-                  `}
-                >
-                  {texto}
-                </p>
-              </div>
-
-              <div className="study-postit-footer flex items-center justify-between mt-4">
-                <p className="text-[10px] text-black/50">
-                  {formatarPrazo(prazo)}
-                </p>
-
-                <button
-                  onClick={() => toggleFeito(id)}
-                  aria-label={feito ? "Marcar como pendente: " + texto : "Concluir: " + texto}
-                  aria-pressed={feito}
-                  className="study-postit-complete"
-                >
-                  <span aria-hidden="true">{feito && <Check size={12} />}</span>
-                  {feito ? 'Concluído' : 'Concluir'}
-                </button>
-              </div>
-            </div>
-          )
-        )}
-      </div>
-
-      <button
-        aria-label="Novo post-it"
-        onClick={() => setSheetAberto(true)}
-        className="
-          fixed
-          study-postits-add
-          w-12 h-12
-          rounded-full
-          flex
-          items-center
-          justify-center
-          shadow-xl
-          transition-transform
-          active:scale-90
-        "
+    <div className="study-postits" style={{ paddingTop: '8px', paddingBottom: '28px' }}>
+      {/* Cabeçalho do Mural */}
+      <div
         style={{
-          background:
-            'linear-gradient(135deg, #8B5CF6, #6366F1, #22D3A0)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          padding: '16px 18px',
+          borderRadius: '22px',
+          background: 'linear-gradient(150deg, rgba(26, 42, 68, 0.72), rgba(14, 24, 42, 0.82))',
+          border: '1px solid rgba(226, 240, 255, 0.16)',
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16)',
+          marginBottom: '16px',
         }}
       >
-        <Plus size={22} className="text-white" />
-      </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '13px',
+              background: 'rgba(245, 208, 138, 0.18)',
+              border: '1px solid rgba(245, 208, 138, 0.36)',
+              color: '#F5D08A',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            <StickyNote size={19} />
+          </span>
+          <div>
+            <h2 style={{ fontSize: '17px', fontWeight: 650, color: '#f5f9ff', margin: 0 }}>Mural de Revisão</h2>
+            <p style={{ fontSize: '12px', color: '#9eb3d1', margin: '2px 0 0' }}>
+              {abertosCount === 0 ? 'Tudo em dia por aqui' : `${abertosCount} ${abertosCount === 1 ? 'lembrete ativo' : 'lembretes ativos'}`}
+            </p>
+          </div>
+        </div>
 
-      {sheetAberto && (
-        <ModalNovoPostit
-          onClose={() => setSheetAberto(false)}
-          onSalvar={adicionarPostit}
-        />
+        <button
+          type="button"
+          onClick={() => setSheetAberto(true)}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            minHeight: '40px',
+            padding: '0 15px',
+            borderRadius: '999px',
+            background: 'linear-gradient(145deg, #eef5ff, #c5dcfb)',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 6px 18px rgba(37, 99, 235, 0.25)',
+            color: '#0e1d34',
+            fontSize: '13px',
+            fontWeight: 650,
+            cursor: 'pointer',
+          }}
+        >
+          <Plus size={16} />
+          <span>Novo</span>
+        </button>
+      </div>
+
+      {/* Filtros em pílula */}
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
+        {filtros.map((f) => {
+          const selected = ativo === f
+          return (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setAtivo(f)}
+              style={{
+                minHeight: '36px',
+                padding: '0 14px',
+                borderRadius: '999px',
+                fontSize: '12.5px',
+                fontWeight: selected ? 620 : 500,
+                background: selected
+                  ? 'linear-gradient(145deg, rgba(164, 202, 255, 0.28), rgba(86, 132, 214, 0.22))'
+                  : 'rgba(18, 30, 50, 0.65)',
+                border: selected ? '1px solid rgba(226, 240, 255, 0.32)' : '1px solid rgba(226, 240, 255, 0.14)',
+                color: selected ? '#ffffff' : '#a9bdd8',
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+              }}
+            >
+              {f}
+            </button>
+          )
+        })}
+      </div>
+
+      {itensFiltrados.length === 0 ? (
+        <div
+          style={{
+            padding: '36px 20px',
+            borderRadius: '24px',
+            textAlign: 'center',
+            background: 'rgba(18, 30, 50, 0.55)',
+            border: '1px dashed rgba(226, 240, 255, 0.2)',
+          }}
+        >
+          <p style={{ fontSize: '14px', color: '#b4c7e2', margin: 0 }}>
+            Sua mesa está livre. Toque em <strong>+ Novo</strong> para colar um post-it.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+          <AnimatePresence initial={false}>
+            {itensFiltrados.map(({ id, materia, cor, texto, prazo, feito }, idx) => (
+              <motion.article
+                key={id}
+                layout={!reduced}
+                initial={reduced ? false : { opacity: 0, y: 12, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1, rotate: (idx % 3) - 1 }}
+                exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
+                transition={reduced ? { duration: 0 } : cardSpring}
+                className="study-paper-postit relative p-4 flex flex-col justify-between min-h-[168px]"
+                style={{
+                  '--postit-color': cor,
+                  borderRadius: '18px',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        color: 'rgba(24, 32, 46, 0.68)',
+                      }}
+                    >
+                      {materia}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removerPostit(id)}
+                      aria-label={`Remover post-it: ${texto}`}
+                      style={{
+                        width: '26px',
+                        height: '26px',
+                        borderRadius: '999px',
+                        display: 'grid',
+                        placeItems: 'center',
+                        background: 'rgba(24, 32, 46, 0.08)',
+                        border: 'none',
+                        color: 'rgba(24, 32, 46, 0.65)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+
+                  <p
+                    style={{
+                      fontSize: '14.5px',
+                      fontWeight: 560,
+                      color: '#1e2634',
+                      lineHeight: 1.42,
+                      textDecoration: feito ? 'line-through' : 'none',
+                      opacity: feito ? 0.55 : 1,
+                    }}
+                  >
+                    {texto}
+                  </p>
+                </div>
+
+                <div
+                  className="study-postit-footer"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginTop: '14px',
+                    paddingTop: '10px',
+                    borderTop: '1px solid rgba(30, 38, 52, 0.14)',
+                  }}
+                >
+                  <span style={{ fontSize: '11px', color: 'rgba(30, 38, 52, 0.65)', fontWeight: 500 }}>
+                    {formatarPrazo(prazo)}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleFeito(id)}
+                    aria-label={feito ? 'Marcar como pendente: ' + texto : 'Concluir: ' + texto}
+                    aria-pressed={feito}
+                    className="study-postit-complete"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '11.5px',
+                      fontWeight: 650,
+                      color: '#1e2634',
+                      background: feito ? 'rgba(16, 185, 129, 0.24)' : 'rgba(30, 38, 52, 0.08)',
+                      padding: '4px 10px',
+                      borderRadius: '999px',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {feito && <Check size={12} />}
+                    <span>{feito ? 'Feito' : 'Concluir'}</span>
+                  </button>
+                </div>
+              </motion.article>
+            ))}
+          </AnimatePresence>
+        </div>
       )}
+
+      {sheetAberto && <ModalNovoPostit onClose={() => setSheetAberto(false)} onSalvar={adicionarPostit} />}
     </div>
   )
 }
