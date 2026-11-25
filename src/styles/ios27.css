@@ -152,3 +152,14 @@ body:has(.study-navigation):not(:has(.study-room))::before { background:none; }
   background:#1b2d44;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:#90a6c4;
  }
 }
+/* Android/touch: desativa backdrop-filter para evitar travamento de GPU em dispositivos fracos.
+   iOS usa hover:hover (mouse virtual ausente em touch), então a glass permanece lá. */
+@media(hover:none) and (pointer:coarse) {
+ :root {--ios27-filter:none;--ios27-glass-alpha:.96;}
+ :is(.ios27-glass,.glass,.glass-deep,.glass-raised,.glass-sm,.glass-violet,.glass-blue,.glass-green,
+ .glass-sidebar,.glass-toast,.study-navigation-inner,.study-topbar a,.study-room-dock,
+ .study-composer-field,.study-room-nfc,.study-tone-picker,.study-book-new) {
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  background:rgba(17,24,38,var(--ios27-glass-alpha));
+ }
+}

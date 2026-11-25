@@ -248,6 +248,21 @@
 .animate-fade-up   { animation: gl-fade-up .5s cubic-bezier(.22,1,.36,1) both; }
 .animate-pulse-glow{ animation: gl-pulse-glow 2.4s ease-in-out infinite; }
 
+/* Android/touch: zera blur das variáveis glass para dispositivos sem GPU dedicada */
+@media(hover:none) and (pointer:coarse) {
+ :root {
+  --gl-blur:none;
+  --gl-blur-sm:none;
+  --gl-bg:rgba(10,10,14,.95);
+  --gl-bg-deep:rgba(10,10,14,.97);
+ }
+ .glass-sidebar {-webkit-backdrop-filter:none;backdrop-filter:none;}
+ .glass-toast {-webkit-backdrop-filter:none;backdrop-filter:none;}
+ .input-glass {backdrop-filter:none;}
+ .btn-ghost {-webkit-backdrop-filter:none;backdrop-filter:none;}
+ .btn-danger {backdrop-filter:none;}
+}
+
 /* ── Desktop offset (Tailwind não processa classes dinâmicas, força aqui) ── */
 @media (min-width: 768px) {
   .md\:pl-\[88px\] {
