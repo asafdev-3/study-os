@@ -18,10 +18,11 @@ function mainSubject(value) {
   return subjects[Array.isArray(keys) ? keys[0] : keys]
 }
 
+const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
+
 export default function Dashboard() {
   const navigate = useNavigate()
   useEffect(() => {
-    // Keep the dashboard scrollable, including on smaller iPhones.
     window.scrollTo(0, 0)
   }, [])
   const [profile, setProfile] = useState(null)
@@ -30,8 +31,9 @@ export default function Dashboard() {
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [now] = useState(Date.now)
-  const reducedMotion = useStudyReducedMotion()
-  const [rainPaused, setRainPaused] = useState(false)
+  const android = isAndroidDevice()
+  const reducedMotion = useStudyReducedMotion() || android
+  const [rainPaused, setRainPaused] = useState(() => android)
   const [rainHidden, setRainHidden] = useState(() => document.hidden)
 
   useEffect(() => {
@@ -67,9 +69,11 @@ export default function Dashboard() {
 
   return (
     <main className="study-room study-page study-home-v2">
-      <div className="study-home-rain" aria-hidden="true">
-        <RainWindow still={reducedMotion || rainPaused || rainHidden} />
-      </div>
+      {!android && (
+        <div className="study-home-rain" aria-hidden="true">
+          <RainWindow still={reducedMotion || rainPaused || rainHidden} />
+        </div>
+      )}
       <div className="study-room-shade" aria-hidden="true" />
 
       <div className="study-room-content">
@@ -79,7 +83,7 @@ export default function Dashboard() {
             <span>Study<span>OS</span><small>SUA SALA DE ESTUDO</small></span>
           </div>
           <div className="study-room-header-actions">
-            {!reducedMotion && (
+            {!reducedMotion && !android && (
               <button
                 type="button"
                 className="study-home-rain-toggle"

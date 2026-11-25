@@ -1,13 +1,13 @@
 /* Persistent tab/navigation layer, one composited content transition.
    The browser snapshots only the content region, not the full window. */
 @supports (view-transition-name: none) {
-  html[data-study-transition="crossfade"] .study-route-stage {
+  html:not(.is-android)[data-study-transition="crossfade"] .study-route-stage {
     view-transition-name: study-screen;
   }
-  html[data-study-transition="crossfade"] .study-navigation {
+  html:not(.is-android)[data-study-transition="crossfade"] .study-navigation {
     view-transition-name: study-tabs;
   }
-  html[data-study-transition="crossfade"] .study-topbar {
+  html:not(.is-android)[data-study-transition="crossfade"] .study-topbar {
     view-transition-name: study-toolbar;
   }
 
@@ -16,18 +16,20 @@
   html::view-transition-old(study-tabs),
   html::view-transition-new(study-tabs),
   html::view-transition-old(study-toolbar),
-  html::view-transition-new(study-toolbar) {
-    animation-duration: 0s;
+  html::view-transition-new(study-toolbar),
+  html.is-android::view-transition-old(study-screen),
+  html.is-android::view-transition-new(study-screen) {
+    animation-duration: 0s !important;
   }
 
-  html::view-transition-group(study-screen) {
+  html:not(.is-android)::view-transition-group(study-screen) {
     animation-duration: 220ms;
     animation-timing-function: cubic-bezier(.22,1,.36,1);
   }
-  html::view-transition-old(study-screen) {
+  html:not(.is-android)::view-transition-old(study-screen) {
     animation: study-screen-away 220ms cubic-bezier(.22,1,.36,1) both;
   }
-  html::view-transition-new(study-screen) {
+  html:not(.is-android)::view-transition-new(study-screen) {
     animation: study-screen-arrive 220ms cubic-bezier(.22,1,.36,1) both;
   }
   @keyframes study-screen-away {
@@ -40,9 +42,61 @@
     100% { opacity:1; transform:none; }
   }
 }
+
+/* Android Lite Mode: zero backdrop-filter, zero box-shadow bloat, crisp dark surfaces */
+html.is-android .study-navigation-inner,
+html.is-android .study-tab-indicator,
+html.is-android .study-room-header-actions .study-room-nfc,
+html.is-android .study-room-header-actions .study-home-rain-toggle,
+html.is-android .study-topbar a,
+html.is-android .study-nfc-back,
+html.is-android .study-nfc-buttons .study-primary,
+html.is-android .study-nfc-write,
+html.is-android .study-paper-postit,
+html.is-android .study-area-options,
+html.is-android .glass,
+html.is-android .glass-deep,
+html.is-android .glass-raised,
+html.is-android .glass-sm,
+html.is-android .glass-sidebar,
+html.is-android .glass-toast {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.is-android .study-navigation-inner {
+  background: #141c2b !important;
+  border-color: rgba(180, 200, 235, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.is-android .study-tab-indicator {
+  background: #273552 !important;
+  border-color: rgba(180, 205, 250, 0.22) !important;
+  box-shadow: none !important;
+}
+
+html.is-android .study-room-header-actions .study-room-nfc,
+html.is-android .study-topbar a,
+html.is-android .study-nfc-back,
+html.is-android .study-nfc-buttons .study-primary,
+html.is-android .study-nfc-write {
+  background: #192438 !important;
+  box-shadow: none !important;
+}
+
+html.is-android .study-paper-postit {
+  background: color-mix(in srgb, var(--postit-color, #c5b8e8) 18%, #162033) !important;
+  box-shadow: none !important;
+}
+
+html.is-android .study-route-blur {
+  display: none !important;
+}
+
 /* An ENEM segment changes only the inner panel; don't fade the entire route. */
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
+  html:not(.is-android):not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
     animation:study-segment-enter 180ms cubic-bezier(.22,1,.36,1) both;
   }
   @keyframes study-segment-enter {
