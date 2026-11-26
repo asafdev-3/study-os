@@ -3,22 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { X, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const conquistas = [
-  {
-    id: 1, emoji: '🦉', nome: 'Coruja',
-    desc: '10 sessões depois das 23h',
-    detalhe: 'Complete 10 sessões de estudo entre 23h e meia-noite.',
-  },
-  {
-    id: 2, emoji: '🔥', nome: 'Fôlego',
-    desc: 'Uma semana inteira sem quebrar sequência',
-    detalhe: 'Sete dias consecutivos de estudo sem falhar.',
-  },
-  {
-    id: 3, emoji: '🗺️', nome: 'Cartógrafo',
-    desc: '50 anotações organizadas pela IA',
-    detalhe: 'Organize 50 anotações com a ajuda da Kira para desbloquear.',
-  },
+const metasMensais = [
+  { id: 'primeira', emoji: '🌱', nome: 'Primeiro passo', desc: 'Conclua uma sessão', meta: 1, tipo: 'sessoes' },
+  { id: 'retorno', emoji: '🗓️', nome: 'Voltei', desc: 'Estude em dois dias diferentes', meta: 2, tipo: 'dias' },
+  { id: 'ritmo', emoji: '🔥', nome: 'Em ritmo', desc: 'Conclua três sessões', meta: 3, tipo: 'sessoes' },
+  { id: 'semana', emoji: '✨', nome: 'Presença', desc: 'Estude em três dias diferentes', meta: 3, tipo: 'dias' },
 ]
 
 const XP_POR_SESSAO = 30
@@ -152,6 +141,7 @@ function Perfil() {
   const [conquistaSelecionada, setConquistaSelecionada] = useState(null)
   const [perfil, setPerfil] = useState(null)
   const [user, setUser] = useState(null)
+  const [notasCriadas, setNotasCriadas] = useState(null)
   const [sessoes, setSessoes] = useState(null)
   const [erroSessoes, setErroSessoes] = useState(false)
   const [erroPerfil, setErroPerfil] = useState(false)
@@ -171,6 +161,8 @@ function Perfil() {
         .eq('id', user.id)
         .maybeSingle()
       await Promise.allSettled([
+        Promise.resolve(supabase.from('annotations').select('id', {count:'exact', head:true}).eq('user_id',user.id))
+          .then(({count,error}) => { if (ativo && !error) setNotasCriadas(count) }),
         Promise.resolve(perfilQuery).then(({ data, error }) => {
           if (!ativo) return
           if (error) setErroPerfil(true)
@@ -196,10 +188,14 @@ function Perfil() {
   const nivel = Math.floor(xpAtual / XP_POR_NIVEL) + 1
   const xpProximo = nivel * XP_POR_NIVEL
   const pct = (xpAtual % XP_POR_NIVEL) / XP_POR_NIVEL * 100
-  const conquistasAtuais = conquistas.map((conquista, i) => ({
-    ...conquista,
-    desbloqueada: i === 0 ? noturnas >= 10 : i === 1 && recorde >= 7,
-  }))
+  const mes = chaveDiaLocal(new Date()).slice(0, 7)
+  const diasDoMes = (sessoes ?? []).map(s => chaveDiaLocal(new Date(s.created_at))).filter(dia => dia.startsWith(mes))
+  const contagens = { sessoes: diasDoMes.length, dias: new Set(diasDoMes).size }
+  const conquistasAtuais = metasMensais.map(meta => {
+    const progresso = Math.min(meta.meta, contagens[meta.tipo])
+    return { ...meta, progresso, desbloqueada: progresso === meta.meta,
+      detalhe: meta.desc + ' neste mês. As metas recomeçam no primeiro dia do próximo mês.' }
+  })
 
   return (
     <div className="study-page min-h-dvh max-w-lg mx-auto px-4">
@@ -306,7 +302,7 @@ function Perfil() {
       </div>
 
       {/* Conquistas */}
-      <p className="text-[#a1a1aa] text-[10px] tracking-widest uppercase mb-3">Conquistas</p>
+      <p className="text-[#a1a1aa] text-[10px] tracking-widest uppercase mb-3">Conquistas de {new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date())}</p>
       <div className="flex flex-col gap-2">
         {conquistasAtuais.map((conquista) => (
           <button
@@ -322,10 +318,17 @@ function Perfil() {
               <p className={`text-sm font-medium ${!conquista.desbloqueada && 'text-[#a1a1aa]'}`}>{conquista.nome}</p>
               <p className="text-[#a1a1aa] text-xs mt-0.5">{conquista.desc}</p>
             </div>
-            <span className="text-[#a1a1aa] text-xs flex-shrink-0">{conquista.desbloqueada ? 'Concluída' : 'Pendente'}</span>
+            <span className="text-[#a1a1aa] text-xs flex-shrink-0">{conquista.desbloqueada ? 'Concluída' : conquista.progresso + ' / ' + conquista.meta}</span>
           </button>
         ))}
       </div>
+
+      <details className="study-nfc-help">
+        <summary>Marcos de estudo</summary>
+        <p>Coruja · {Math.min(noturnas, 10)}/10 sessões após as 23h</p>
+        <p>Cartógrafo · {notasCriadas == null ? "…" : Math.min(notasCriadas, 50)}/50 anotações no caderno</p>
+        <p>Fôlego · {Math.min(recorde, 7)}/7 dias consecutivos</p>
+      </details>
 
       {conquistaSelecionada && (
         <ModalConquista conquista={conquistaSelecionada} onClose={() => setConquistaSelecionada(null)} />

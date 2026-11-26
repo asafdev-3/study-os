@@ -14,11 +14,14 @@ async function stripe(path, key, options = {}) {
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store')
-  if (req.method !== 'POST') return res.status(405).json({ code: 'METHOD_NOT_ALLOWED' })
   const { STRIPE_SECRET_KEY: key, STUDYOS_SITE_URL: site, VITE_SUPABASE_URL: supabase,
     VITE_SUPABASE_ANON_KEY: anonKey } = process.env
   // Esta integração libera exclusivamente o sandbox até existir confirmação de assinatura.
-  if (!key?.startsWith('sk_test_') || !site || !supabase || !anonKey) {
+  const configured = Boolean(key?.startsWith('sk_test_') && site?.startsWith('https://') && supabase && anonKey
+    && Object.values(plans).every(plan => /^price_[A-Za-z0-9]+$/.test(process.env[plan.variable] ?? '')))
+  if (req.method === 'GET') return res.status(200).json({ available: configured, mode: 'test' })
+  if (req.method !== 'POST') return res.status(405).json({ code: 'METHOD_NOT_ALLOWED' })
+  if (!configured) {
     return res.status(503).json({ code: 'CHECKOUT_NOT_CONFIGURED' })
   }
   const authorization = req.headers.authorization

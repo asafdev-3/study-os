@@ -2,26 +2,20 @@ import { preloadStudyRoute } from './studyRoutes'
 
 const primaryPaths = ['/dashboard', '/anotacoes', '/chat', '/enem', '/perfil', '/configuracoes']
 
-// Pré-carrega as rotas principais em segundo plano quando o navegador estiver ocioso
-if (typeof window !== 'undefined') {
-  const warmRoutes = () => {
-    primaryPaths.forEach((path) => {
-      try { void preloadStudyRoute(path) } catch { /* ignore */ }
-    })
-  }
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(warmRoutes, { timeout: 1800 })
-  } else {
-    window.setTimeout(warmRoutes, 900)
-  }
-}
-
 export function transitionTo(change) {
   change()
 }
 
+let resetTransition
 export function transitionRoute(path, change) {
-  try { void preloadStudyRoute(path) } catch { /* ignore */ }
+  const root = document.documentElement
+  const reduced = root.dataset.studyMotion === 'reduced' || matchMedia('(prefers-reduced-motion: reduce)').matches
+  clearTimeout(resetTransition)
+  if (!reduced) {
+    root.dataset.studyTransition = 'crossfade'
+    resetTransition = setTimeout(() => { delete root.dataset.studyTransition }, 180)
+  }
+  void preloadStudyRoute(path)?.catch(() => {})
   change()
 }
 

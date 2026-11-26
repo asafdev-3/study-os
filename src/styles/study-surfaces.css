@@ -1,0 +1,87 @@
+/* One stationary photo behind the routed content keeps the scene stable between tabs. */
+.study-scenery {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(165deg, #0c172bab, #0c172bd9 62%, #0b1321ef),
+    url('../assets/autumn-rain.webp') center / cover;
+}
+@media (max-width: 700px) {
+  .study-scenery { background-image: linear-gradient(165deg, #0c172ba6, #0c172bd4 62%, #0b1321ef), url('../assets/autumn-rain-mobile.webp'); }
+}
+.study-route-stage[data-scenic] { position: relative; background: transparent; }
+.study-route-stage[data-scenic] .study-page { background: transparent; }
+.study-enem::before { display: none; }
+.study-route-stage .study-chat {
+  position: fixed;
+  inset: var(--chat-top, 0px) 0 auto;
+  background: transparent !important;
+  box-shadow: none;
+  width: 100%;
+  padding-inline: max(14px, calc((100% - 848px) / 2));
+}
+.study-chat .study-chat-header { margin-inline: 0; align-items: center; }
+.study-chat .study-chat-header > div { display: grid; gap: 3px; }
+.study-chat .study-chat-header p { position: static; }
+.study-chat .study-chat-header > .study-kira-character { margin-left: 0; }
+.study-chat .study-chat-empty { justify-content: safe center !important; }
+.study-chat-empty .study-kira-character--hero { margin: 0 auto 12px; }
+.study-chat .study-chat-log { scrollbar-width: thin; }
+.study-chat .study-chat-header, .study-chat .study-composer-field {
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+}
+@media (min-width: 768px) {
+  .study-route-stage .study-chat {
+    left: 88px;
+    width: calc(100% - 88px) !important;
+    padding: 18px max(22px, calc((100% - 940px) / 2)) 20px;
+  }
+  .study-chat .study-chat-header { border-radius: 20px !important; }
+}
+.kira-lid {
+  position: absolute;
+  top: 35.5%;
+  width: 7.2%;
+  height: 20.8%;
+  border-radius: 24%;
+  background: linear-gradient(#101d32 20%, #080d1b 84%, #427091);
+  transform: scaleY(0);
+  transform-origin: center top;
+  pointer-events: none;
+}
+.kira-lid-left { left: 35.1%; }
+.kira-lid-right { left: 68.2%; }
+html:not([data-study-motion="reduced"]) .study-kira-character:hover img { transform: none; }
+.settings-search {
+  width: 100%; min-height: 46px; border: 1px solid #d6e7ff3b;
+  background: #15233cc9; color: white; padding: 10px 16px; border-radius: 15px;
+}
+.settings-search::placeholder { color: #b5c3d6; }
+.study-enem .study-enem-tabs { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); width: 100%; }
+.study-enem .study-enem-segment { padding-inline: 2px; min-width: 0; font-size: clamp(11px, 2.6vw, 14px); }
+.study-enem .enem-practice-hero { padding: clamp(18px,4vw,36px); background: linear-gradient(135deg,#263852df,#14233be8); }
+.study-enem .enem-practice-section { background: #17243ad9; }
+.nfc-intro { display: grid; gap: 14px; align-items: center; margin-block: 18px; text-align: left; }
+.nfc-intro h1 { margin: 0 0 8px; font-size: clamp(32px,6vw,50px); }
+.nfc-intro p { margin: 0; max-width: 40ch; color: #d2deee; line-height: 1.55; }
+.nfc-intro .study-setup-animation { width: 100%; height: 155px; margin: 0; }
+@media (min-width: 680px) { .nfc-intro { grid-template-columns: 1.25fr 1fr; } }
+.study-book-writing { position: relative; transform-origin: left center; }
+.study-book-writing[data-backward="true"] { transform-origin: right center; }
+@keyframes kira-eyelid { 0%, 50%, 54%, 100% { transform: scaleY(0); } 52% { transform: scaleY(1); } }
+@keyframes nfc-approach { 0%,100% { transform: translateX(-15px) rotate(-6deg); } 55%,76% { transform: translateX(13px) rotate(1deg); } }
+@keyframes leaf-turn { from { transform: perspective(950px) rotateY(var(--turn-angle,-32deg)); opacity: .72; } to { transform: perspective(950px) rotateY(0); opacity: 1; } }
+@keyframes leaf-shadow { from { opacity: .6; transform: scaleX(1); } to { opacity: 0; transform: scaleX(.08); } }
+@keyframes tab-arrival { from { opacity: .86; } to { opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) .kira-lid { animation: kira-eyelid 4.6s ease-in-out infinite; }
+  html:not([data-study-motion="reduced"]) .nfc-intro .setup-nfc-phone { animation: nfc-approach 2.6s ease-in-out 3; }
+  html:not([data-study-motion="reduced"]) .study-book-writing { animation: leaf-turn 250ms ease-out both; }
+  .study-book-writing[data-backward="true"] { --turn-angle: 32deg; }
+  html:not([data-study-motion="reduced"]) .study-book-writing::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; transform-origin: inherit;
+    background: linear-gradient(90deg,#70583d50,transparent 55%); animation: leaf-shadow 250ms ease-out both;
+  }
+  html:not([data-study-motion="reduced"]) .study-page-enter { animation: tab-arrival 160ms ease-out; }
+}

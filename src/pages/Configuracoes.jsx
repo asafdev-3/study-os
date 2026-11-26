@@ -51,6 +51,9 @@ export default function Configuracoes() {
   const { secao } = useParams()
   const navigate = useNavigate()
   const [preferences, setPreferences] = useState(readPreferences)
+  const [search, setSearch] = useState('')
+  const normalize = text => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  const groups = GROUPS.map(group => group.filter(item => normalize(item.name + ' ' + item.subtitle).includes(normalize(search.trim()))))
   const [notice, setNotice] = useState('')
   const [pending, setPending] = useState(false)
 
@@ -164,7 +167,9 @@ export default function Configuracoes() {
 
       {!secao && (
         <div style={{ display: 'grid', gap: '16px' }}>
-          {GROUPS.map((group, groupIndex) => (
+          <input className="settings-search" type="search" aria-label="Buscar ajustes" placeholder="Buscar ajustes" value={search} onChange={e => setSearch(e.target.value)} />
+          {groups.every(group => !group.length) && <p>Nenhum ajuste encontrado.</p>}
+          {groups.map((group, groupIndex) => group.length > 0 && (
             <section key={groupIndex} style={cardStyle}>
               {group.map(({ id, name, subtitle, Icon, bg }, rowIndex) => (
                 <Link
@@ -213,9 +218,7 @@ export default function Configuracoes() {
           <InstallAnimation />
           <h2>Seu espaço de estudo, sempre à mão.</h2>
           <p>O StudyOS é um aplicativo web instalável (PWA). Adicione-o à tela inicial sem baixar pela App Store ou Play Store.</p>
-          <div className="study-install-platform"><h3>iPhone e iPad</h3><ol><li>Abra o StudyOS no Safari.</li><li>Toque em Compartilhar.</li><li>Escolha <strong>Adicionar à Tela de Início</strong> e confirme.</li></ol></div>
-          <div className="study-install-platform"><h3>Android</h3><ol><li>Abra o StudyOS no Chrome.</li><li>Toque no menu de três pontos.</li><li>Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</li></ol></div>
-          <p className="study-note">A instalação cria um atalho com experiência de aplicativo.</p>
+          <button type="button" className="study-primary" onClick={() => window.dispatchEvent(new Event('studyos:install'))}>Adicionar à tela inicial</button>
         </section>
       )}
 

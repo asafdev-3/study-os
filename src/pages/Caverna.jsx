@@ -44,7 +44,6 @@ function Caverna() {
       deadlineRef.current = null
       return
     }
-    deadlineRef.current = Date.now() + segundos * 1000
     let blinkTimer = null
 
     const tick = () => {
@@ -76,6 +75,12 @@ function Caverna() {
       document.removeEventListener('visibilitychange', tick)
     }
   }, [rodando, modo])
+
+  function toggleTimer() {
+    if (concluido) { resetar(); return }
+    if (!rodando) deadlineRef.current = Date.now() + segundos * 1000
+    setRodando(!rodando)
+  }
 
   function resetar() {
     deadlineRef.current = null
@@ -293,7 +298,7 @@ function Caverna() {
 
         <button
           type="button"
-          onClick={() => (concluido ? resetar() : setRodando(r => !r))}
+          onClick={toggleTimer}
           aria-label={rodando ? 'Pausar sessão' : 'Iniciar sessão'}
           style={{
             width: '74px',

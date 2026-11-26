@@ -2,21 +2,12 @@ import { useEffect } from 'react'
 import { m as motion, MotionConfig, LazyMotion, domAnimation } from 'framer-motion'
 import { pageSpring, softTransition, useStudyReducedMotion } from '../lib/motion'
 import { readPreferences } from '../lib/preferences'
-import { installFoldBlur } from '../lib/foldBlur'
 
 const isAndroid = () => document.documentElement.classList.contains('is-android')
-const isMobileViewport = () => window.matchMedia('(max-width: 767px)').matches
 
 export function StudyMotion({ children }) {
   const systemReduced = useStudyReducedMotion()
-  const android = isAndroid()
-  const reduced = systemReduced || android
-
-  useEffect(() => {
-    // Ativa foldBlur apenas em desktop para não causar repaints em telas móveis
-    if (android || isMobileViewport()) return
-    return installFoldBlur()
-  }, [android])
+  const reduced = systemReduced
 
   useEffect(() => {
     const syncPrefs = () => {

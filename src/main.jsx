@@ -53,6 +53,13 @@ if (typeof window !== 'undefined') {
   })
 }
 
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault()
+  window.studyInstallPrompt = event
+  window.dispatchEvent(new Event('studyos:install-ready'))
+})
+window.addEventListener('appinstalled', () => { window.studyInstallPrompt = null })
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

@@ -239,7 +239,8 @@ export default function EnemScreen({ userId }) {
   }
 
   const tabs = [
-    [fromNfc ? "foco" : "praticar", fromNfc ? "Foco" : "Praticar"],
+    ["praticar", "Praticar"],
+    ["foco", "Foco"],
     ["postits", "Post-its"],
     ["corte", "Ingresso"],
     ["kira", "Kira"],
@@ -248,10 +249,9 @@ export default function EnemScreen({ userId }) {
   const paneMotion = reduced
     ? { initial: false, animate: { opacity: 1 } }
     : {
-        initial: { opacity: 0, y: 10 },
+        initial: { opacity: .86, y: 3 },
         animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: -6 },
-        transition: cardSpring,
+        transition: { duration: .16 },
       };
 
   return (
@@ -273,10 +273,10 @@ export default function EnemScreen({ userId }) {
       >
         <div>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 650, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9ec5ff', marginBottom: '4px' }}>
-            <GraduationCap size={14} /> Preparação Oficial
+            <GraduationCap size={14} /> Sala de estudos
           </span>
           <h1>Modo ENEM</h1>
-          <p>Simulados TRI, mural de revisão e notas de corte.</p>
+          <p>Pratique por matéria, revise seus post-its ou reserve 25 minutos para focar.</p>
         </div>
       </motion.header>
 
@@ -312,7 +312,7 @@ export default function EnemScreen({ userId }) {
           </motion.div>
         )}
 
-        {fromNfc && tab === "foco" && (
+        {tab === "foco" && (
           <motion.div key="foco" className="study-enem-pane" {...paneMotion}>
             <SessaoFoco key={userId} userId={userId} />
           </motion.div>

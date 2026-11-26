@@ -135,6 +135,7 @@ function ModalNovoPostit({ onClose, onSalvar }) {
             value={texto}
             maxLength={160}
             onChange={(e) => setTexto(e.target.value)}
+            aria-label="Texto do post-it"
             placeholder="O que você não pode esquecer?"
             className="w-full h-[82px] resize-none rounded-2xl bg-white/[0.05] border border-white/[0.14] px-4 py-3 text-[16px] text-white outline-none placeholder:text-[#7b90b0]"
           />
@@ -304,6 +305,7 @@ function Lembretes({ userId }) {
 
         <button
           type="button"
+          aria-label="Novo post-it"
           onClick={() => setSheetAberto(true)}
           style={{
             display: 'inline-flex',

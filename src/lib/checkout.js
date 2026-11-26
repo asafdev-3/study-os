@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 export async function callCheckout(body) {
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) throw new Error('Entre com Google antes de abrir o checkout.')
+  if (!session) throw new Error('Entre na sua conta antes de abrir o checkout.')
   const response = await fetch('/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },

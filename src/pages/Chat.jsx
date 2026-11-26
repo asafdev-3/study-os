@@ -144,7 +144,7 @@ export default function Chat({ userId }) {
       transition={reduced ? { duration: 0 } : { y: pageSpring, opacity: softTransition }}
       style={{
         width: '100%',
-        maxWidth: isDesktop ? '980px' : '100%',
+        maxWidth: 'none',
         marginInline: 'auto',
         borderInline: 'none',
         background: 'transparent',
@@ -207,20 +207,7 @@ export default function Chat({ userId }) {
               marginInline: 'auto',
             }}
           >
-            <motion.div
-              animate={reduced ? undefined : { y: [0, -5, 0] }}
-              transition={reduced ? undefined : { duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
-              style={{
-                padding: isDesktop ? '22px 32px 12px' : '18px 24px 10px',
-                borderRadius: '34px',
-                background: 'radial-gradient(circle at 50% 40%, rgba(96, 165, 250, 0.22), rgba(14, 24, 42, 0.52))',
-                border: '1px solid rgba(215, 232, 255, 0.18)',
-                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 18px 42px rgba(0, 0, 0, 0.28)',
-                marginBottom: '18px',
-              }}
-            >
-              <KiraAvatar size={isDesktop ? 142 : 124} hero />
-            </motion.div>
+            <KiraAvatar size={isDesktop ? 142 : 110} hero />
 
             <motion.h2 {...fadeUp(0.04, reduced)} style={{ fontSize: isDesktop ? '32px' : '26px', fontWeight: 680, lineHeight: 1.12, color: '#f5f9ff', letterSpacing: '-0.035em', textAlign: 'center' }}>
               O que vamos estudar hoje?

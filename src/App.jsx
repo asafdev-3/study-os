@@ -17,6 +17,8 @@ import './components/glass.css'
 import './styles/ios27.css'
 import './styles/ios27-transitions.css'
 import './styles/apple-polish.css'
+import './styles/study-surfaces.css'
+import InstallPwaModal from './components/InstallPwaModal'
 
 const Lock = lazy(() => import('./pages/Lock'))
 const Dashboard = lazy(loadStudyRoute['/dashboard'])
@@ -108,11 +110,13 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
 
   return (
     <>
+      {comSidebar && location.pathname !== '/dashboard' && <div aria-hidden="true" className="study-scenery" />}
+      {comSidebar && <InstallPwaModal auto={location.pathname === '/dashboard'} />}
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
       {comSidebar && <FoldableTransition screen={location.pathname} />}
       {comSidebar && <PaywallModal />}
-      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
+      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} data-scenic={comSidebar && location.pathname !== '/dashboard' || undefined} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />
         </Suspense>
@@ -122,10 +126,6 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
 }
 
 function StudySession() {
-  useEffect(() => {
-    document.documentElement.dataset.studyMotion = readPreferences().reduceMotion ? 'reduced' : 'system'
-  }, [])
-
   const [auth, setAuth] = useState({ session: undefined, locked: false })
 
   useEffect(() => {

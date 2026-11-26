@@ -77,6 +77,7 @@ try {
     await page.getByRole('heading', { name: 'Olá, Vitor.' }).waitFor()
     if (width < 768) {
       await page.waitForTimeout(400)
+      await page.locator('.study-room-dock').evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
       const dock = await page.locator('.study-room-dock').boundingBox()
       const bar = await page.locator('.study-navigation').boundingBox()
       assert(dock.y + dock.height <= bar.y + 4, 'Home actions must clear navbar: ' + JSON.stringify({dock,bar}))
@@ -92,7 +93,7 @@ try {
     await page.screenshot({ path: 'qa.local/enem-practice-' + width + '.png' })
     await page.getByRole('group', { name:'Seções do modo ENEM' }).getByRole('button', { name:'Post-its', exact:true }).click()
     await page.getByRole('button', { name:'Novo post-it' }).click()
-    await page.getByPlaceholder('O que precisa lembrar?').fill('Revisar porcentagem e resolver duas questões.')
+    await page.getByRole('textbox', { name: 'Texto do post-it' }).fill('Revisar porcentagem e resolver duas questões.')
     await page.getByRole('button', { name:'Colar post-it' }).click()
     await page.locator('.study-paper-postit').waitFor()
     const radius = await page.locator('.study-paper-postit').evaluate(el => parseFloat(getComputedStyle(el).borderTopLeftRadius))

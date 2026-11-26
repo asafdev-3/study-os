@@ -116,6 +116,7 @@ export default function Anotacoes() {
   const navigate = useNavigate()
   const linkedNote = params.get('nota')
   const activeArea = Object.hasOwn(areas, params.get('area')) ? params.get('area') : ''
+  const [backward, setBackward] = useState(false)
   const [indexOpen, setIndexOpen] = useState(false)
   const [notes, setNotes] = useState(null)
   const [error, setError] = useState(false)
@@ -273,7 +274,7 @@ export default function Anotacoes() {
           <span className="study-book-ribbon" aria-hidden="true" />
           <div className="study-book-top"><span>Caderno de estudos</span><span>{editor ? 'Escrevendo' : selected ? String(selectedIndex + 1).padStart(2, '0') : '01'}</span></div>
           {editor ? <NovaNota key={editor.id || 'new'} initial={editor} onSave={save} onCancel={() => setEditor(null)} /> : <>
-            <article className="study-book-writing">
+            <article key={selected?.id} data-backward={backward} className="study-book-writing">
               <small>{selected ? areas[selected.area] ?? 'Geral' : 'Página em branco'}</small>
               <h2>{selected?.title || (term || activeArea ? 'Nenhuma página encontrada' : 'Sua primeira página')}</h2>
               <div className="study-book-lines"><p>{selected ? selected.content || 'Sem texto.' : term || activeArea ? 'Tente outra palavra ou escolha outra área no índice.' : 'Guarde uma ideia, organize o que aprendeu ou traga uma explicação da Kira para cá.'}</p></div>
@@ -284,9 +285,9 @@ export default function Anotacoes() {
               </div> : !term && !activeArea && <button type="button" className="study-book-start" onClick={() => setEditor({ area: 'geral' })}><Pencil size={16} aria-hidden="true" /> Escrever primeira página</button>}
             </article>
             <nav className="study-book-pager" aria-label="Navegar no caderno">
-              <button type="button" aria-label="Página anterior" disabled={!selected || selectedIndex === 0} onClick={() => selectNote(filtered[selectedIndex - 1].id)}><ArrowLeft size={18} /></button>
+              <button type="button" aria-label="Página anterior" disabled={!selected || selectedIndex === 0} onClick={() => { setBackward(true); selectNote(filtered[selectedIndex - 1].id) } }><ArrowLeft size={18} /></button>
               <span aria-live="polite">{selected ? `Página ${selectedIndex + 1} de ${filtered.length}` : 'Seu caderno, no seu ritmo.'}</span>
-              <button type="button" aria-label="Próxima página" disabled={!selected || selectedIndex >= filtered.length - 1} onClick={() => selectNote(filtered[selectedIndex + 1].id)}><ArrowRight size={18} /></button>
+              <button type="button" aria-label="Próxima página" disabled={!selected || selectedIndex >= filtered.length - 1} onClick={() => { setBackward(false); selectNote(filtered[selectedIndex + 1].id) } }><ArrowRight size={18} /></button>
             </nav>
           </>}
         </section>

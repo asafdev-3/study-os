@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, Copy, Radio, Smartphone, Timer } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Copy, Smartphone, Timer } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
 import { supabase } from '../lib/supabase'
@@ -90,11 +90,11 @@ export default function NFC() {
         <p className="study-nfc-description">25 minutos, uma matéria. Se já existe uma sessão, vamos retomar de onde você parou.</p>
         <button type="button" className="study-primary" disabled={busy} onClick={startFocus}>{busy ? 'Preparando…' : 'Entrar em foco'}<ArrowRight size={17} aria-hidden="true" /></button>
       </> : <>
-        <div className="study-nfc-symbol"><Radio size={34} strokeWidth={1.2} aria-hidden="true" /></div>
-        {!android && <NfcAnimation />}
-        <p className="study-nfc-eyebrow">DO PAPEL PARA O DIGITAL</p>
-        <h1>Um toque.<br /><em>Seu espaço.</em></h1>
-        <p className="study-nfc-description">Uma etiqueta na mesa abre o Modo Caverna. No caderno, abre a matéria. Escolha o que você quer encontrar.</p>
+        <header className="nfc-intro">
+          <div><h1>Etiqueta NFC</h1>
+          <p>Escolha o que abrir ao encostar o celular na etiqueta. Você pode testar o destino antes de gravar.</p></div>
+          <NfcAnimation />
+        </header>
         {action && <p role="alert" className="study-note">Este atalho não é válido. Crie um novo destino abaixo.</p>}
         <section className="study-nfc-builder" aria-label="Configurar etiqueta NFC">
           <label className={type === 'caverna' ? 'study-nfc-url' : ''}>
@@ -128,9 +128,9 @@ export default function NFC() {
           </div>
           {'NDEFReader' in window && <button className="study-nfc-write" type="button" disabled={!url} onClick={busy ? () => controller.current?.abort() : write}>{busy ? 'Cancelar gravação' : 'Gravar na etiqueta com este celular'}</button>}
         </section>
-        <details className="study-nfc-help" open>
-          <summary><Smartphone size={18} aria-hidden="true" />Como usar no iPhone</summary>
-          <ol><li>Copie o link e grave na etiqueta como <strong>URL</strong>, usando um aplicativo de gravação NFC.</li><li>Aproxime a parte superior do iPhone da etiqueta, com a tela ligada.</li><li>Toque na notificação para abrir o destino. Entre na sua conta, se necessário.</li></ol>
+        <details className="study-nfc-help">
+          <summary><Smartphone size={18} aria-hidden="true" />{android ? "Como usar no Android" : "Como usar no iPhone"}</summary>
+          <ol><li>Copie o link e grave na etiqueta como <strong>URL</strong>, {'NDEFReader' in window ? 'ou use o botão de gravação acima.' : 'usando um aplicativo de gravação NFC.'}</li><li>{android ? "Ative o NFC e aproxime a traseira do celular da etiqueta." : "Aproxime a parte superior do iPhone da etiqueta, com a tela ligada."}</li><li>Toque na notificação para abrir o destino. Entre na sua conta, se necessário.</li></ol>
           <p>No Safari, a gravação é feita pelo aplicativo externo. No Android com navegador compatível, a opção de gravar aparece acima. Não bloqueie a etiqueta contra regravação: você poderá atualizar o endereço quando trocar de domínio.</p>
         </details>
       </>}

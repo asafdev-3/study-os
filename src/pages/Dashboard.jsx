@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
 import { KiraAvatar } from '../components/KiraAvatar'
 import RainWindow from '../components/RainWindow'
-import InstallPwaModal from '../components/InstallPwaModal'
+
 import { useStudyReducedMotion } from '../lib/motion'
 import './Dashboard.css'
 
@@ -89,7 +89,6 @@ export default function Dashboard() {
 
   return (
     <main className="study-room study-page study-home-v2">
-      <InstallPwaModal />
 
       {/* Fundo da sala sem chuva caindo, mantendo apenas as gotas de condensação no vidro */}
       <div className="study-home-rain" aria-hidden="true">

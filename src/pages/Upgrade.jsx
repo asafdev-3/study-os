@@ -2,9 +2,9 @@
 // Rota: /upgrade
 // Animação: stagger hierárquico — header → hero → recursos (cascata) → planos → CTA
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import { ArrowLeft, Check, Zap } from 'lucide-react'
 import { callCheckout } from '../lib/checkout'
 
@@ -51,6 +51,15 @@ function Upgrade() {
   const [selecionado, setSelecionado] = useState('anual')
   const [checkoutError, setCheckoutError] = useState('')
   const [opening, setOpening] = useState(false)
+  const [available, setAvailable] = useState(null)
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/checkout', {signal: controller.signal})
+      .then(async response => response.ok && (await response.json()).available === true)
+      .then(setAvailable)
+      .catch(() => { if (!controller.signal.aborted) setAvailable(false) })
+    return () => controller.abort()
+  }, [])
   const checkoutAttempt = useRef(null)
 
   async function openCheckout() {
@@ -307,7 +316,7 @@ function Upgrade() {
       >
         <button
           onClick={openCheckout}
-          disabled={opening}
+          disabled={opening || available !== true}
           style={{
             width: '100%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -324,7 +333,7 @@ function Upgrade() {
           }}
         >
           <Zap size={15} color="#ffffff" />
-          {opening ? 'Abrindo checkout…' : 'Abrir checkout de teste'}
+          {opening ? 'Abrindo checkout…' : available === null ? 'Verificando checkout…' : available ? 'Abrir checkout de teste' : 'Checkout indisponível'}
         </button>
 
         {checkoutError && <p role="alert" className="study-note text-rose-300">{checkoutError}</p>}

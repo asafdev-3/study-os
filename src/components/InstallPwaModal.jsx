@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Download, PlusSquare, Share, Sparkles, X } from 'lucide-react'
 
 const DISMISS_KEY = 'studyos:pwa-modal-dismissed'
@@ -13,42 +13,36 @@ function isIosDevice() {
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 }
 
-export default function InstallPwaModal() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null)
+export default function InstallPwaModal({ auto }) {
+  const [deferredPrompt, setDeferredPrompt] = useState(() => window.studyInstallPrompt)
   const [open, setOpen] = useState(false)
   const [installing, setInstalling] = useState(false)
+  const dialog = useRef(null)
   const ios = isIosDevice()
 
   useEffect(() => {
-    if (isStandalone()) return
-    if (sessionStorage.getItem(DISMISS_KEY) === '1') return
-
-    const onBeforeInstall = (event) => {
-      event.preventDefault()
-      setDeferredPrompt(event)
-      setOpen(true)
+    const show = () => setOpen(true)
+    const eligible = () => auto && !isStandalone() && sessionStorage.getItem(DISMISS_KEY) !== '1'
+    const ready = () => {
+      setDeferredPrompt(window.studyInstallPrompt)
+      if (eligible()) show()
     }
-
-    const onAppInstalled = () => {
-      setDeferredPrompt(null)
-      setOpen(false)
-    }
-
-    window.addEventListener('beforeinstallprompt', onBeforeInstall)
-    window.addEventListener('appinstalled', onAppInstalled)
-
-    // No iOS Safari não existe beforeinstallprompt: exibe o modal de orientação após 2.5s
-    let iosTimer = null
-    if (ios) {
-      iosTimer = window.setTimeout(() => setOpen(true), 2500)
-    }
-
+    const installed = () => { setDeferredPrompt(null); setOpen(false) }
+    const timer = (!window.studyInstallPrompt && /Android/i.test(navigator.userAgent) || ios || window.studyInstallPrompt) && eligible() ? setTimeout(show, 2500) : null
+    window.addEventListener('studyos:install', show)
+    window.addEventListener('studyos:install-ready', ready)
+    window.addEventListener('appinstalled', installed)
     return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstall)
-      window.removeEventListener('appinstalled', onAppInstalled)
-      if (iosTimer) clearTimeout(iosTimer)
+      clearTimeout(timer)
+      window.removeEventListener('studyos:install', show)
+      window.removeEventListener('studyos:install-ready', ready)
+      window.removeEventListener('appinstalled', installed)
     }
-  }, [ios])
+  }, [ios, auto])
+
+  useEffect(() => {
+    if (open && dialog.current && !dialog.current.open) dialog.current.showModal()
+  }, [open])
 
   function close() {
     sessionStorage.setItem(DISMISS_KEY, '1')
@@ -64,7 +58,10 @@ export default function InstallPwaModal() {
       if (choice?.outcome === 'accepted') {
         setOpen(false)
       }
+    } catch {
+      setOpen(true)
     } finally {
+      window.studyInstallPrompt = null
       setDeferredPrompt(null)
       setInstalling(false)
     }
@@ -73,14 +70,16 @@ export default function InstallPwaModal() {
   if (!open) return null
 
   return (
-    <div
-      role="dialog"
+    <dialog
+      ref={dialog}
+      onCancel={close}
       aria-modal="true"
       aria-labelledby="pwa-modal-title"
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
+        width: '100%', height: '100%', maxWidth: 'none', maxHeight: 'none', border: 0,
         display: 'grid',
         placeItems: 'center',
         padding: '20px',
@@ -131,7 +130,7 @@ export default function InstallPwaModal() {
           />
           <div>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', letterSpacing: '0.08em', color: '#9ec5ff', textTransform: 'uppercase', fontWeight: 600 }}>
-              <Sparkles size={12} /> App Nativo
+              <Sparkles size={12} /> Tela inicial
             </span>
             <h2 id="pwa-modal-title" style={{ margin: '2px 0 0', fontSize: '19px', fontWeight: 650, letterSpacing: '-0.02em' }}>
               Instalar o StudyOS
@@ -140,10 +139,10 @@ export default function InstallPwaModal() {
         </div>
 
         <p style={{ margin: '0 0 18px', fontSize: '14px', lineHeight: 1.5, color: '#c8d6ea' }}>
-          Tenha acesso em tela cheia sem barra do navegador, abertura instantânea e uso offline na sua tela inicial.
+          Abra sua sala de estudos pelo ícone do StudyOS.
         </p>
 
-        {deferredPrompt ? (
+        {isStandalone() ? <p>O StudyOS já está instalado neste dispositivo.</p> : deferredPrompt ? (
           <button
             type="button"
             onClick={installNow}
@@ -165,9 +164,9 @@ export default function InstallPwaModal() {
             }}
           >
             <Download size={18} />
-            {installing ? 'Instalando…' : 'Instalar automaticamente'}
+            {installing ? 'Instalando…' : 'Instalar StudyOS'}
           </button>
-        ) : (
+        ) : !ios ? <p>Abra o menu do navegador e selecione <strong>Instalar aplicativo</strong> ou <strong>Adicionar à tela inicial</strong>. No Android, use o Chrome se a opção estiver ausente.</p> : (
           <div
             style={{
               display: 'grid',
@@ -208,6 +207,6 @@ export default function InstallPwaModal() {
           Agora não
         </button>
       </div>
-    </div>
+    </dialog>
   )
 }
