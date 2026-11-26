@@ -1,0 +1,44 @@
+#studyos-passage {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 44%, #202f4c, #0c1522 68%);
+  opacity: 0;
+}
+
+#studyos-passage img {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  box-shadow: 0 16px 50px #03071285;
+}
+
+html[data-study-passage="leaving"] #studyos-passage {
+  opacity: 1;
+  transition: opacity 180ms cubic-bezier(.22,1,.36,1);
+}
+
+html[data-study-passage="leaving"] #studyos-passage img {
+  animation: passage-mark-in 180ms cubic-bezier(.22,1,.36,1) both;
+}
+
+html[data-study-passage="arriving"] #studyos-passage { opacity: 1; }
+
+html[data-study-passage="revealing"] #studyos-passage {
+  animation: passage-reveal 420ms cubic-bezier(.22,1,.36,1) both;
+}
+
+html[data-study-passage="revealing"] #studyos-passage img {
+  animation: passage-mark-out 420ms cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes passage-mark-in { from { transform: scale(.8); opacity: 0; } }
+@keyframes passage-reveal { from { opacity: 1; } to { opacity: 0; } }
+@keyframes passage-mark-out { to { transform: scale(1.12); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  #studyos-passage { display: none; }
+}

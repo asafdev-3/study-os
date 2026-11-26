@@ -117,7 +117,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
       {comSidebar && <InstallPwaModal auto={location.pathname === '/dashboard'} />}
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
-      {comSidebar && <FoldableTransition screen={location.pathname} />}
+      {comSidebar && <FoldableTransition />}
       {comSidebar && <PaywallModal />}
       <div style={{ paddingLeft: comSidebar ? undefined : 0 }} data-scene={scene} data-scenic={scenic || undefined} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
         <Suspense fallback={<TelaCarregando />}>

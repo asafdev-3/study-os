@@ -39,7 +39,7 @@ export function PageMotion({ children }) {
   const reduced = useStudyReducedMotion()
   return (
     <motion.div key={pathname} className="study-page-enter"
-      initial={reduced ? false : { opacity: .86 }}
+      initial={reduced ? false : { opacity: .92 }}
       animate={{ opacity: 1 }}
       transition={reduced ? { duration: 0 } : softTransition}>
       {children}

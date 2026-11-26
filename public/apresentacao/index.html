@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-study-landing>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +8,7 @@
   <title>StudyOS — Estude com sistema.</title>
   <link rel="icon" href="/apresentacao/logo.webp" />
   <link rel="stylesheet" href="/apresentacao/styles.css" />
+  <link rel="stylesheet" href="/apresentacao/passagem.css" />
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -25,7 +26,7 @@
       <a href="#pro">Pro</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <a class="nav-cta" href="/login">Entrar <span>↗</span></a>
+    <a class="nav-cta" data-open-studyos href="/login">Entrar <span>↗</span></a>
   </header>
 
   <main>
@@ -37,7 +38,7 @@
         <h1>Você não precisa estudar mais.<br><em>Precisa estudar melhor.</em></h1>
         <p class="hero-sub">O StudyOS transforma anotações, rotina, dúvidas e foco em um único sistema. Com a Kira ao seu lado, você sabe o que estudar, quando revisar e quando parar de se distrair.</p>
         <div class="hero-actions">
-          <a href="/login?modo=cadastro" class="button primary">Começar grátis <span>→</span></a>
+          <a data-open-studyos href="/login?modo=cadastro" class="button primary">Começar grátis <span>→</span></a>
           <a href="#demo" class="button ghost">Testar demonstração</a>
         </div>
         <div class="trust-line">
@@ -361,7 +362,7 @@
             <li><span>✓</span>Post-its infinitos</li>
             <li><span>✓</span>Histórico completo de estudos</li>
           </ul>
-          <a href="/upgrade" class="button primary full">Ver planos <span>→</span></a>
+          <a data-open-studyos href="/upgrade" class="button primary full">Ver planos <span>→</span></a>
           <small class="legal">Checkout de demonstração, sem cobrança real.</small>
         </div>
       </div>
@@ -371,7 +372,7 @@
       <img src="/apresentacao/logo.webp" alt="" />
       <p>Você já tem conteúdo suficiente.</p>
       <h2>Agora precisa de um sistema.</h2>
-      <a href="/login?modo=cadastro" class="button white">Começar no StudyOS <span>→</span></a>
+      <a data-open-studyos href="/login?modo=cadastro" class="button white">Começar no StudyOS <span>→</span></a>
     </section>
 
     <section class="faq section-light" id="faq">
@@ -398,6 +399,7 @@
     <div class="footer-bottom"><span>© 2026 StudyOS</span><span>Feito para aprender melhor.</span></div>
   </footer>
 
+  <script src="/apresentacao/passagem.js"></script>
   <script src="/apresentacao/script.js"></script>
 </body>
 </html>
