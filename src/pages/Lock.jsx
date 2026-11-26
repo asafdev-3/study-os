@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Fingerprint, Moon, Sun } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+import { preloadStudyRoute } from '../lib/studyRoutes'
+import { useStudyReducedMotion } from '../lib/motion'
+
 const HOLD_DURATION = 800
 
 const timeFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -12,6 +15,9 @@ export default function Lock({ onUnlock }) {
   const location = useLocation()
   const [now, setNow] = useState(() => new Date())
   const [phase, setPhase] = useState('idle')
+  const reduced = useStudyReducedMotion()
+  const destination = location.state?.destino ?? '/dashboard'
+  useEffect(() => { void preloadStudyRoute(destination)?.catch(() => {}) }, [destination])
   const frame = useRef(0)
   const active = useRef(null)
   const ring = useRef(null)
@@ -76,8 +82,8 @@ export default function Lock({ onUnlock }) {
       setPhase('confirmed')
       timer.current = setTimeout(() => {
         onUnlock()
-        navigate(location.state?.destino ?? '/dashboard', { replace: true })
-      }, 180)
+        navigate(destination, { replace: true })
+      }, reduced ? 0 : 480)
     }
     function paint() {
       if (!active.current) return
@@ -140,7 +146,7 @@ export default function Lock({ onUnlock }) {
           </svg>
           {phase === 'confirmed' ? <Check size={28} strokeWidth={1.7} aria-hidden="true" /> : <Fingerprint size={32} strokeWidth={1.5} aria-hidden="true" />}
         </button>
-        <p id="study-lock-status" role="status">{phase === 'confirmed' ? 'Leitura concluída!' : phase === 'scan' ? 'Escaneando... Mantenha pressionado' : phase === 'cancelled' ? 'Cancelado! Segure até o fim para concluir' : 'Segure um instante para entrar'}</p>
+        <p id="study-lock-status" role="status">{phase === 'confirmed' ? 'Desbloqueado' : phase === 'scan' ? 'Escaneando... Mantenha pressionado' : phase === 'cancelled' ? 'Segure até o círculo se completar' : 'Segure um instante para entrar'}</p>
       </div>
     </main>
   )

@@ -51,7 +51,7 @@
       const layer = cover()
       layer.getBoundingClientRect()
       root.dataset.studyPassage = 'leaving'
-      setTimeout(() => location.assign(destination.href), 180)
+      setTimeout(() => location.assign(destination.href), 380)
     })
     return
   }
@@ -69,8 +69,9 @@
   const observer = new MutationObserver(() => {
     if (document.querySelector('main, .study-upgrade, .study-room')) reveal()
   })
-  const timeout = setTimeout(reveal, 3200)
+  const timeout = setTimeout(reveal, 5200)
   observer.observe(document.getElementById('root'), { childList: true, subtree: true })
+  if (document.querySelector('main, .study-upgrade, .study-room')) reveal()
 
   function reveal() {
     observer.disconnect()
@@ -80,7 +81,7 @@
       setTimeout(() => {
         layer.remove()
         delete root.dataset.studyPassage
-      }, 440)
-    }, Math.max(0, 1350 - (performance.now() - started)))
+      }, 640)
+    }, Math.max(0, 2700 - (performance.now() - started)))
   }
 })()

@@ -2,7 +2,7 @@ import { transitionTo, transitionRoute } from '../lib/routeTransition';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { useViewportSpring } from '../lib/useViewportSpring';
 import { kiraMessageMotion } from '../lib/kiraMotion';
-import { useStudyReducedMotion, pageSpring, cardSpring, softTransition } from '../lib/motion';
+import { useStudyReducedMotion } from '../lib/motion';
 import { KiraAvatar } from '../components/KiraAvatar'
 import PromptField from '../components/PromptField';
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import EnemAdmissions from "../components/EnemAdmissions";
 import EnemPractice from "../components/EnemPractice";
 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { ArrowUp, BookmarkPlus, ChevronRight, GraduationCap, RotateCcw } from "lucide-react";
+import { ArrowUp, BookmarkPlus, ChevronRight, RotateCcw } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { FOCUS_SECONDS, readFocus } from "../lib/focus";
 import { notifyFocus } from "../lib/preferences";
@@ -29,9 +29,7 @@ const AREAS = [
 const QUICK_PROMPTS = [
   "O que estudar hoje",
   "Dica de redação",
-  "Resumo de CN",
   "Simulado rápido",
-  "Cronograma final",
 ];
 
 const BOLSAS = [
@@ -165,7 +163,7 @@ function SessaoFoco({ userId }) {
       </div>
       {done && <div className="study-note">
         <p role="status">{saveState === "idle" ? "Salvando sessão…" : saveState === "saved"
-          ? `Sessão registrada · +30 XP` : "Falha ao salvar a sessão."}</p>
+          ? `Sessão registrada` : "Falha ao salvar a sessão."}</p>
         {saveState === "error" && <button type="button" onClick={retrySave}>Tentar novamente</button>}
       </div>}
     </section>
@@ -250,9 +248,9 @@ export default function EnemScreen({ userId }) {
   const paneMotion = reduced
     ? { initial: false, animate: { opacity: 1 } }
     : {
-        initial: { opacity: .86, y: 3 },
+        initial: { opacity: .45, y: 5 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: .16 },
+        transition: { duration: .28, ease: [.22, 1, .36, 1] },
       };
 
   return (
@@ -262,25 +260,8 @@ export default function EnemScreen({ userId }) {
       data-chat-active={tab === "kira" || undefined}
       className="study-page study-enem"
       data-switched={switched || undefined}
-      initial={reduced ? false : { opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={reduced ? { duration: 0 } : { y: pageSpring, opacity: softTransition }}
     >
-      <motion.header
-        className="study-enem-header"
-        initial={reduced ? false : { opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={reduced ? { duration: 0 } : { ...cardSpring, delay: 0.03 }}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}
-      >
-        <div>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 650, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9ec5ff', marginBottom: '4px' }}>
-            <GraduationCap size={14} /> Sala de estudos
-          </span>
-          <h1>Modo ENEM</h1>
-          <p>Pratique por matéria, revise seus post-its ou reserve 25 minutos para focar.</p>
-        </div>
-      </motion.header>
+      <header className="study-enem-header"><h1>ENEM</h1></header>
 
       <div className="study-enem-tabs" role="group" aria-label="Seções do modo ENEM">
         {tabs.map(([id, label]) => {
@@ -355,7 +336,7 @@ export default function EnemScreen({ userId }) {
             <div className="study-enem-conversation" ref={log}>
               {messages.length === 0 && !loading && (
                 <div className="enem-kira-welcome">
-                  <KiraAvatar size={104} hero />
+                  <KiraAvatar size={50} />
                   <h3>O que vamos revisar?</h3>
                   <div className="study-enem-prompts">
                   {QUICK_PROMPTS.map((prompt, index) => <button key={prompt} style={{ "--prompt-order": index }} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}

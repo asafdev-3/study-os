@@ -37,11 +37,12 @@ try {
    background:getComputedStyle(element).backgroundColor,
    radius:parseFloat(getComputedStyle(element).borderTopLeftRadius),
   }))
-  assert(navStyle.blur.includes(width < 768 ? 'blur(18px)' : 'blur(24px)'),JSON.stringify(navStyle))
+  assert(navStyle.blur.includes('blur(12px)'),JSON.stringify(navStyle))
   assert(navStyle.radius>=24)
   const slider=page.getByRole('slider',{name:'Intensidade do vidro'})
   await slider.focus()
   await page.keyboard.press('ArrowUp')
+  assert.notEqual(await nav.evaluate(el=>getComputedStyle(el).backgroundColor),navStyle.background)
   assert.equal(Number(await page.evaluate(()=>document.documentElement.style.getPropertyValue('--ios27-glass-alpha'))),.68)
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('studyos:preferences')).glassOpacity),.68)
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'overflow at '+width)

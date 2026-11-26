@@ -20,6 +20,7 @@ if (typeof window !== 'undefined') {
     const vv = window.visualViewport
     if (!vv) return
     const keyboardHeight = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+    rootEl.style.setProperty('--vv-top', `${vv.offsetTop}px`)
     rootEl.style.setProperty('--vvh', `${vv.height}px`)
     rootEl.style.setProperty('--keyboard-offset', `${keyboardHeight}px`)
     if (keyboardHeight > 110) {
@@ -37,12 +38,12 @@ if (typeof window !== 'undefined') {
     const target = event.target
     if (!(target instanceof HTMLElement)) return
     const isInput = target.matches('input, textarea, select, [contenteditable="true"]')
-    if (!isInput) return
+    if (!isInput || target.closest('dialog, .study-composer')) return
 
     // Garante que o campo focado suba acima do teclado após a abertura nativa
     window.setTimeout(() => {
       updateViewportMetrics()
-      if (typeof target.scrollIntoView === 'function') {
+      if (target.isConnected && target === document.activeElement) {
         target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
       }
     }, 260)

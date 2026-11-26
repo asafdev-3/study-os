@@ -21,10 +21,9 @@ export default function EnemPractice({ userId }) {
   }
   return <section className="enem-practice">
     <div className="enem-practice-hero">
-      <span className="study-eyebrow">UM PASSO DE CADA VEZ</span>
-      <h2>Entender. Praticar. Evoluir.</h2>
-      <p>Escolha uma área e comece com uma questão. A explicação vem depois da sua tentativa.</p>
-      <label>Hoje quero estudar<select value={area} onChange={e => setArea(e.target.value)}>{areas.map(x => <option key={x}>{x}</option>)}</select></label>
+      <h2>Uma questão por vez.</h2>
+      <p>Escolha a matéria. A Kira prepara uma questão e comenta sua tentativa.</p>
+      <label>Matéria<select value={area} onChange={e => setArea(e.target.value)}>{areas.map(x => <option key={x}>{x}</option>)}</select></label>
       <button className="study-primary" onClick={() => ask(area === 'Redação'
         ? 'Quero praticar redação ENEM. Proponha um tema de treino, identificado como autoral, e peça primeiro minha tese. Oriente em etapas curtas. Não atribua nota oficial.'
         : 'Vamos praticar ' + area + ' para o ENEM. Crie uma questão autoral de treino, identificada como gerada por IA, com cinco alternativas. Não dê o gabarito antes da minha tentativa. Depois explique o raciocínio e peça que eu identifique a causa de eventual erro.')}>Começar com Kira →</button>

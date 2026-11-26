@@ -4,7 +4,7 @@ import PromptField from '../components/PromptField'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion, pageSpring, softTransition } from '../lib/motion'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUp, BookmarkPlus, Check, Copy } from 'lucide-react'
+import { ArrowUp, BookmarkPlus, Check, Copy, BookOpen } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { KiraAvatar } from '../components/KiraAvatar'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
@@ -13,7 +13,6 @@ import { useKira } from '../lib/useKira'
 const prompts = [
   { label: 'Faça um quiz', text: 'Faça um quiz curto sobre o assunto que eu quero revisar. Pergunte qual é.' },
   { label: 'Explique em 20 segundos', text: 'Explique em 20 segundos o assunto que eu quero entender. Pergunte qual é.' },
-  { label: 'Treinar redação', text: 'Quero treinar redação do ENEM. Me dê um tema e explique como estruturar a introdução.' },
 ]
 
 export default function Chat({ userId }) {
@@ -21,7 +20,6 @@ export default function Chat({ userId }) {
   const navigate = useNavigate()
   const [activity, setActivity] = useState(false)
   const [copyStatus, setCopyStatus] = useState(null)
-  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
   const reduced = useStudyReducedMotion()
   const [input, setInput] = useState(() => location.state?.prompt ?? '')
   const { messages, remaining, loading, error, send } = useKira(true, userId ? `studyos:chat:${userId}` : null)
@@ -31,12 +29,6 @@ export default function Chat({ userId }) {
   const page = useRef(null)
   const follow = useRef(true)
   const updateViewport = useViewportSpring(page, 'chat')
-
-  useEffect(() => {
-    const onResize = () => setIsDesktop(window.innerWidth >= 768)
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
 
   useEffect(() => {
     if (location.state?.prompt) navigate(location.pathname + location.search, { replace: true, state: null })
@@ -145,10 +137,10 @@ export default function Chat({ userId }) {
       }}
     >
       <header className="study-chat-header">
-        <div><small>Assistente de estudos</small><h1>Kira</h1></div>
+        <KiraAvatar size={44} /><div><h1>Kira</h1><small>Tutora de estudos</small></div>
         {remaining !== null && <span className="kira-quota" aria-live="polite"
           aria-label={`${remaining} mensagens restantes hoje`}>{remaining}/{KIRA_DAILY_LIMIT} hoje</span>}
-        <KiraAvatar size={52} />
+
       </header>
 
       <div
@@ -162,7 +154,7 @@ export default function Chat({ userId }) {
       >
         {messages.length === 0 && (
           <section className="kira-conversation-start" aria-label="Começar conversa">
-            <p className="study-message study-message--assistant">Oi, eu sou a Kira. O que vamos estudar hoje?</p>
+            <h2>O que vamos<br /><em>estudar hoje?</em></h2>
             <div className="kira-shortcuts">
               {prompts.map(({ label, text }) => <button key={label} type="button" onClick={() => choose(text)}>{label}</button>)}
             </div>
@@ -203,29 +195,17 @@ export default function Chat({ userId }) {
         )}
       </div>
 
-      <form onSubmit={submit} className="study-composer" style={{ maxWidth: isDesktop ? '860px' : '100%', width: '100%', marginInline: 'auto' }}>
-        <button type="button" className="study-activity-toggle" aria-pressed={activity} onClick={() => setActivity(value => !value)}>
-          Resolver atividade
-        </button>
+      <form onSubmit={submit} className="study-composer">
         {error && (
           <p role="alert" style={{ color: '#fda4af', fontSize: 13, padding: '0 2px 6px', overflowWrap: 'anywhere' }}>
             {error}
           </p>
         )}
-        <div
-          className="study-composer-field"
-          style={{
-            display: 'flex', alignItems: 'flex-end', gap: 8,
-            background: 'rgba(20, 32, 52, 0.85)',
-            border: '1px solid rgba(210, 230, 255, 0.24)',
-            borderRadius: 26,
-            padding: '10px 10px 10px 16px',
-            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 28px rgba(0, 0, 0, 0.22)',
-            transition: 'border-color 0.15s',
-          }}
-          onFocusCapture={(e) => e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.65)'}
-          onBlurCapture={(e) => e.currentTarget.style.borderColor = 'rgba(210, 230, 255, 0.24)'}
-        >
+        <div className="study-composer-field">
+          <button type="button" className="kira-mode" aria-label="Resolver atividade" title="Resolver atividade"
+            aria-pressed={activity} onClick={() => { setActivity(value => !value); field.current?.focus() }}>
+            <BookOpen size={19} />
+          </button>
           <PromptField
             fieldRef={field}
             aria-label="Mensagem para a Kira"
@@ -243,15 +223,7 @@ export default function Chat({ userId }) {
             type="submit"
             aria-label="Enviar mensagem"
             disabled={loading || !input.trim()}
-            style={{
-              width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: input.trim() && !loading ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'rgba(255, 255, 255, 0.08)',
-              border: 'none', cursor: 'pointer',
-              color: '#fff',
-              transition: 'background 0.2s, opacity 0.2s',
-              opacity: loading || !input.trim() ? 0.42 : 1,
-            }}
+
           >
             <ArrowUp size={18} aria-hidden="true" />
           </button>

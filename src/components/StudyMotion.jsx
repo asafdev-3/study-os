@@ -39,9 +39,9 @@ export function PageMotion({ children }) {
   const reduced = useStudyReducedMotion()
   return (
     <motion.div key={pathname} className="study-page-enter"
-      initial={reduced ? false : { opacity: .92 }}
+      initial={reduced ? false : { opacity: .24 }}
       animate={{ opacity: 1 }}
-      transition={reduced ? { duration: 0 } : softTransition}>
+      transition={reduced ? { duration: 0 } : { duration: pathname === '/dashboard' ? .48 : .3, ease: [.22, 1, .36, 1] }}>
       {children}
     </motion.div>
   )

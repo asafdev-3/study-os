@@ -53,7 +53,7 @@ export default function EnemAdmissions({ userId }) {
     catch { setNotice('Comparação pronta. Não foi possível guardar neste dispositivo.') }
   }
   return <section className="study-admissions" aria-label="Faculdades por nota e cidade">
-    <header><span className="study-eyebrow">SEU PRÓXIMO PASSO</span><h2>Onde sua nota pode chegar?</h2><p>Compare suas cinco notas com os pesos de cada curso. Referência histórica do Sisu 2025, em ampla concorrência, sem bônus.</p></header>
+    <header><h2>Simular ingresso</h2><p>Compare suas cinco notas com os pesos de cada curso. Referência histórica do Sisu 2025, em ampla concorrência, sem bônus.</p></header>
     <form onSubmit={submit} className="study-admissions-form">
       <fieldset><legend>Suas notas do ENEM</legend><div className="study-score-inputs">{SCORE_AREAS.map(([id, label]) => <label key={id}>{label}<input aria-label={`Nota de ${label}`} inputMode="decimal" required maxLength={7} value={typeof profile[id] === 'string' || typeof profile[id] === 'number' ? profile[id] : ''} onChange={event => change(id, event.target.value)} placeholder="0 a 1.000" /></label>)}</div></fieldset>
       <div className="study-location-inputs"><label>Estado<select aria-label="Estado onde moro" value={profile.uf ?? ''} onChange={event => change('uf', event.target.value)}><option value="">Todos</option>{['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => <option key={uf}>{uf}</option>)}</select></label>

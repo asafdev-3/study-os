@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { m as motion, AnimatePresence } from 'framer-motion'
 import { Plus, Check, X, Trash2 } from 'lucide-react'
@@ -21,164 +21,43 @@ function ModalNovoPostit({ onClose, onSalvar }) {
   const [texto, setTexto] = useState('')
   const [materia, setMateria] = useState(null)
   const [prazo, setPrazo] = useState('')
-  const [visivel, setVisivel] = useState(false)
-  const textoRef = useRef(null)
-
-  useEffect(() => {
-    requestAnimationFrame(() => setVisivel(true))
-    const t = setTimeout(() => textoRef.current?.focus(), 220)
-    return () => clearTimeout(t)
+  const dialog = useRef(null)
+  useLayoutEffect(() => {
+    const sheet = dialog.current
+    const opener = document.activeElement
+    sheet.showModal()
+    return () => {
+      sheet.close()
+      opener?.focus({ preventScroll: true })
+    }
   }, [])
 
-  function fechar() {
-    setVisivel(false)
-    setTimeout(onClose, 180)
-  }
-
-  function handleSalvar() {
+  function save(event) {
+    event.preventDefault()
     if (!texto.trim()) return
     onSalvar({ texto: texto.trim(), materia, prazo })
-    fechar()
+    onClose()
   }
 
-  const habilitado = texto.trim().length > 0
-
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-label="Novo post-it"
-      className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-      style={{ opacity: visivel ? 1 : 0, transition: 'opacity 180ms ease' }}
-    >
-      <div
-        className="absolute inset-0"
-        onClick={fechar}
-        style={{
-          background: 'rgba(4, 10, 20, 0.72)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-        }}
-      />
-
-      <div
-        className="relative w-full max-w-[400px] rounded-[28px] overflow-hidden"
-        style={{
-          zIndex: 10,
-          background: 'linear-gradient(155deg, rgba(28, 44, 70, 0.84), rgba(13, 23, 40, 0.92))',
-          border: '1px solid rgba(226, 240, 255, 0.22)',
-          backdropFilter: 'blur(24px) saturate(185%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(185%)',
-          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 24px 60px rgba(0, 0, 0, 0.45)',
-          transform: visivel ? 'translateY(0) scale(1)' : 'translateY(14px) scale(0.96)',
-          transition: 'transform 240ms cubic-bezier(.22,1,.36,1)',
-        }}
-      >
-        <div className="flex items-center justify-between px-5 pt-5 pb-4">
-          <div>
-            <p className="text-[15px] font-semibold text-white">Novo post-it</p>
-            <p className="text-[12px] text-[#9eb3d1] mt-0.5">Fixe um lembrete rápido no seu mural</p>
-          </div>
-          <button
-            type="button"
-            onClick={fechar}
-            aria-label="Fechar"
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-white/[0.08] border border-white/[0.14] text-[#c8daf4]"
-          >
-            <X size={16} />
-          </button>
+    <dialog className="postit-editor" ref={dialog} aria-labelledby="postit-heading"
+      onCancel={event => { event.preventDefault(); onClose() }}
+      onClick={event => { if (event.target === event.currentTarget) onClose() }}>
+      <form onSubmit={save}>
+        <header><h2 id="postit-heading" tabIndex={-1} autoFocus>Novo post-it</h2>
+          <button type="button" aria-label="Fechar" onClick={onClose}><X size={20} /></button></header>
+        <div className="postit-fields">
+          <label htmlFor="postit-text">Lembrete</label>
+          <textarea id="postit-text" value={texto} maxLength={160} required aria-label="Texto do post-it"
+            placeholder="O que você quer lembrar?" onChange={event => setTexto(event.target.value)} />
+          <label>Matéria<select value={materia ?? ''} onChange={event => setMateria(event.target.value || null)}>
+            <option value="">Geral</option>{materiasForm.map(name => <option key={name}>{name}</option>)}
+          </select></label>
+          <label>Prazo opcional<input type="datetime-local" value={prazo} onChange={event => setPrazo(event.target.value)} /></label>
         </div>
-
-        <div className="px-5 pt-1">
-          <div
-            className="rounded-[20px] p-4 min-h-[104px]"
-            style={{
-              background: materia ? `${coresMaterias[materia]}18` : 'rgba(255, 255, 255, 0.04)',
-              border: `1px solid ${materia ? `${coresMaterias[materia]}45` : 'rgba(226, 240, 255, 0.14)'}`,
-            }}
-          >
-            {materia && (
-              <p className="text-[10px] font-semibold tracking-[0.14em] uppercase mb-1.5" style={{ color: coresMaterias[materia] }}>
-                ● {materia}
-              </p>
-            )}
-            <p className="text-[15px] text-white leading-relaxed">
-              {texto || <span className="text-[#7b90b0]">Seu lembrete aparece aqui…</span>}
-            </p>
-            {prazo && <p className="text-[11px] text-[#9eb3d1] mt-3">{formatarPrazo(prazo)}</p>}
-          </div>
-        </div>
-
-        <div className="px-5 pt-4">
-          <p className="text-[10px] font-semibold text-[#9eb3d1] tracking-[0.14em] uppercase mb-2">Matéria</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {materiasForm.map((m) => {
-              const selecionada = materia === m
-              return (
-                <button
-                  type="button"
-                  key={m}
-                  onClick={() => setMateria(selecionada ? null : m)}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition"
-                  style={{
-                    background: selecionada ? `${coresMaterias[m]}26` : 'rgba(255, 255, 255, 0.05)',
-                    border: `1px solid ${selecionada ? `${coresMaterias[m]}80` : 'rgba(226, 240, 255, 0.12)'}`,
-                    color: selecionada ? coresMaterias[m] : '#b4c7e2',
-                  }}
-                >
-                  {m}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="px-5 pt-3">
-          <textarea
-            ref={textoRef}
-            value={texto}
-            maxLength={160}
-            onChange={(e) => setTexto(e.target.value)}
-            aria-label="Texto do post-it"
-            placeholder="O que você não pode esquecer?"
-            className="w-full h-[82px] resize-none rounded-2xl bg-white/[0.05] border border-white/[0.14] px-4 py-3 text-[16px] text-white outline-none placeholder:text-[#7b90b0]"
-          />
-          <div className="flex justify-end mt-1">
-            <span className="text-[10px] text-[#8ea5c6]">{texto.length}/160</span>
-          </div>
-        </div>
-
-        <div className="px-5 pt-2">
-          <input
-            type="datetime-local"
-            value={prazo}
-            onChange={(e) => setPrazo(e.target.value)}
-            className="w-full rounded-2xl bg-white/[0.05] border border-white/[0.14] px-4 py-3 text-[15px] text-[#dce8fa] outline-none"
-            style={{ colorScheme: 'dark' }}
-          />
-        </div>
-
-        <div className="grid grid-cols-[1fr_1.35fr] gap-2.5 px-5 pt-4 pb-5">
-          <button
-            type="button"
-            onClick={fechar}
-            className="h-11 rounded-full border border-white/[0.14] bg-white/[0.05] text-sm font-medium text-[#b4c7e2]"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleSalvar}
-            disabled={!habilitado}
-            className="h-11 rounded-full text-sm font-semibold transition"
-            style={{
-              color: habilitado ? '#0d1b30' : '#7185a3',
-              background: habilitado ? 'linear-gradient(145deg, #eef5ff, #c2dafc)' : 'rgba(255, 255, 255, 0.06)',
-              boxShadow: habilitado ? 'inset 0 1px 0 rgba(255,255,255,0.85), 0 8px 20px rgba(59,130,246,0.28)' : 'none',
-            }}
-          >
-            Colar post-it
-          </button>
-        </div>
-      </div>
-    </div>, document.body
+        <footer><small>{texto.length}/160</small><button type="submit" disabled={!texto.trim()}>Colar post-it</button></footer>
+      </form>
+    </dialog>, document.body
   )
 }
 

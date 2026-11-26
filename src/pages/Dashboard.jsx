@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, Flame, GraduationCap, Radio, Settings, StickyNote } from 'lucide-react'
+import { ArrowRight, BookOpen, Timer, GraduationCap, Radio, Settings, StickyNote, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
-import { KiraAvatar } from '../components/KiraAvatar'
-import dashboardScene from '../assets/scenes/dashboard.webp'
-import dashboardMobile from '../assets/scenes/dashboard-small.webp'
-import RainWindow from '../components/RainWindow'
-
-import { useStudyReducedMotion } from '../lib/motion'
 import './Dashboard.css'
 
 const subjects = {
@@ -40,7 +34,7 @@ function mainSubject(value) {
   return subjects[Array.isArray(keys) ? keys[0] : keys]
 }
 
-const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
+
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -53,16 +47,6 @@ export default function Dashboard() {
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [now] = useState(Date.now)
-  const android = isAndroidDevice()
-  const reducedMotion = useStudyReducedMotion() || android
-  const [hidden, setHidden] = useState(() => document.hidden)
-
-  useEffect(() => {
-    const onVisibility = () => setHidden(document.hidden)
-    document.addEventListener('visibilitychange', onVisibility)
-    return () => document.removeEventListener('visibilitychange', onVisibility)
-  }, [])
-
   useEffect(() => {
     let active = true
     async function load() {
@@ -90,91 +74,33 @@ export default function Dashboard() {
   const notePath = note ? '/anotacoes?nota=' + encodeURIComponent(note.id) : '/anotacoes'
 
   return (
-    <main className="study-room study-page study-home-v2">
-
-      {/* Fundo da sala sem chuva caindo, mantendo apenas as gotas de condensação no vidro */}
-      <div className="study-home-rain" aria-hidden="true">
-        <RainWindow image={dashboardScene} mobileImage={dashboardMobile} still={reducedMotion || hidden} showRain={false} showDrops={!android} />
-      </div>
-      <div className="study-room-shade" aria-hidden="true" />
-
-      <div className="study-room-content">
-        <header className="study-room-header">
-          <div className="study-room-brand">
-            <img src="/icons/icon-192.png" alt="" width="38" height="38" />
-            <span>Study<span>OS</span><small>SUA SALA DE ESTUDO</small></span>
-          </div>
-          <div className="study-room-header-actions">
-            <StudyLink to="/nfc" className="study-room-nfc" aria-label="Abrir recursos NFC">
-              <Radio size={17} aria-hidden="true" /><span>NFC</span>
-            </StudyLink>
-            <StudyLink to="/configuracoes" className="study-room-nfc" aria-label="Configurações">
-              <Settings size={17} aria-hidden="true" />
-            </StudyLink>
-          </div>
-        </header>
-
-        <div className="study-home-grid">
-          <div className="study-home-main">
-            <section className="study-room-welcome">
-              <p>{new Date(now).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-              <h1>{firstName ? `Olá, ${firstName}.` : 'Seu espaço de estudo.'}</h1>
-              <span>{courseName ? `A caminho de ${courseName}.` : 'Seu caderno, suas ideias, seu ritmo.'}</span>
-            </section>
-
-            {error && (
-              <p role="alert" className="study-room-error">
-                Não foi possível carregar seu espaço.{' '}
-                <button onClick={() => { setError(false); setRetry(value => value + 1) }}>Tentar novamente</button>
-              </p>
-            )}
-
-            <StudyLink to="/enem" className="study-home-session">
-              <span className="study-home-session-icon"><GraduationCap size={22} aria-hidden="true" /></span>
-              <span className="study-home-session-copy"><strong>Estudar para o ENEM</strong><small>Questões e sessões de foco</small></span>
-              <ArrowRight size={19} aria-hidden="true" />
-            </StudyLink>
-
-            <section className="study-room-workspace" aria-label="Na sua mesa">
-              <StudyLink to={notePath} className="study-desk-paper">
-                <div className="study-paper-meta">
-                  <span>{note ? 'ÚLTIMA ANOTAÇÃO' : 'CADERNO PESSOAL'}</span>
-                  <BookOpen size={18} aria-hidden="true" />
-                </div>
-                <h2>{note?.title || (noteError ? 'Abra seu caderno.' : 'Ideias que ficam.')}</h2>
-                <p>{note?.content || (noteError ? 'Consulte suas anotações e continue de onde parou.' : 'Anote o que fez sentido. Volte ao que ainda precisa entender.')}</p>
-                <span className="study-paper-link">
-                  {note ? 'Continuar leitura' : 'Abrir anotações'}
-                  <ArrowRight size={18} aria-hidden="true" />
-                </span>
-              </StudyLink>
-              <StudyLink className="study-room-subject" to={'/anotacoes?area=' + area}>
-                Caderno de {subject}<ArrowRight size={15} aria-hidden="true" />
-              </StudyLink>
-            </section>
-          </div>
-
-          <aside className="study-home-secondary" aria-label="Ferramentas de estudo">
-
-            <div className="study-room-dock">
-              <StudyLink className="study-room-kira" to="/caverna">
-                <Flame size={20} aria-hidden="true" />
-                <span><strong>Modo Caverna</strong><small>25 minutos de foco</small></span>
-                <ArrowRight size={18} aria-hidden="true" />
-              </StudyLink>
-              <StudyLink className="study-room-kira study-room-postits" to="/lembretes">
-                <StickyNote size={24} aria-hidden="true" />
-                <span><strong>Meus post-its</strong><small>Lembretes de estudo</small></span>
-                <ArrowRight size={18} aria-hidden="true" />
-              </StudyLink>
-              <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>
-                <KiraAvatar size={66} />
-                <span><strong>Kira sugere</strong><small>Vamos revisar {subject}?</small></span>
-                <ArrowRight size={18} aria-hidden="true" />
-              </StudyLink>
-            </div>
-          </aside>
-        </div>
+    <main className="study-room desk-home">
+      <header className="desk-toolbar">
+        <span>StudyOS</span>
+        <div><StudyLink to="/nfc" aria-label="Abrir recursos NFC"><Radio size={20} /></StudyLink>
+          <StudyLink to="/configuracoes" aria-label="Configurações"><Settings size={20} /></StudyLink></div>
+      </header>
+      <div className="desk-layout">
+        <section className="desk-journal">
+          <p className="desk-date">{new Date(now).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          <h1>{firstName ? `Olá, ${firstName}.` : 'Sua mesa.'}</h1>
+          {courseName && <p className="desk-goal">A caminho de {courseName}.</p>}
+          {error && <p role="alert">Falha ao carregar sua mesa. <button onClick={() => { setError(false); setRetry(x => x + 1) }}>Tentar novamente</button></p>}
+          <StudyLink className="desk-leaf" to={notePath}>
+            <span><BookOpen size={17} />{note ? 'Última anotação' : 'Meu caderno'}</span>
+            <h2>{note?.title || 'Abra seu caderno.'}</h2>
+            {note?.content && <p>{note.content}</p>}
+            <strong>{note ? 'Continuar leitura' : noteError ? 'Consultar anotações' : 'Abrir anotações'} <ArrowRight size={17} /></strong>
+          </StudyLink>
+          <StudyLink className="desk-subject" to={'/anotacoes?area=' + area}>Caderno de {subject} <ArrowRight size={15} /></StudyLink>
+        </section>
+        <nav className="desk-agenda" aria-label="Ferramentas de estudo">
+          <h2>Na sua mesa</h2>
+          <StudyLink to="/enem"><GraduationCap /><span>Estudar para o ENEM</span><ArrowRight /></StudyLink>
+          <StudyLink to="/chat" state={{ prompt }}><MessageCircle /><span>Revisar {subject} com Kira</span><ArrowRight /></StudyLink>
+          <StudyLink to="/caverna"><Timer /><span>25 minutos de foco</span><ArrowRight /></StudyLink>
+          <StudyLink to="/lembretes"><StickyNote /><span>Meus post-its</span><ArrowRight /></StudyLink>
+        </nav>
       </div>
     </main>
   )

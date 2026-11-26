@@ -110,7 +110,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
   const comSidebar = !!sessao && !bloqueado && !SEM_SIDEBAR.includes(location.pathname)
 
   const scene = location.pathname.split('/')[1] || 'splash'
-  const scenic = !['dashboard', 'login', 'native-session'].includes(scene)
+  const scenic = !['login', 'native-session'].includes(scene)
   return (
     <>
       {scenic && scene !== 'splash' && <SceneBackdrop scene={scene} />}
