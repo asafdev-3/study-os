@@ -892,7 +892,7 @@ html[data-enem-chat],html[data-enem-chat] body { overflow:hidden; }
  html[data-enem-chat][data-study-keyboard] .study-enem-header { display:none; }
  html[data-enem-chat][data-study-keyboard] .study-topbar { display:none; }
 }
-@media(min-width:768px) { .study-enem[data-chat-active] { left:calc(50% + 32px); transform:translateX(-50%); width:min(100% - 144px,720px); padding-bottom:24px; } }
+@media(min-width:768px) { .study-enem[data-chat-active] { inset-inline:88px 0; margin-inline:auto; width:min(calc(100% - 128px), 1024px); padding-bottom:24px; } }
 .study-admissions { display:grid; gap:18px; }
 .study-admissions header h2 { font-size:clamp(23px,5vw,30px); font-weight:600; line-height:1.15; letter-spacing:-.03em; margin:10px 0; color:#f5f7ff; }
 .study-admissions p { font-size:13px; line-height:1.6; color:#c4cedd; }

@@ -121,6 +121,10 @@ try {
     await page.getByRole('group', { name:'Seções do modo ENEM' }).getByRole('button', { name:'Kira', exact:true }).click()
     await page.waitForTimeout(400)
     const composer = await page.locator('.study-enem-chat .study-composer').boundingBox()
+    if (width >= 768) {
+      const panel = await page.locator('.study-enem[data-chat-active]').boundingBox()
+      assert(Math.abs(panel.x + panel.width / 2 - (width + 88) / 2) < 2, 'Center the ENEM chat in the space beside the desktop navigation')
+    }
     assert(composer.y > height * .65, 'ENEM composer belongs at the bottom')
     if (width < 768) {
       const bar = await page.locator('.study-navigation').boundingBox()

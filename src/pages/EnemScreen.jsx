@@ -3,6 +3,7 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { useViewportSpring } from '../lib/useViewportSpring';
 import { kiraMessageMotion } from '../lib/kiraMotion';
 import { useStudyReducedMotion, pageSpring, cardSpring, softTransition } from '../lib/motion';
+import { KiraAvatar } from '../components/KiraAvatar'
 import PromptField from '../components/PromptField';
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Lembretes from "./Lembretes";
@@ -352,8 +353,12 @@ export default function EnemScreen({ userId }) {
             </div>
             <div className="study-enem-conversation" ref={log}>
               {messages.length === 0 && !loading && (
-                <div className="study-enem-prompts">
-                  {QUICK_PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
+                <div className="enem-kira-welcome">
+                  <KiraAvatar size={104} hero />
+                  <h3>O que vamos revisar?</h3>
+                  <div className="study-enem-prompts">
+                  {QUICK_PROMPTS.map((prompt, index) => <button key={prompt} style={{ "--prompt-order": index }} type="button" onClick={() => enviar(prompt)}>{prompt}</button>)}
+                  </div>
                 </div>
               )}
               {(messages.length > 0 || loading) && (

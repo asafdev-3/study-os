@@ -108,15 +108,17 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
   const location = useLocation()
   const comSidebar = !!sessao && !bloqueado && !SEM_SIDEBAR.includes(location.pathname)
 
+  const scene = location.pathname.split('/')[1] || 'splash'
+  const scenic = !['dashboard', 'login', 'native-session'].includes(scene)
   return (
     <>
-      {comSidebar && location.pathname !== '/dashboard' && <div aria-hidden="true" className="study-scenery" />}
+      {scenic && <div aria-hidden="true" key={scene} data-scene={scene} className="study-scenery" />}
       {comSidebar && <InstallPwaModal auto={location.pathname === '/dashboard'} />}
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
       {comSidebar && <FoldableTransition screen={location.pathname} />}
       {comSidebar && <PaywallModal />}
-      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} data-scenic={comSidebar && location.pathname !== '/dashboard' || undefined} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
+      <div style={{ paddingLeft: comSidebar ? undefined : 0 }} data-scene={scene} data-scenic={scenic || undefined} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />
         </Suspense>

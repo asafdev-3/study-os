@@ -3,11 +3,8 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(165deg, #0c172bab, #0c172bd9 62%, #0b1321ef),
-    url('../assets/autumn-rain.webp') center / cover;
-}
-@media (max-width: 700px) {
-  .study-scenery { background-image: linear-gradient(165deg, #0c172ba6, #0c172bd4 62%, #0b1321ef), url('../assets/autumn-rain-mobile.webp'); }
+  background: linear-gradient(172deg, #08132191, #0b1629ae 50%, #091121dd),
+    var(--scene-image) center / cover no-repeat, #101a28;
 }
 .study-route-stage[data-scenic] { position: relative; background: transparent; }
 .study-route-stage[data-scenic] .study-page { background: transparent; }
@@ -117,4 +114,92 @@ html body #root :is(.study-tab-indicator, .study-enem-segment-active) {
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :root { --control-glass-tint: #17273b; }
+}
+.study-scenery[data-scene="anotacoes"] { --scene-image: url('../assets/scenes/anotacoes.webp'); }
+.study-scenery[data-scene="caverna"] { --scene-image: url('../assets/scenes/caverna.webp'); }
+.study-scenery[data-scene="chat"] { --scene-image: url('../assets/scenes/chat.webp'); }
+.study-scenery[data-scene="configuracoes"] { --scene-image: url('../assets/scenes/configuracoes.webp'); }
+.study-scenery[data-scene="enem"] { --scene-image: url('../assets/scenes/enem.webp'); }
+.study-scenery[data-scene="esqueci-senha"] { --scene-image: url('../assets/scenes/esqueci-senha.webp'); }
+.study-scenery[data-scene="lembretes"] { --scene-image: url('../assets/scenes/lembretes.webp'); }
+.study-scenery[data-scene="lock"] { --scene-image: url('../assets/scenes/lock.webp'); }
+.study-scenery[data-scene="nfc"] { --scene-image: url('../assets/scenes/nfc.webp'); }
+.study-scenery[data-scene="nova-anotacao"] { --scene-image: url('../assets/scenes/nova-anotacao.webp'); }
+.study-scenery[data-scene="onboarding"] { --scene-image: url('../assets/scenes/onboarding.webp'); }
+.study-scenery[data-scene="perfil"] { --scene-image: url('../assets/scenes/perfil.webp'); }
+.study-scenery[data-scene="splash"] { --scene-image: url('../assets/scenes/splash.webp'); }
+.study-scenery[data-scene="sucesso"] { --scene-image: url('../assets/scenes/sucesso.webp'); }
+.study-scenery[data-scene="upgrade"] { --scene-image: url('../assets/scenes/upgrade.webp'); }
+
+@media (max-width: 760px) {
+.study-scenery[data-scene="anotacoes"] { --scene-image: url('../assets/scenes/anotacoes-small.webp'); }
+.study-scenery[data-scene="caverna"] { --scene-image: url('../assets/scenes/caverna-small.webp'); }
+.study-scenery[data-scene="chat"] { --scene-image: url('../assets/scenes/chat-small.webp'); }
+.study-scenery[data-scene="configuracoes"] { --scene-image: url('../assets/scenes/configuracoes-small.webp'); }
+.study-scenery[data-scene="enem"] { --scene-image: url('../assets/scenes/enem-small.webp'); }
+.study-scenery[data-scene="esqueci-senha"] { --scene-image: url('../assets/scenes/esqueci-senha-small.webp'); }
+.study-scenery[data-scene="lembretes"] { --scene-image: url('../assets/scenes/lembretes-small.webp'); }
+.study-scenery[data-scene="lock"] { --scene-image: url('../assets/scenes/lock-small.webp'); }
+.study-scenery[data-scene="nfc"] { --scene-image: url('../assets/scenes/nfc-small.webp'); }
+.study-scenery[data-scene="nova-anotacao"] { --scene-image: url('../assets/scenes/nova-anotacao-small.webp'); }
+.study-scenery[data-scene="onboarding"] { --scene-image: url('../assets/scenes/onboarding-small.webp'); }
+.study-scenery[data-scene="perfil"] { --scene-image: url('../assets/scenes/perfil-small.webp'); }
+.study-scenery[data-scene="splash"] { --scene-image: url('../assets/scenes/splash-small.webp'); }
+.study-scenery[data-scene="sucesso"] { --scene-image: url('../assets/scenes/sucesso-small.webp'); }
+.study-scenery[data-scene="upgrade"] { --scene-image: url('../assets/scenes/upgrade-small.webp'); }
+}
+
+.study-route-stage:is([data-scene="splash"], [data-scene="caverna"], [data-scene="nova-anotacao"]) :is(main, .bg-black),
+.study-route-stage[data-scenic] :is(.study-onboarding, .study-lock, .study-entry) { background: transparent !important; }
+.study-route-stage[data-scenic] :is(.study-onboarding,.study-lock,.study-auth-page)::before { background: transparent; }
+.enem-kira-welcome { display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 100%; padding: 14px; }
+.enem-kira-welcome .study-kira-character { margin: 0; }
+.enem-kira-welcome h3 { margin: 0; font-size: clamp(19px,2.4vw,30px); letter-spacing: -.035em; }
+.enem-kira-welcome .study-enem-prompts { justify-content: center; max-width: 640px; }
+@media (max-height: 620px) and (max-width: 767px) { .enem-kira-welcome .study-kira-character { display: none; } }
+@media (min-width: 768px) {
+  .study-enem[data-chat-active] { max-width: 1024px; padding-inline: clamp(16px,2.8vw,44px); }
+  .study-enem[data-chat-active] .study-enem-tabs { width: min(100%,560px); margin-inline: 0; }
+  .study-enem-chat {
+    margin-top: 14px; padding: clamp(14px,2vw,28px); border-radius: 28px;
+    border: 1px solid var(--control-glass-edge); background: var(--control-glass-surface);
+    box-shadow: var(--control-glass-shadow);
+    -webkit-backdrop-filter: var(--control-glass-filter); backdrop-filter: var(--control-glass-filter);
+  }
+  .study-enem-kira-title { gap: 12px; }
+  .study-enem-kira-title > div { margin-right: auto; }
+  .study-enem-kira-title button, .enem-kira-welcome button { background: #c2ddff12; padding-inline: 14px; border: 1px solid #e4f0ff30; border-radius: 16px; }
+  .study-enem-conversation { padding-inline: 4px; scrollbar-width: thin; }
+}
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
+  .study-enem-chat,
+  #root :is(.study-navigation-inner, .study-room-dock, .study-chat-header, .study-composer-field) {
+    --control-glass-filter: blur(18px) saturate(1.48);
+    --control-glass-shadow: inset 0 1px 0 #ffffff70, inset 1px 0 0 #daeaff24,
+      inset 0 -1px 0 #a2c6ec30, 0 12px 34px #030b1736;
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  .study-enem-chat, #root :is(.study-navigation-inner, .study-room-dock, .study-chat-header, .study-composer-field) {
+    --control-glass-filter: none; --control-glass-shadow: none;
+  }
+}
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) :is(.study-home-session, .study-closed-book, .enem-kira-welcome button, .study-enem-kira-title button) {
+    transition: transform 220ms cubic-bezier(.22,1,.36,1), box-shadow 220ms ease;
+  }
+  html:not([data-study-motion="reduced"]) :is(.study-home-session, .study-closed-book, .enem-kira-welcome button, .study-enem-kira-title button):hover {
+    transform: translateY(-3px); box-shadow: inset 0 1px #eff8ff63, 0 8px 22px #020a1842;
+  }
+  html:not([data-study-motion="reduced"]) .enem-kira-welcome button {
+    animation: prompt-arrival 260ms cubic-bezier(.22,1,.36,1) backwards;
+    animation-delay: calc(var(--prompt-order) * 24ms);
+  }
+  @keyframes prompt-arrival {
+    from { opacity: .4; translate: 0 6px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+  html:not([data-study-motion="reduced"]) .study-book-writing { --turn-angle: -58deg; animation-duration: 360ms; }
+  html:not([data-study-motion="reduced"]) .study-book-writing[data-backward="true"] { --turn-angle: 58deg; }
+  html:not([data-study-motion="reduced"]) .study-book-writing::before { animation-duration: 360ms; }
 }

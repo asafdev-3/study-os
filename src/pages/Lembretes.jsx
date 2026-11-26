@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { m as motion, AnimatePresence } from 'framer-motion'
 import { Plus, Check, X, Trash2, StickyNote } from 'lucide-react'
 import { cardSpring, useStudyReducedMotion } from '../lib/motion'
@@ -42,8 +43,8 @@ function ModalNovoPostit({ onClose, onSalvar }) {
 
   const habilitado = texto.trim().length > 0
 
-  return (
-    <div
+  return createPortal(
+    <div role="dialog" aria-modal="true" aria-label="Novo post-it"
       className="fixed inset-0 z-[100] flex items-center justify-center px-4"
       style={{ opacity: visivel ? 1 : 0, transition: 'opacity 180ms ease' }}
     >
@@ -177,7 +178,7 @@ function ModalNovoPostit({ onClose, onSalvar }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>, document.body
   )
 }
 

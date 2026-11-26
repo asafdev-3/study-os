@@ -9,13 +9,13 @@ const runners = [
   [8, 17, 5], [20, 54, 7], [41, 8, 4], [64, 69, 6], [83, 22, 7], [94, 60, 5],
 ]
 
-export default function RainWindow({ still }) {
+export default function RainWindow({ still, image = autumnNight, mobileImage = autumnNightMobile }) {
   const photoRef = useRef(null)
   return (
     <div className="rain-window" aria-hidden="true" data-still={still || undefined}>
       <picture>
-        <source media="(max-width: 760px)" srcSet={autumnNightMobile} />
-        <img ref={photoRef} src={autumnNight} alt="" width="1672" height="941" fetchPriority="high" />
+        <source media="(max-width: 760px)" srcSet={mobileImage} />
+        <img ref={photoRef} src={image} alt="" width="1672" height="941" fetchPriority="high" />
       </picture>
       <div className="rain-wind">
         <span className="rain-sheet rain-far" />

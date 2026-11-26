@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { StudyLink } from '../components/StudyLink'
 import { KiraAvatar } from '../components/KiraAvatar'
+import dashboardScene from '../assets/scenes/dashboard.webp'
+import dashboardMobile from '../assets/scenes/dashboard-small.webp'
 import RainWindow from '../components/RainWindow'
 
 import { useStudyReducedMotion } from '../lib/motion'
@@ -92,7 +94,7 @@ export default function Dashboard() {
 
       {/* Fundo da sala sem chuva caindo, mantendo apenas as gotas de condensação no vidro */}
       <div className="study-home-rain" aria-hidden="true">
-        <RainWindow still={reducedMotion || hidden} showRain={false} showDrops={!android} />
+        <RainWindow image={dashboardScene} mobileImage={dashboardMobile} still={reducedMotion || hidden} showRain={false} showDrops={!android} />
       </div>
       <div className="study-room-shade" aria-hidden="true" />
 
