@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { nfcDestination, safeDestination, rememberDestination, pendingDestination, clearDestination } from '../src/lib/nfc.js'
+import { nfcDestination, nfcTagDetails, nfcTagPath, safeDestination, rememberDestination, pendingDestination, clearDestination } from '../src/lib/nfc.js'
 
 const values = new Map()
 globalThis.window = { location: { origin: 'https://study-os-three-pearl.vercel.app' } }
@@ -36,4 +36,15 @@ test('stale destinations expire and invalid storage fails safely', () => {
   sessionStorage.setItem('studyos:pending-destination', 'invalid JSON')
   assert.equal(pendingDestination(), null)
   clearDestination()
+})
+
+test('new NFC tags resolve to study destinations without skipping the receipt route', () => {
+  const note = nfcDestination('nota', '', 'a/b?c')
+  const tag = new URL(nfcTagPath(note), window.location.origin)
+  assert.equal(tag.pathname, '/nfc')
+  assert.equal(nfcTagDetails(tag.searchParams.get('abrir')).destination, note)
+  assert.equal(nfcTagDetails('/nfc?acao=foco&area=cn').title, 'Ciências da Natureza')
+  for (const invalid of ['/nfc?abrir=/caverna', '/nfc?acao=foco&area=toString', '//other.test/caverna', '/login']) {
+    assert.equal(nfcTagDetails(invalid), null)
+  }
 })

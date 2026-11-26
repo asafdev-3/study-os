@@ -131,12 +131,11 @@ export default function Dashboard() {
 
             <StudyLink to="/enem" className="study-home-session">
               <span className="study-home-session-icon"><GraduationCap size={22} aria-hidden="true" /></span>
-              <span className="study-home-session-copy"><strong>Começar uma sessão</strong><small>ENEM, questões e tempo de foco</small></span>
+              <span className="study-home-session-copy"><strong>Estudar para o ENEM</strong><small>Questões e sessões de foco</small></span>
               <ArrowRight size={19} aria-hidden="true" />
             </StudyLink>
 
             <section className="study-room-workspace" aria-label="Na sua mesa">
-              <div className="study-desk-label"><span />Na sua mesa</div>
               <StudyLink to={notePath} className="study-desk-paper">
                 <div className="study-paper-meta">
                   <span>{note ? 'ÚLTIMA ANOTAÇÃO' : 'CADERNO PESSOAL'}</span>
@@ -156,16 +155,16 @@ export default function Dashboard() {
           </div>
 
           <aside className="study-home-secondary" aria-label="Ferramentas de estudo">
-            <p className="study-home-secondary-label">À mão</p>
+
             <div className="study-room-dock">
               <StudyLink className="study-room-kira" to="/caverna">
-                <Flame size={24} aria-hidden="true" style={{ color: '#a78bfa' }} />
-                <span><strong>Modo Caverna</strong><small>Imersão total de 25 min sem distrações</small></span>
+                <Flame size={20} aria-hidden="true" />
+                <span><strong>Modo Caverna</strong><small>25 minutos de foco</small></span>
                 <ArrowRight size={18} aria-hidden="true" />
               </StudyLink>
               <StudyLink className="study-room-kira study-room-postits" to="/lembretes">
                 <StickyNote size={24} aria-hidden="true" />
-                <span><strong>Meus post-its</strong><small>Tarefas e lembretes de estudo</small></span>
+                <span><strong>Meus post-its</strong><small>Lembretes de estudo</small></span>
                 <ArrowRight size={18} aria-hidden="true" />
               </StudyLink>
               <StudyLink className="study-room-kira" to="/chat" state={{ prompt }}>

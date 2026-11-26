@@ -101,7 +101,7 @@ planButtons.forEach((btn) => {
     } else {
       priceValue.textContent = '15,82';
       priceSub.textContent = 'cobrado R$ 189,90 por ano';
-      priceBadge.textContent = '2 MESES GRÁTIS';
+      priceBadge.textContent = 'PLANO ANUAL';
     }
   });
 });
@@ -167,42 +167,6 @@ if (finePointer && !reduceMotion && demoWrap && demoPhone) {
   demoWrap.addEventListener('pointerleave', () => demoPhone.style.transform = 'rotateY(-5deg) rotateX(2deg)');
 }
 
-// Dashboard task demo
-const demoTasks = [...document.querySelectorAll('[data-demo-task]')];
-const demoTaskCount = document.getElementById('demoTaskCount');
-function updateTaskCount(){
-  const done = demoTasks.filter(t => t.classList.contains('checked')).length;
-  if (demoTaskCount) demoTaskCount.textContent = `${done} de ${demoTasks.length}`;
-}
-demoTasks.forEach(task => task.addEventListener('click', () => {
-  task.classList.toggle('checked');
-  const box = task.querySelector('i');
-  box.textContent = task.classList.contains('checked') ? '✓' : '';
-  task.classList.remove('burst');
-  void task.offsetWidth;
-  task.classList.add('burst');
-  updateTaskCount();
-}));
-const taskStart = document.querySelector('[data-demo-task-start]');
-if (taskStart) taskStart.addEventListener('click', () => {
-  const pending = demoTasks.find(t => !t.classList.contains('checked'));
-  if (pending) pending.click();
-  taskStart.textContent = '✓ Sessão adicionada';
-  setTimeout(() => taskStart.textContent = '⚡ Começar agora', 1700);
-});
-
-// Notes / OCR demo
-const ocrResult = document.getElementById('ocrResult');
-document.querySelectorAll('[data-ocr-trigger]').forEach(btn => btn.addEventListener('click', () => {
-  const live = document.getElementById('ocrLive');
-  live?.classList.add('scanning');
-  if (ocrResult) ocrResult.classList.remove('show');
-  setTimeout(() => {
-    live?.classList.remove('scanning');
-    ocrResult?.classList.add('show');
-  }, 900);
-}));
-
 // Kira mini demo
 const kiraDynamic = document.getElementById('kiraDynamic');
 const kiraQuickActions = document.getElementById('kiraQuickActions');
@@ -220,7 +184,7 @@ function bindQuizAnswers(){
     const feedback = document.createElement('div');
     feedback.className = 'mini-bubble bot';
     feedback.style.marginTop = '7px';
-    feedback.innerHTML = correct ? '<b>Exato.</b> Oxidação = perda de elétrons. +15 XP.' : '<b>Quase.</b> Oxidação é perda de elétrons. Tenta lembrar: OIL RIG.';
+    feedback.innerHTML = correct ? '<b>Exato.</b> Oxidação = perda de elétrons.' : '<b>Quase.</b> Oxidação é perda de elétrons. Tenta lembrar: OIL RIG.';
     kiraDynamic.appendChild(feedback);
   }));
 }
@@ -251,27 +215,13 @@ if (addPostit && postitBoard) addPostit.addEventListener('click', () => {
   }
   const note = document.createElement('button');
   note.className = 'mini-post p-purple new-post';
-  note.innerHTML = '<small>REVISÃO</small><b>Química</b><span>20:30 · flashcards</span>';
+  note.innerHTML = '<small>REVISÃO</small><b>Química</b><span>20:30 · revisão</span>';
   postitBoard.insertBefore(note, postitBoard.querySelector('.postit-hint'));
   postitAdded = true;
 });
 
-// Progress demo
-const registerSession = document.getElementById('registerSession');
-const demoXp = document.getElementById('demoXp');
-const demoStreak = document.getElementById('demoStreak');
-let sessionRegistered = false;
-if (registerSession) registerSession.addEventListener('click', () => {
-  sessionRegistered = !sessionRegistered;
-  if (sessionRegistered) {
-    demoXp.textContent = '2.505 XP';
-    demoStreak.textContent = '13';
-    registerSession.textContent = '✓ Sessão registrada · +25 XP';
-    registerSession.classList.add('done');
-  } else {
-    demoXp.textContent = '2.480 XP';
-    demoStreak.textContent = '12';
-    registerSession.textContent = '＋ Registrar sessão de 25 min';
-    registerSession.classList.remove('done');
-  }
-});
+const landingKira = document.querySelector('.landing-kira');
+if (landingKira && !reduceMotion) {
+  const kiraVisibility = new IntersectionObserver(([entry]) => landingKira.classList.toggle('is-visible', entry.isIntersecting));
+  kiraVisibility.observe(landingKira);
+}

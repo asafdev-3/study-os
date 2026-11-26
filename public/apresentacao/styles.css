@@ -580,3 +580,50 @@ details p { margin:-6px 0 27px; color:#666269; line-height:1.65; max-width:650px
 .ocr-live.scanning .ocr-camera-card{box-shadow:0 0 0 1px rgba(34,211,160,.25),0 0 35px rgba(34,211,160,.12)}
 .ocr-live.scanning .hand-note{animation:ocrSnap .9s var(--ease)}
 @keyframes ocrSnap{0%{transform:rotate(-4deg) scale(1)}45%{transform:rotate(-2deg) scale(1.04);filter:brightness(1.18)}100%{transform:rotate(-4deg) scale(1)}}
+
+/* Keep the product examples consistent with the installed app. */
+.hero { isolation: isolate; }
+.hero::before {
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background: url('/apresentacao/vidro.svg') center / min(100%, 960px) auto no-repeat;
+  opacity:.34;
+}
+.phone-main, .demo-phone { background:#101726; }
+.preview-home { padding:20px 12px 12px; color:#eef4ff; }
+.dashboard-screen .preview-home { padding-top:60px; }
+.preview-home h4 { font-size: clamp(24px,4vw,34px); margin:6px 0 16px; color:#f4f8ff; }
+.preview-home > small { color:#aebdd1; font-size:9px; letter-spacing:.08em; }
+.preview-row { display:flex; align-items:center; justify-content:space-between; gap:6px; min-height:34px; padding:7px 9px; color:#e3ebf8; font-size:12px; background:#19283be0; }
+.preview-home > .preview-row { border:1px solid #a5bbd536; border-radius:12px; }
+.preview-tools { border:1px solid #a5bbd536; border-radius:12px; overflow:hidden; }
+.preview-tools .preview-row + .preview-row { border-top:1px solid #c4d7ee17; }
+.preview-paper { background:#ebdfc4; color:#302920; border-radius:5px 7px 10px 3px; padding:13px; margin:12px 0; box-shadow:1px 4px 10px #08090c35; }
+.preview-paper small, .preview-paper strong { display:block; }
+.preview-paper strong { font:500 22px Georgia,serif; margin-block:5px; }
+.preview-paper p { color:#554d40; margin:0; font-size:12px; }
+.preview-kira-icon { object-fit:contain; }
+.kira-toolbar small { text-transform:none; }
+.mini-post { border-radius:2px 2px 7px 2px; color:#302920; box-shadow:2px 6px 9px #090a0e50; }
+.nfc-screen strong { color:#f0f4ff; font-size:clamp(22px, 3vw, 29px); line-height:1.08; }
+.nfc-screen > span { color:#abc9e7; }
+.nfc-screen p { color:#c6d0df; }
+.site-header.scrolled { backdrop-filter:blur(12px) saturate(1.25); }
+.chat-demo { background:#111927dc; border:1px solid #b7cef438; box-shadow:inset 0 1px #edf5ff30,0 12px 32px #0408126b; }
+.landing-kira { width:min(92%,460px); animation:none; }
+.landing-kira img { display:block; width:100%; height:auto; }
+.landing-kira i { position:absolute; top:35.5%; left:35.1%; width:7.2%; height:20.8%; border-radius:24%; background:linear-gradient(#101d32,#080d1b 85%,#427091); transform:scaleY(0); transform-origin:top; }
+.landing-kira i:last-child { left:68.2%; }
+@media (prefers-reduced-motion:no-preference) {
+  .landing-kira.is-visible i { animation: landing-blink 4.6s ease-in-out infinite; }
+}
+@keyframes landing-blink { 0%,50%,54%,100% { transform:scaleY(0); } 52% { transform:scaleY(1); } }
+.hero-product::before {
+  content:""; position:absolute; inset:5% 2% 10%; pointer-events:none;
+  background:url('/apresentacao/chuva.svg') repeat; background-size:168px 180px;
+  mask-image:radial-gradient(ellipse at center, #000, transparent 67%);
+  opacity:.24;
+}
+@media (min-width:900px) and (prefers-reduced-motion:no-preference) {
+  .hero-product::before { animation: landing-drizzle 2.1s linear infinite; }
+}
+@keyframes landing-drizzle { to { background-position:0 180px; } }

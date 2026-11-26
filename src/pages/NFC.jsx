@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, Copy, Smartphone, Timer } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Copy, Nfc, Smartphone, Timer } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { StudyLink } from '../components/StudyLink'
 import { supabase } from '../lib/supabase'
 import { FOCUS_SECONDS, readFocus } from '../lib/focus'
-import { NFC_AREAS, nfcDestination } from '../lib/nfc'
+import { NFC_AREAS, nfcDestination, nfcTagDetails, nfcTagPath } from '../lib/nfc'
 import { NfcAnimation } from '../components/SetupAnimations'
 
 const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
@@ -20,6 +20,7 @@ export default function NFC() {
   const [noteError, setNoteError] = useState(false)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
+  const [writtenPath, setWrittenPath] = useState(null)
   const [copied, setCopied] = useState(false)
   const controller = useRef(null)
   const urlInput = useRef(null)
@@ -27,7 +28,17 @@ export default function NFC() {
   const targetArea = params.get('area')
   const validFocus = action === 'foco' && Object.hasOwn(NFC_AREAS, targetArea)
   const destination = nfcDestination(type, area, noteId)
-  const url = destination ? window.location.origin + destination : ''
+  const tagPath = destination ? nfcTagPath(destination) : ''
+  const url = tagPath ? window.location.origin + tagPath : ''
+  const detected = params.has('abrir')
+  const tag = nfcTagDetails(detected ? params.get('abrir') : writtenPath)
+  const detectedDestination = detected ? tag?.destination : null
+
+  useEffect(() => {
+    if (!detectedDestination) return
+    const timer = setTimeout(() => navigate(detectedDestination, { replace: true }), 1100)
+    return () => clearTimeout(timer)
+  }, [detectedDestination, navigate])
 
   useEffect(() => () => controller.current?.abort(), [])
   useEffect(() => {
@@ -57,7 +68,7 @@ export default function NFC() {
     try {
       const writer = new window.NDEFReader()
       await writer.write({ records: [{ recordType: 'url', data: url }] }, { signal: controller.current.signal })
-      setStatus('Etiqueta gravada. Aproxime o celular novamente para testar.')
+      setWrittenPath(destination)
     } catch (error) {
       setStatus(error.name === 'AbortError' ? 'Gravação cancelada.' : error.name === 'NotAllowedError'
         ? 'Permissão de NFC recusada. Você também pode copiar o link e gravar em outro aplicativo.'
@@ -80,6 +91,18 @@ export default function NFC() {
     } catch { setStatus('Não foi possível preparar a sessão. Tente novamente.'); setBusy(false) }
   }
 
+  if (tag) return (
+    <main className="study-nfc-receipt">
+      <Nfc size={26} aria-hidden="true" />
+      <p role="status">{detected ? 'Atalho NFC' : 'Etiqueta gravada'}</p>
+      <h1>{tag.title}</h1>
+      <p>{tag.description}</p>
+      {detected && <div className="nfc-receipt-progress" aria-hidden="true" />}
+      <StudyLink className="study-primary" to={tag.destination} replace>Abrir agora<ArrowRight size={16} aria-hidden="true" /></StudyLink>
+      <button type="button" onClick={() => detected ? navigate('/nfc', { replace: true }) : setWrittenPath(null)}>Voltar à configuração</button>
+    </main>
+  )
+
   return (
     <main className="study-page study-nfc">
       <StudyLink className="study-nfc-back" to="/dashboard"><ArrowLeft size={18} aria-hidden="true" />Sua sala</StudyLink>
@@ -95,7 +118,7 @@ export default function NFC() {
           <p>Escolha o que abrir ao encostar o celular na etiqueta. Você pode testar o destino antes de gravar.</p></div>
           <NfcAnimation />
         </header>
-        {action && <p role="alert" className="study-note">Este atalho não é válido. Crie um novo destino abaixo.</p>}
+        {(action || detected) && <p role="alert" className="study-note">Este atalho não é válido. Crie um novo destino abaixo.</p>}
         <section className="study-nfc-builder" aria-label="Configurar etiqueta NFC">
           <label className={type === 'caverna' ? 'study-nfc-url' : ''}>
             Ação da etiqueta
@@ -124,8 +147,10 @@ export default function NFC() {
           <label className="study-nfc-url">Endereço da etiqueta<input ref={urlInput} aria-label="Endereço da etiqueta" readOnly value={url} placeholder="Escolha o destino acima" onFocus={event => event.target.select()} /></label>
           <div className="study-nfc-buttons">
             <button className="study-primary" type="button" disabled={!url || busy} onClick={copy}><Copy size={16} aria-hidden="true" />{copied ? 'Copiado' : 'Copiar link'}</button>
-            {destination && <StudyLink to={destination}>Testar destino<ArrowRight size={16} aria-hidden="true" /></StudyLink>}
+            {destination && <StudyLink to={tagPath}>Testar destino<ArrowRight size={16} aria-hidden="true" /></StudyLink>}
           </div>
+          {copied && !('NDEFReader' in window) &&
+            <button className="study-nfc-write" type="button" onClick={() => setWrittenPath(destination)}>Já gravei a etiqueta</button>}
           {'NDEFReader' in window && <button className="study-nfc-write" type="button" disabled={!url} onClick={busy ? () => controller.current?.abort() : write}>{busy ? 'Cancelar gravação' : 'Gravar na etiqueta com este celular'}</button>}
         </section>
         <details className="study-nfc-help">

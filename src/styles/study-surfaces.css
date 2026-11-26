@@ -238,3 +238,38 @@ html body #root .revision-board .revision-slip { position:relative; min-width:0;
   background:var(--control-glass-surface) !important; box-shadow:var(--control-glass-shadow);
   backdrop-filter:var(--control-glass-filter); -webkit-backdrop-filter:var(--control-glass-filter);
 }
+
+.study-nfc-receipt {
+  display: grid; align-content: center; justify-items: start; gap: 16px;
+  width: min(100%, 520px); min-height: 78dvh; margin: auto;
+  padding: max(28px, env(safe-area-inset-top)) 28px calc(var(--study-nav-space) + 24px);
+  color: #eef4fd;
+}
+.study-nfc-receipt > svg { color: #acd5f9; }
+.study-nfc-receipt h1 { font-size: clamp(34px, 8vw, 56px); letter-spacing: -.06em; margin: 0; }
+.study-nfc-receipt p { margin: 0; color: #b7c8dc; }
+.study-nfc-receipt button { color: #b7c8dc; min-height: 44px; }
+.nfc-receipt-progress { width: min(100%, 250px); height: 4px; border-radius: 4px; background: #d1e5ff22; overflow: hidden; }
+.nfc-receipt-progress::before { content: ''; display: block; height: 100%; background: linear-gradient(90deg,#9b87ff,#72dddb); transform-origin: left; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-study-motion="reduced"]) .nfc-receipt-progress::before { animation: nfc-ready 1100ms linear both; }
+}
+@keyframes nfc-ready { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.study-chat .study-chat-header small { display: block; color: #adc0d5; font-size: 11px; }
+.study-chat .study-chat-header h1 { font-size: 24px; line-height: 1.05; letter-spacing: -.04em; }
+.study-chat .study-chat-header > div { flex: 1; }
+.kira-quota { color: #adc0d5; font-size: 11px; white-space: nowrap; }
+.kira-conversation-start { width: min(100%, 660px); margin: 8px auto 0; }
+.kira-conversation-start .study-message { display: inline-block; margin: 0 0 12px; }
+.kira-shortcuts { display: flex; flex-wrap: wrap; gap: 6px; }
+.kira-shortcuts button {
+  padding: 6px 12px; min-height: 40px; border-radius: 12px;
+  border: 1px solid #d5e8ff26; background: #182337; color: #e0eaf7; font-size: 13px; cursor: pointer;
+}
+.kira-shortcuts button:hover { background: #24344d; }
+.study-room .study-room-dock .study-room-kira { border-radius: 0; min-height: 58px; }
+.study-room .study-room-dock .study-room-kira > svg:last-child { opacity: .6; }
+.study-room .study-home-session-icon {
+  background: transparent; border: 0; box-shadow: none; color: #e2edfb;
+}

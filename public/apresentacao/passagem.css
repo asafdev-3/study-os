@@ -42,3 +42,15 @@ html[data-study-passage="revealing"] #studyos-passage img {
 @media (prefers-reduced-motion: reduce) {
   #studyos-passage { display: none; }
 }
+
+.passage-stack { display:grid; justify-items:center; gap:20px; }
+#studyos-passage img.passage-kira { width:122px; height:81px; border:0; border-radius:0; box-shadow:none; object-fit:contain; }
+@media (prefers-reduced-motion:no-preference) {
+  html[data-study-passage="arriving"] #studyos-passage .passage-kira { animation: passage-kira-hop 900ms cubic-bezier(.22,1,.36,1) both; }
+}
+@keyframes passage-kira-hop {
+  0% { transform:translateY(8px) rotate(-4deg); }
+  34% { transform:translateY(-12px) rotate(5deg); }
+  72% { transform:translateY(1px) rotate(-2deg); }
+  100% { transform:translateY(0) rotate(0); }
+}

@@ -19,7 +19,14 @@
     const image = new Image(64, 64)
     image.src = '/icons/icon-192.png'
     image.alt = ''
-    layer.append(image)
+    const kira = new Image(122, 81)
+    kira.src = '/apresentacao/kira-avatar.webp'
+    kira.className = 'passage-kira'
+    kira.alt = ''
+    const stack = document.createElement('div')
+    stack.className = 'passage-stack'
+    stack.append(image, kira)
+    layer.append(stack)
     document.body.append(layer)
     return layer
   }
@@ -56,6 +63,7 @@
   } catch { return }
   if (!motionAllowed() || entry?.url !== location.pathname + location.search || Date.now() - entry.time > 15000) return
 
+  const started = performance.now()
   root.dataset.studyPassage = 'arriving'
   const layer = cover()
   const observer = new MutationObserver(() => {
@@ -67,12 +75,12 @@
   function reveal() {
     observer.disconnect()
     clearTimeout(timeout)
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       root.dataset.studyPassage = 'revealing'
       setTimeout(() => {
         layer.remove()
         delete root.dataset.studyPassage
       }, 440)
-    })
+    }, Math.max(0, 1350 - (performance.now() - started)))
   }
 })()

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 360 560" preserveAspectRatio="none">
+  <defs>
+    <radialGradient id="lens" cx=".40" cy=".69" r=".64" gradientUnits="objectBoundingBox">
+      <stop stop-color="#d0e2ec" stop-opacity=".25"/>
+      <stop offset=".61" stop-color="#638397" stop-opacity=".15"/>
+      <stop offset=".87" stop-color="#07101d" stop-opacity=".68"/>
+      <stop offset="1" stop-color="#b0c5cb" stop-opacity=".28"/>
+    </radialGradient>
+    <g id="bead">
+      <path d="M-.95.04C-.94-.54-.43-1.04.11-1.02.72-1.04 1.04-.48.97.13.9.88.32 1.11-.24.98-.67.91-1 .61-.95.04Z" fill="url(#lens)"/>
+      <ellipse cx="-.34" cy="-.53" rx=".21" ry=".11" fill="#e6f2fc" fill-opacity=".75" transform="rotate(-19 -.34 -.53)"/>
+      <path d="M.65.47Q.51.78.13.81" fill="none" stroke="#f4d6a6" stroke-width=".11" stroke-opacity=".55" stroke-linecap="round"/>
+    </g>
+  </defs>
+  <g>
+    <use xlink:href="#bead" transform="translate(21 15) scale(2.4 2.8)"/>
+    <use xlink:href="#bead" transform="translate(16 22) scale(1.1)"/>
+    <use xlink:href="#bead" transform="translate(74 9) scale(1.4 1.2)"/>
+    <use xlink:href="#bead" transform="translate(193 16) scale(2 2.1)"/>
+    <use xlink:href="#bead" transform="translate(226 8) scale(1.1)"/>
+    <use xlink:href="#bead" transform="translate(256 33) rotate(14) scale(3.5 4)"/>
+    <use xlink:href="#bead" transform="translate(261 24) scale(1.3)"/>
+    <use xlink:href="#bead" transform="translate(279 13) scale(1.5)"/>
+    <use xlink:href="#bead" transform="translate(342 78) scale(2.3 2.6)"/>
+    <use xlink:href="#bead" transform="translate(349 108) scale(1.2)"/>
+    <use xlink:href="#bead" transform="translate(12 132) scale(2.8 3.2)"/>
+    <use xlink:href="#bead" transform="translate(9 145) scale(1.1)"/>
+    <use xlink:href="#bead" transform="translate(350 236) scale(3.1 3.7)"/>
+    <use xlink:href="#bead" transform="translate(345 241) scale(1)"/>
+    <use xlink:href="#bead" transform="translate(12 327) scale(1.7 1.5)"/>
+    <use xlink:href="#bead" transform="translate(349 404) scale(1.5)"/>
+    <use xlink:href="#bead" transform="translate(10 458) scale(2.3 2.6)"/>
+    <use xlink:href="#bead" transform="translate(305 550) scale(2.8 2.4)"/>
+    <use xlink:href="#bead" transform="translate(294 546) scale(1.2)"/>
+    <use xlink:href="#bead" transform="translate(86 551) scale(1.6 1.3)"/>
+  </g>
+</svg>

@@ -2,25 +2,19 @@ import { useViewportSpring } from '../lib/useViewportSpring'
 import { kiraMessageMotion } from '../lib/kiraMotion'
 import PromptField from '../components/PromptField'
 import { m as motion } from 'framer-motion'
-import { useStudyReducedMotion, cardSpring, pageSpring, softTransition } from '../lib/motion'
+import { useStudyReducedMotion, pageSpring, softTransition } from '../lib/motion'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUp, BookmarkPlus, BookOpen, Check, ChevronRight, Copy, PenTool, Sparkles } from 'lucide-react'
+import { ArrowUp, BookmarkPlus, Check, Copy } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { KiraAvatar } from '../components/KiraAvatar'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
 import { useKira } from '../lib/useKira'
 
 const prompts = [
-  { Icon: BookOpen, color: '#60a5fa', label: 'Explique um assunto', subtitle: 'Conceito claro com exemplo prático', text: 'Me ajude a entender um assunto do ENEM. Pergunte qual é e explique com um exemplo.' },
-  { Icon: Sparkles, color: '#a78bfa', label: 'Pratique uma questão', subtitle: 'Simulado rápido estilo ENEM', text: 'Crie uma questão no estilo ENEM. Pergunte qual área eu quero praticar.' },
-  { Icon: PenTool, color: '#34d399', label: 'Treine redação', subtitle: 'Tema atual e estrutura nota 1000', text: 'Quero treinar redação do ENEM. Me dê um tema atual e explique como estruturar a introdução.' },
+  { label: 'Faça um quiz', text: 'Faça um quiz curto sobre o assunto que eu quero revisar. Pergunte qual é.' },
+  { label: 'Explique em 20 segundos', text: 'Explique em 20 segundos o assunto que eu quero entender. Pergunte qual é.' },
+  { label: 'Treinar redação', text: 'Quero treinar redação do ENEM. Me dê um tema e explique como estruturar a introdução.' },
 ]
-
-const fadeUp = (delay = 0, reduced = false) => ({
-  initial: reduced ? false : { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0 },
-  transition: reduced ? { duration: 0 } : { ...cardSpring, delay },
-})
 
 export default function Chat({ userId }) {
   const location = useLocation()
@@ -150,38 +144,11 @@ export default function Chat({ userId }) {
         background: 'transparent',
       }}
     >
-      <header
-        className="study-chat-header"
-        style={{
-          gap: 12,
-          borderRadius: isDesktop ? '0 0 24px 24px' : 0,
-          borderInline: isDesktop ? '1px solid rgba(226, 240, 255, 0.14)' : 'none',
-        }}
-      >
-        <KiraAvatar size={46} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{
-            fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-            color: '#9ec5ff', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600,
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
-            Kira · IA Educacional
-          </p>
-          <h1 style={{ fontSize: 16, fontWeight: 620, letterSpacing: '-0.02em', lineHeight: 1.2, color: '#f3f7ff' }}>
-            Tutora do StudyOS
-          </h1>
-        </div>
-        {remaining !== null && (
-          <span aria-live="polite" aria-label={`${remaining} mensagens restantes hoje`} style={{
-            fontSize: 11, color: '#c8daf4', flexShrink: 0,
-            padding: '5px 12px', borderRadius: 999,
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid rgba(215, 232, 255, 0.18)',
-            fontVariantNumeric: 'tabular-nums',
-          }}>
-            {remaining}/{KIRA_DAILY_LIMIT} hoje
-          </span>
-        )}
+      <header className="study-chat-header">
+        <div><small>Assistente de estudos</small><h1>Kira</h1></div>
+        {remaining !== null && <span className="kira-quota" aria-live="polite"
+          aria-label={`${remaining} mensagens restantes hoje`}>{remaining}/{KIRA_DAILY_LIMIT} hoje</span>}
+        <KiraAvatar size={52} />
       </header>
 
       <div
@@ -194,77 +161,10 @@ export default function Chat({ userId }) {
         }}
       >
         {messages.length === 0 && (
-          <section
-            className="study-chat-empty"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '100%',
-              paddingBlock: isDesktop ? '24px' : '12px',
-              maxWidth: isDesktop ? '860px' : '100%',
-              marginInline: 'auto',
-            }}
-          >
-            <div className="chat-welcome-copy"><KiraAvatar size={isDesktop ? 156 : 100} hero />
-
-            <motion.h2 {...fadeUp(0.04, reduced)} style={{ fontSize: isDesktop ? '32px' : '26px', fontWeight: 680, lineHeight: 1.12, color: '#f5f9ff', letterSpacing: '-0.035em', textAlign: 'center' }}>
-              O que vamos estudar hoje?
-            </motion.h2>
-            <motion.p {...fadeUp(0.08, reduced)} style={{ color: '#b4c7e2', fontSize: isDesktop ? 15 : 14, margin: '8px 0 24px', textAlign: 'center', maxWidth: '420px' }}>
-              Escolha um caminho abaixo ou envie sua dúvida para começar.
-            </motion.p>
-            </div>
-
-            <div
-              className="study-chat-starters"
-              style={{
-                width: '100%',
-                display: 'grid',
-                gridTemplateColumns: isDesktop ? 'repeat(3, minmax(0, 1fr))' : '1fr',
-                gap: isDesktop ? 14 : 10,
-              }}
-            >
-              {prompts.map(({ Icon, color, label, subtitle, text }, i) => (
-                <motion.button
-                  key={label}
-                  type="button"
-                  onClick={() => choose(text)}
-                  whileHover={reduced ? undefined : { y: -2, scale: 1.01 }}
-                  whileTap={reduced ? undefined : { scale: 0.98 }}
-                  {...fadeUp(0.12 + i * 0.05, reduced)}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: isDesktop ? 'column' : 'row',
-                    alignItems: isDesktop ? 'flex-start' : 'center',
-                    gap: isDesktop ? 12 : 13,
-                    padding: isDesktop ? '18px' : '12px 15px',
-                    borderRadius: 22,
-                    background: 'linear-gradient(150deg, rgba(26, 42, 68, 0.72), rgba(13, 23, 40, 0.84))',
-                    border: '1px solid rgba(215, 232, 255, 0.18)',
-                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 26px rgba(0, 0, 0, 0.2)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
-                  <div style={{
-                    width: 42, height: 42, borderRadius: 14, flexShrink: 0,
-                    background: `${color}22`,
-                    border: `1px solid ${color}48`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color,
-                  }}>
-                    <Icon size={20} strokeWidth={2} />
-                  </div>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <strong style={{ display: 'block', fontSize: 15, fontWeight: 620, color: '#f0f6ff' }}>{label}</strong>
-                    <small style={{ display: 'block', fontSize: 12.5, color: '#9eb3d1', marginTop: 3, lineHeight: 1.35 }}>{subtitle}</small>
-                  </span>
-                  {!isDesktop && <ChevronRight size={16} style={{ color: '#8ea8cc', flexShrink: 0 }} />}
-                </motion.button>
-              ))}
+          <section className="kira-conversation-start" aria-label="Começar conversa">
+            <p className="study-message study-message--assistant">Oi, eu sou a Kira. O que vamos estudar hoje?</p>
+            <div className="kira-shortcuts">
+              {prompts.map(({ label, text }) => <button key={label} type="button" onClick={() => choose(text)}>{label}</button>)}
             </div>
           </section>
         )}
