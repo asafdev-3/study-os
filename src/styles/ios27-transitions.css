@@ -285,15 +285,6 @@ html.is-android .study-route-blur {
   display: none !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html:not(.is-android):not([data-study-motion="reduced"]) .study-enem[data-switched] .study-enem-pane:not([hidden]) {
-    animation: study-segment-enter 180ms cubic-bezier(.22,1,.36,1) both;
-  }
-  @keyframes study-segment-enter {
-    from { opacity: .90; transform: translateY(3px); }
-    to { opacity: 1; transform: none; }
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   html::view-transition-old(root), html::view-transition-new(root),
   html::view-transition-old(study-screen), html::view-transition-new(study-screen) { animation-duration: 0s !important; }

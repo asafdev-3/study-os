@@ -2,9 +2,6 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { transitionRoute } from '../lib/routeTransition'
 
-const isAndroid = () => document.documentElement.classList.contains('is-android')
-
-// Animate the outgoing DOM before navigation on iOS/Desktop; navigate immediately on Android.
 export function FoldableTransition() {
   const navigate = useNavigate()
   useEffect(() => {
@@ -14,12 +11,6 @@ export function FoldableTransition() {
       const url = new URL(link.href)
       if (url.origin !== location.origin || url.pathname === location.pathname) return
       event.preventDefault()
-
-      // No Android, evita captura/blur de DOM em tela cheia para manter 60fps
-      if (isAndroid()) {
-        navigate(url.pathname + url.search + url.hash)
-        return
-      }
 
       void transitionRoute(url.pathname, () => navigate(url.pathname + url.search + url.hash))
     }

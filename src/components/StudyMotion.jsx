@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { m as motion, MotionConfig, LazyMotion, domAnimation } from 'framer-motion'
+import { m as motion, MotionConfig, LazyMotion, domMax } from 'framer-motion'
 import { pageSpring, softTransition, useStudyReducedMotion } from '../lib/motion'
+import { useLocation } from 'react-router-dom'
 import { readPreferences } from '../lib/preferences'
 
 const isAndroid = () => document.documentElement.classList.contains('is-android')
@@ -22,7 +23,7 @@ export function StudyMotion({ children }) {
   }, [reduced])
 
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={domMax} strict>
       <MotionConfig
         reducedMotion={reduced ? 'always' : 'never'}
         transition={reduced ? { duration: 0 } : pageSpring}
@@ -34,7 +35,16 @@ export function StudyMotion({ children }) {
 }
 
 export function PageMotion({ children }) {
-  return <div className="study-page-enter">{children}</div>
+  const { pathname } = useLocation()
+  const reduced = useStudyReducedMotion()
+  return (
+    <motion.div key={pathname} className="study-page-enter"
+      initial={reduced ? false : { opacity: .86 }}
+      animate={{ opacity: 1 }}
+      transition={reduced ? { duration: 0 } : softTransition}>
+      {children}
+    </motion.div>
+  )
 }
 
 export function FadeMotion({ children, delay = 0 }) {

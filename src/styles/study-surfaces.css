@@ -73,7 +73,6 @@ html:not([data-study-motion="reduced"]) .study-kira-character:hover img { transf
 @keyframes nfc-approach { 0%,100% { transform: translateX(-15px) rotate(-6deg); } 55%,76% { transform: translateX(13px) rotate(1deg); } }
 @keyframes leaf-turn { from { transform: perspective(950px) rotateY(var(--turn-angle,-32deg)); opacity: .72; } to { transform: perspective(950px) rotateY(0); opacity: 1; } }
 @keyframes leaf-shadow { from { opacity: .6; transform: scaleX(1); } to { opacity: 0; transform: scaleX(.08); } }
-@keyframes tab-arrival { from { opacity: .86; } to { opacity: 1; } }
 @media (prefers-reduced-motion: no-preference) {
   html:not([data-study-motion="reduced"]) .kira-lid { animation: kira-eyelid 4.6s ease-in-out infinite; }
   html:not([data-study-motion="reduced"]) .nfc-intro .setup-nfc-phone { animation: nfc-approach 2.6s ease-in-out 3; }
@@ -83,5 +82,39 @@ html:not([data-study-motion="reduced"]) .study-kira-character:hover img { transf
     content: ''; position: absolute; inset: 0; pointer-events: none; transform-origin: inherit;
     background: linear-gradient(90deg,#70583d50,transparent 55%); animation: leaf-shadow 250ms ease-out both;
   }
-  html:not([data-study-motion="reduced"]) .study-page-enter { animation: tab-arrival 160ms ease-out; }
+}
+
+/* A single optical layer per control. The highlight stays sharp over the blurred scene. */
+:root {
+  --control-glass-tint: rgb(16 32 52 / var(--ios27-glass-alpha, .67));
+  --control-glass-filter: blur(12px) saturate(1.3);
+  --control-glass-surface:
+    linear-gradient(155deg, #eff8ff38 0%, #d4ecff09 28%, transparent 55%, #a8d5ff19 100%),
+    var(--control-glass-tint);
+  --control-glass-edge: #d6ebff52;
+  --control-glass-shadow: inset 0 1px 0 #ffffff55, inset 0 -1px 0 #a2c6ec29, 0 5px 18px #030b172e;
+}
+html.is-android { --control-glass-filter: blur(5px) saturate(1.12); }
+
+html body #root :is(.study-navigation-inner, .study-home-session, .study-room-dock,
+  .study-room-nfc, .study-enem-tabs, .study-chat-header, .study-composer-field,
+  .study-book-new, .study-nfc-back, .study-topbar a, .settings-search) {
+  background: var(--control-glass-surface) !important;
+  border: 1px solid var(--control-glass-edge);
+  box-shadow: var(--control-glass-shadow);
+  -webkit-backdrop-filter: var(--control-glass-filter) !important;
+  backdrop-filter: var(--control-glass-filter) !important;
+}
+html body #root :is(.study-tab-indicator, .study-enem-segment-active) {
+  background: linear-gradient(145deg, #c2e4ff47, #80b9ee21 65%, #c9e9ff32) !important;
+  border: 1px solid #e5f4ff59;
+  box-shadow: inset 0 1px 0 #ffffff69, inset 0 -1px 0 #c7eaff24;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  html:root { --control-glass-surface: #19293c; --control-glass-filter: none; --control-glass-edge: #9eafc1; --control-glass-shadow: none; }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --control-glass-tint: #17273b; }
 }

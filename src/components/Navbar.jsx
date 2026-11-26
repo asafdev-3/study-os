@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { StudyLink } from './StudyLink'
-import { preloadStudyRoute } from '../lib/studyRoutes'
+import { m as motion } from 'framer-motion'
+import { microSpring, useStudyReducedMotion } from '../lib/motion'
 
 function SfIcon({ id, active }) {
   const fillOpacity = active ? 0.25 : 0
@@ -117,6 +118,7 @@ const items = [
 const hiddenRoutes = new Set(['/', '/login', '/lock', '/upgrade', '/sucesso', '/esqueci-senha', '/nfc', '/onboarding', '/caverna', '/native-session'])
 
 export default function Navbar() {
+  const reduced = useStudyReducedMotion()
   const { pathname } = useLocation()
   if (hiddenRoutes.has(pathname)) return null
 
@@ -133,13 +135,14 @@ export default function Navbar() {
               to={path}
               className="study-tab"
               aria-current={active ? 'page' : undefined}
-              onPointerEnter={() => { try { void preloadStudyRoute(path) } catch { /* ignore */ } }}
               style={{
                 color: active ? '#f8fbff' : '#9fb1cb',
                 fontWeight: active ? 600 : 500,
               }}
             >
-              {active && <span className="study-tab-indicator" aria-hidden="true" />}
+              {active && <motion.span layoutId={reduced ? undefined : 'study-current-tab'}
+                initial={false} transition={reduced ? { duration: 0 } : microSpring}
+                className="study-tab-indicator" aria-hidden="true" />}
               <SfIcon id={id} active={active} />
               <span>{label}</span>
             </StudyLink>
