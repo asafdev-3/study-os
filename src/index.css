@@ -114,7 +114,7 @@ html[data-study-chat], html[data-study-chat] body {
 }
 .study-chat-header h1 { font-size: 17px; font-weight: 650; letter-spacing: -.025em; }
 .study-chat-header p, .study-chat-header span { color: var(--study-muted); font-size: 12px; }
-.study-chat-header span { margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.study-chat-header > span:last-child { margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 .study-chat-log {
   min-height: 0; overflow-y: auto; overscroll-behavior: contain;
