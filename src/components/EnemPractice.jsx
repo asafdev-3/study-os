@@ -1,3 +1,4 @@
+import { ArrowRight, BookMarked, ChevronDown, LibraryBig } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 const areas = ['Matemática', 'Natureza', 'Humanas', 'Linguagens', 'Redação']
@@ -21,15 +22,18 @@ export default function EnemPractice({ userId }) {
   }
   return <section className="enem-practice">
     <div className="enem-practice-hero">
-      <h2>Uma questão por vez.</h2>
+      <h2>Uma questão <em>por vez.</em></h2>
       <p>Escolha a matéria. A Kira prepara uma questão e comenta sua tentativa.</p>
       <label>Matéria<select value={area} onChange={e => setArea(e.target.value)}>{areas.map(x => <option key={x}>{x}</option>)}</select></label>
       <button className="study-primary" onClick={() => ask(area === 'Redação'
         ? 'Quero praticar redação ENEM. Proponha um tema de treino, identificado como autoral, e peça primeiro minha tese. Oriente em etapas curtas. Não atribua nota oficial.'
-        : 'Vamos praticar ' + area + ' para o ENEM. Crie uma questão autoral de treino, identificada como gerada por IA, com cinco alternativas. Não dê o gabarito antes da minha tentativa. Depois explique o raciocínio e peça que eu identifique a causa de eventual erro.')}>Começar com Kira →</button>
+        : 'Vamos praticar ' + area + ' para o ENEM. Crie uma questão autoral de treino, identificada como gerada por IA, com cinco alternativas. Não dê o gabarito antes da minha tentativa. Depois explique o raciocínio e peça que eu identifique a causa de eventual erro.')}>Começar com Kira <ArrowRight size={17} aria-hidden="true" /></button>
       <small>Usa sua cota de mensagens somente quando você enviar no chat.</small>
     </div>
-    <details className="enem-practice-section"><summary>Meu diário de erros <span>{entries.length} registros</span></summary>
+    <div className="enem-resources">
+    <details className="enem-practice-section"><summary><BookMarked size={21} />
+      <span className="resource-title">Meu diário de erros<small>{entries.length} {entries.length === 1 ? 'registro' : 'registros'}</small></span><ChevronDown size={17} />
+    </summary>
       <p>Guarde o assunto ou a referência da questão que merece outra tentativa.</p>
       <form onSubmit={save}>
         <label>Assunto ou questão<input value={topic} onChange={e=>setTopic(e.target.value)} maxLength={160} required placeholder="Ex.: porcentagem · questão 12" /></label>
@@ -40,12 +44,13 @@ export default function EnemPractice({ userId }) {
       {entries.map(entry=><div className="enem-error-entry" key={entry.id}><strong>{entry.topic}</strong><small>{entry.area} · {entry.reason}</small><button onClick={()=>ask('Quero revisar ' + entry.topic + ' em ' + entry.area + '. Minha dificuldade foi: ' + entry.reason + '. Comece com uma pergunta curta para descobrir o que ainda não compreendi. Espere minha resposta.')}>Revisar com Kira →</button></div>)}
       <small>Registros desta conta salvos neste navegador, até 50 itens.</small>
     </details>
-    <details className="enem-practice-section"><summary>Provas, redação e materiais oficiais</summary>
+    <details className="enem-practice-section"><summary><LibraryBig size={21} /><span className="resource-title">Provas, redação e materiais oficiais</span><ChevronDown size={17} /></summary>
       <p>Treine com provas reais. Os links abrem recursos externos; o StudyOS não é vinculado ao MEC.</p>
       <a href="https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos" target="_blank" rel="noreferrer">Provas e gabaritos · Inep ↗</a>
       <a href="https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/outros-documentos" target="_blank" rel="noreferrer">Cartilha de redação e matriz · Inep ↗</a>
       <a href="https://app.mecenem.mec.gov.br" target="_blank" rel="noreferrer">Simulados, aulas e redação · MEC Enem ↗</a>
       <small>MEC Enem: gratuito, com acesso por conta Gov.br.</small>
     </details>
+    </div>
   </section>
 }

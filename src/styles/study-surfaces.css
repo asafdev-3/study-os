@@ -228,7 +228,7 @@ html body #root .revision-board .revision-slip { position:relative; min-width:0;
   .study-enem:not([data-chat-active]) { width:min(1140px,100%); padding:clamp(30px,5vh,68px) clamp(22px,3vw,50px) 40px; }
   .study-enem:not([data-chat-active]) .study-enem-header h1 { font-size:clamp(38px,4.7vw,62px); letter-spacing:-.06em; }
   .study-enem .enem-practice { display:grid; grid-template-columns: minmax(0,1.45fr) minmax(220px,1fr); align-items:start; gap:16px; }
-  .study-enem .enem-practice-hero { grid-row:span 2; margin:0; }
+  .study-enem .enem-practice-hero { margin:0; }
   .study-enem .enem-practice-section { margin:0; }
   #root .study-chat .study-chat-empty { display:grid !important; grid-template-columns:minmax(220px,1fr) minmax(240px,1fr); gap:clamp(20px,4vw,50px); align-content:center; }
   #root .study-chat .study-chat-starters { grid-template-columns:1fr !important; }
@@ -296,20 +296,12 @@ html body #root .study-navigation-inner {
   --control-glass-shadow: 0 4px 18px #02081030; --control-glass-filter: blur(12px);
 }
 html body #root .study-tab-indicator { background: #ffffff13 !important; border: none; box-shadow: none; }
-html body #root .study-enem .study-enem-tabs,html body #root .study-chat .study-chat-header {
+html body #root .study-chat .study-chat-header {
   --control-glass-surface: transparent; --control-glass-shadow: none; --control-glass-filter: none;
   border: none; border-radius: 0 !important; border-bottom: 1px solid #eceee92c;
 }
-html body #root .study-enem .study-enem-tabs { gap: 4px; margin: 0 0 20px; padding: 0 !important; width: 100%; }
-.study-enem .study-enem-segment { border: none; min-height: 44px; border-radius: 0; box-shadow: none; }
-html body #root .study-enem-segment-active { inset: auto 10% 0; height: 2px; border: 0; box-shadow: none; background: #d9dfd9 !important; border-radius: 2px; }
 #root .study-enem .study-enem-header { padding-bottom: 10px; }
 #root .study-enem .study-enem-header h1 { font: 500 clamp(37px,5vw,60px)/1.08 Georgia,serif; letter-spacing: -.055em; }
-html body #root .study-enem .enem-practice-hero { border: 0; background: #19232cf2 !important; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 18px; }
-.study-enem .enem-practice-hero h2, .study-admissions header h2 { letter-spacing: -.045em; text-wrap: balance; }
-.study-enem .enem-practice-section,.study-enem .study-enem-scholarship { background: transparent; border: 0; box-shadow: none; border-radius: 0; border-bottom: 1px solid #ffffff24; }
-.study-enem .study-admissions-form { background: #19232cf2; box-shadow: none; border: 0; }
-.study-enem .study-enem-chat { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; }
 .study-enem .enem-kira-welcome { justify-items: start; align-content: start; min-height: 0; padding: 12px 0; gap: 9px; }
 .study-enem .enem-kira-welcome .study-enem-prompts { justify-content: flex-start; flex-wrap: wrap; }
 html body #root .study-chat .study-chat-header { padding: max(14px,env(safe-area-inset-top)) 0 12px !important; }
@@ -343,3 +335,85 @@ body:has(.postit-editor[open]) { overflow: hidden; }
 .postit-editor footer button { min-height: 44px; border-radius: 22px; padding-inline: 20px; background: #eae5d8; color: #222921; font-weight: 600; }
 .postit-editor footer button:disabled { opacity: .45; }
 @media (max-width:600px) { .postit-editor[open] { align-items: end; } }
+
+/* A fixed track keeps the five labels still while the selected lens moves. */
+.study-enem {
+  --exam-surface: #19252df2;
+  --exam-rim: #dce7e633;
+  --exam-light: #efe9dc;
+  --exam-glass: rgb(26 39 46 / var(--ios27-glass-alpha,.67));
+}
+.enem-switch {
+  position: relative; isolation: isolate; flex: none; display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr)); width: min(100%,620px);
+  margin: 2px 0 clamp(16px,3vh,30px); padding: 4px; box-sizing: border-box;
+  border: 1px solid var(--exam-rim); border-radius: 28px; background: var(--exam-glass);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3);
+  box-shadow: inset 0 1px #ffffff21, 0 5px 14px #0810182b;
+}
+.enem-switch-track { position: absolute; inset: 4px; pointer-events: none; }
+.enem-switch-track span {
+  display: block; width: 20%; height: 100%; border-radius: 24px;
+  background: linear-gradient(150deg,#fffdf6,#dedbce);
+  box-shadow: inset 0 1px #fff,0 1px 5px #030a103d;
+}
+.enem-switch button {
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 7px;
+  min-width: 0; min-height: 44px; padding: 3px 1px; border: 0; border-radius: 23px;
+  font: 560 clamp(12px,1.3vw,14px)/1.2 system-ui,sans-serif; color: #e1e5e4; cursor: pointer; background: transparent;
+}
+.enem-switch button[aria-pressed="true"] { color: #192126; font-weight: 680; }
+.enem-switch button:focus-visible { outline: 2px solid #85bfff; outline-offset: 1px; }
+@media (max-width:560px) { .enem-switch button svg { display: none; } }
+
+html body #root .study-enem .enem-practice-hero {
+  min-width: 0; position: relative; padding: clamp(23px,3.6vw,46px); border: 1px solid #f2ead6ac;
+  border-radius: 24px; background: linear-gradient(125deg,#f4efe3,#e1d9c7) !important;
+  color: #272923; box-shadow: inset 0 1px #fff,0 9px 24px #050c1533;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+#root .enem-practice-hero h2 { margin: 0; color: #292b25; font: 500 clamp(32px,4.3vw,58px)/1.02 Georgia,serif; letter-spacing: -.055em; }
+.enem-practice-hero h2 em { font-weight: 400; color: #53523e; }
+#root .enem-practice-hero p { color: #44483e; max-width: 42ch; margin: 14px 0 26px; }
+#root .enem-practice-hero label { color: #353b33; }
+#root .enem-practice-hero select { background-color: #fffcf37a; border: 1px solid #3c48364d; color: #20271f; color-scheme: light; }
+#root .enem-practice-hero select option { background: #f8f3e9; color: #232723; }
+#root .enem-practice-hero .study-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; border-radius: 24px; border: 0; background: #25362f !important; color: #fffaf1; box-shadow: none; }
+#root .enem-practice-hero small { color: #52564c; font-size: 12px; }
+.enem-resources {
+  min-width: 0; padding: 0 18px; border-radius: 22px; border: 1px solid var(--exam-rim);
+  background: var(--exam-surface); box-shadow: inset 0 1px #ffffff11;
+}
+#root .enem-resources .enem-practice-section {
+  min-width: 0; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+}
+.enem-resources details + details { border-top: 1px solid var(--exam-rim) !important; }
+.enem-resources details[open] { padding-bottom: 17px !important; }
+.enem-resources summary { display: flex; align-items: center; gap: 12px; min-height: 74px; list-style: none; }
+.enem-resources summary::-webkit-details-marker { display: none; }
+.enem-resources summary svg { color: #d6d2c4; flex: none; stroke-width: 1.6; }
+.enem-resources summary svg:last-child { margin-left: auto; }
+.enem-resources details[open] summary svg:last-child { transform: rotate(180deg); }
+#root .enem-resources .resource-title { font-size: 15px; font-weight: 550; margin: 0; color: #f0efea; }
+#root .enem-resources .resource-title small { margin: 3px 0 0; font-size: 12px; color: #bec8ca; font-weight: 400; }
+.study-enem :is(.study-admissions-form,.study-enem-focus,.study-enem-scholarship) {
+  border: 1px solid var(--exam-rim); border-radius: 22px; background: var(--exam-surface); box-shadow: inset 0 1px #ffffff0e;
+}
+.study-enem .study-enem-focus { padding: clamp(18px,4vw,32px); }
+.study-enem .study-enem-scholarship { backdrop-filter: none; -webkit-backdrop-filter: none; }
+.study-enem .revision-board { border-radius: 22px; border: 1px solid #e9dcbb35; }
+.study-enem .revision-new { min-height: 44px; background: var(--exam-light); }
+.study-enem .revision-filters button { min-height: 44px; }
+.study-enem .revision-filters button[aria-pressed="true"] { color: #f8f3e5; background: #343b3c; border-color: #e4dbc46b; }
+#root .study-enem .study-enem-chat { border: 1px solid var(--exam-rim); border-radius: 22px; padding: clamp(12px,2vw,24px); background: var(--exam-surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+@media (max-width:767px) {
+  .study-enem[data-chat-active] .enem-switch { margin-bottom: 8px; }
+  #root .study-enem .study-enem-chat { padding: 10px; margin-top: 0; }
+}
+@media (min-width:900px) {
+  #root .study-enem .enem-practice { grid-template-columns: minmax(0,1.45fr) minmax(260px,.9fr); gap: clamp(16px,2vw,30px); }
+}
+@media (prefers-reduced-transparency:reduce),(prefers-contrast:more) {
+  .enem-switch { background: #1a272e; backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media (forced-colors: active) { .enem-switch button[aria-pressed="true"] { outline: 2px solid Highlight; } }

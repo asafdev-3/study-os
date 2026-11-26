@@ -11,12 +11,20 @@ import EnemAdmissions from "../components/EnemAdmissions";
 import EnemPractice from "../components/EnemPractice";
 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { ArrowUp, BookmarkPlus, ChevronRight, RotateCcw } from "lucide-react";
+import { ArrowUp, BookmarkPlus, BookOpen, ChevronRight, GraduationCap, MessageCircle, RotateCcw, StickyNote, Timer } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { FOCUS_SECONDS, readFocus } from "../lib/focus";
 import { notifyFocus } from "../lib/preferences";
 import { KIRA_DAILY_LIMIT } from "../lib/groq";
 import { useKira } from "../lib/useKira";
+
+const tabs = [
+  ["praticar", "Praticar", BookOpen],
+  ["foco", "Foco", Timer],
+  ["postits", "Post-its", StickyNote],
+  ["corte", "Ingresso", GraduationCap],
+  ["kira", "Kira", MessageCircle],
+];
 
 const AREAS = [
   { id: "lc", label: "Linguagens", short: "LC", color: "#f59e0b" },
@@ -237,14 +245,6 @@ export default function EnemScreen({ userId }) {
     } } });
   }
 
-  const tabs = [
-    ["praticar", "Praticar"],
-    ["foco", "Foco"],
-    ["postits", "Post-its"],
-    ["corte", "Ingresso"],
-    ["kira", "Kira"],
-  ];
-
   const paneMotion = reduced
     ? { initial: false, animate: { opacity: 1 } }
     : {
@@ -263,29 +263,17 @@ export default function EnemScreen({ userId }) {
     >
       <header className="study-enem-header"><h1>ENEM</h1></header>
 
-      <div className="study-enem-tabs" role="group" aria-label="Seções do modo ENEM">
-        {tabs.map(([id, label]) => {
-          const active = tab === id;
-          return (
-            <button
-              className="study-enem-segment"
-              key={id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => { if (!active) transitionTo(() => { setSwitched(true); setTab(id); }); }}
-            >
-              {active && (
-                <motion.span
-                  layoutId="enem-active-pill"
-                  className="study-enem-segment-active"
-                  aria-hidden="true"
-                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 480, damping: 38, mass: 0.65 }}
-                />
-              )}
-              <span>{label}</span>
-            </button>
-          );
-        })}
+      <div className="enem-switch" role="group" aria-label="Seções do modo ENEM">
+        <div className="enem-switch-track" aria-hidden="true">
+          <motion.span initial={false} animate={{ x: (tabs.findIndex(([id]) => id === tab) * 100) + '%' }}
+            transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 33 }} />
+        </div>
+        {tabs.map(([id, label, Icon]) => (
+          <button key={id} type="button" aria-pressed={tab === id}
+            onClick={() => { if (tab !== id) transitionTo(() => { setSwitched(true); setTab(id); }); }}>
+            <Icon size={17} aria-hidden="true" /><span>{label}</span>
+          </button>
+        ))}
       </div>
 
       <AnimatePresence mode="wait" initial={false}>
