@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion } from '../lib/motion'
@@ -7,7 +7,6 @@ import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
 import RainWindow from '../components/RainWindow'
 import KiraLoginScene from '../components/KiraLoginScene'
-import studyosBackdrop from '../assets/studyos-backdrop.webp'
 import './Auth.css'
 
 const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
@@ -43,7 +42,7 @@ export default function Login() {
   const location = useLocation()
   const navigate = useNavigate()
   const android = isAndroidDevice()
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState(() => new URLSearchParams(location.search).get('modo') === 'cadastro' ? 'signup' : 'login')
   const [rainPaused, setRainPaused] = useState(() => android)
   const [focusedField, setFocusedField] = useState(null)
   const [email, setEmail] = useState('')
@@ -139,41 +138,20 @@ export default function Login() {
     }
   }
 
-  const glassFilterId = useId().replace(/[^a-zA-Z0-9_-]/g, '')
-  const refractiveGlass = !android
-    && /Chrome\//.test(navigator.userAgent)
-    && !/Android|Mobile|iPhone|iPad/.test(navigator.userAgent)
-
   const creating = mode === 'signup'
   const reducedMotion = useStudyReducedMotion() || android
 
   return (
     <main className="study-entry study-auth-page study-auth-login">
-      {!android && <RainWindow still={reducedMotion || rainPaused} />}
-      {!android && (
-        <svg width="0" height="0" className="study-auth-glass-filter" aria-hidden="true" focusable="false">
-          <defs>
-            <filter id={glassFilterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-              <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="2" seed="8" result="turbulence" />
-              <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-          </defs>
-        </svg>
-      )}
-      <div className="study-auth-watermark study-auth-brand-backdrop" aria-hidden="true">
-        <img src={studyosBackdrop} alt="" width="900" height="900" style={{ maskImage: `url(${studyosBackdrop})`, WebkitMaskImage: `url(${studyosBackdrop})` }} />
-      </div>
-
+      <RainWindow still={reducedMotion || rainPaused} />
       <KiraLoginScene reducedMotion={reducedMotion} creating={creating} focusedField={focusedField} />
 
       <section
         className="study-auth-card"
-        data-refraction={refractiveGlass}
-        style={refractiveGlass ? { '--auth-glass-filter': 'url(#' + glassFilterId + ')' } : undefined}
         aria-labelledby="auth-title"
       >
         <header className="study-auth-login-brand">
-          <span className="study-auth-login-wordmark">StudyOS</span>
+          <a className="study-auth-login-wordmark" href="/apresentacao/index.html" aria-label="Conhecer o StudyOS">StudyOS ↗</a>
           {!reducedMotion && !android && (
             <button type="button" className="rain-toggle" onClick={() => setRainPaused(value => !value)}
               aria-label={rainPaused ? 'Retomar chuva' : 'Pausar chuva'} title={rainPaused ? 'Retomar chuva' : 'Pausar chuva'}>

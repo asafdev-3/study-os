@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { m as motion, AnimatePresence } from 'framer-motion'
-import { Plus, Check, X, Trash2, StickyNote } from 'lucide-react'
+import { Plus, Check, X, Trash2 } from 'lucide-react'
 import { cardSpring, useStudyReducedMotion } from '../lib/motion'
 
 const filtros = ['Todos', 'Hoje', 'Semana', 'Sem prazo']
@@ -250,7 +250,7 @@ function Lembretes({ userId }) {
   }
 
   function adicionarPostit({ texto, materia, prazo }) {
-    const cor = materia ? coresMaterias[materia] : '#C5B8E8'
+    const cor = materia ? coresMaterias[materia] : '#F1DB8D'
     setItens((prev) => [
       {
         id: crypto.randomUUID(),
@@ -265,225 +265,34 @@ function Lembretes({ userId }) {
   }
 
   return (
-    <div className="study-postits" style={{ paddingTop: '8px', paddingBottom: '28px' }}>
-      {/* Cabeçalho do Mural */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-          padding: '16px 18px',
-          borderRadius: '22px',
-          background: 'linear-gradient(150deg, rgba(26, 42, 68, 0.72), rgba(14, 24, 42, 0.82))',
-          border: '1px solid rgba(226, 240, 255, 0.16)',
-          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.16)',
-          marginBottom: '16px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '13px',
-              background: 'rgba(245, 208, 138, 0.18)',
-              border: '1px solid rgba(245, 208, 138, 0.36)',
-              color: '#F5D08A',
-              display: 'grid',
-              placeItems: 'center',
-            }}
-          >
-            <StickyNote size={19} />
-          </span>
-          <div>
-            <h2 style={{ fontSize: '17px', fontWeight: 650, color: '#f5f9ff', margin: 0 }}>Mural de Revisão</h2>
-            <p style={{ fontSize: '12px', color: '#9eb3d1', margin: '2px 0 0' }}>
-              {abertosCount === 0 ? 'Tudo em dia por aqui' : `${abertosCount} ${abertosCount === 1 ? 'lembrete ativo' : 'lembretes ativos'}`}
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          aria-label="Novo post-it"
-          onClick={() => setSheetAberto(true)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            minHeight: '40px',
-            padding: '0 15px',
-            borderRadius: '999px',
-            background: 'linear-gradient(145deg, #eef5ff, #c5dcfb)',
-            border: '1px solid rgba(255, 255, 255, 0.8)',
-            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 6px 18px rgba(37, 99, 235, 0.25)',
-            color: '#0e1d34',
-            fontSize: '13px',
-            fontWeight: 650,
-            cursor: 'pointer',
-          }}
-        >
-          <Plus size={16} />
-          <span>Novo</span>
-        </button>
+    <section className="revision-wall" aria-label="Mural de revisão">
+      <header className="revision-heading">
+        <div><h2>Mural de revisão</h2><p>{abertosCount} {abertosCount === 1 ? 'lembrete em aberto' : 'lembretes em aberto'}</p></div>
+        <button type="button" className="revision-new" aria-label="Novo post-it" onClick={() => setSheetAberto(true)}><Plus size={17} /> Novo</button>
+      </header>
+      <div className="revision-filters" role="group" aria-label="Filtrar por prazo">
+        {filtros.map(f => <button key={f} type="button" aria-pressed={ativo === f} onClick={() => setAtivo(f)}>{f}</button>)}
       </div>
-
-      {/* Filtros em pílula */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
-        {filtros.map((f) => {
-          const selected = ativo === f
-          return (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setAtivo(f)}
-              style={{
-                minHeight: '36px',
-                padding: '0 14px',
-                borderRadius: '999px',
-                fontSize: '12.5px',
-                fontWeight: selected ? 620 : 500,
-                background: selected
-                  ? 'linear-gradient(145deg, rgba(164, 202, 255, 0.28), rgba(86, 132, 214, 0.22))'
-                  : 'rgba(18, 30, 50, 0.65)',
-                border: selected ? '1px solid rgba(226, 240, 255, 0.32)' : '1px solid rgba(226, 240, 255, 0.14)',
-                color: selected ? '#ffffff' : '#a9bdd8',
-                cursor: 'pointer',
-                transition: 'all 150ms ease',
-              }}
-            >
-              {f}
-            </button>
-          )
-        })}
+      <div className="revision-board">
+        {itensFiltrados.length === 0 && <p className="revision-empty">{itens.length ? 'Nenhum bilhete neste prazo.' : 'Cole seu primeiro lembrete no mural.'}</p>}
+        <AnimatePresence initial={false}>
+          {itensFiltrados.map(({id, materia, cor, texto, prazo, feito}, index) =>
+            <motion.article key={id} className="study-paper-postit revision-slip" data-done={feito}
+              style={{ '--paper-tint': cor || '#F1DB8D' }}
+              layout={!reduced} initial={reduced ? false : { opacity: 0, y: -7, rotate: -2 }}
+              animate={{ opacity: 1, y: 0, rotate: [-1.3,1,.35][index % 3] }}
+              exit={{ opacity: 0 }} transition={reduced ? {duration:0} : cardSpring}>
+              <header><small>{materia}</small><button type="button" aria-label={'Remover post-it: ' + texto} onClick={() => removerPostit(id)}><Trash2 size={15} /></button></header>
+              <p>{texto}</p>
+              <footer><small>{formatarPrazo(prazo)}</small><button type="button" aria-pressed={feito}
+                aria-label={(feito ? 'Marcar como pendente: ' : 'Concluir: ') + texto} onClick={() => toggleFeito(id)}>
+                <span className="slip-check" aria-hidden="true">{feito && <Check size={12} />}</span>{feito ? 'Feito' : 'Concluir'}
+              </button></footer>
+            </motion.article>)}
+        </AnimatePresence>
       </div>
-
-      {itensFiltrados.length === 0 ? (
-        <div
-          style={{
-            padding: '36px 20px',
-            borderRadius: '24px',
-            textAlign: 'center',
-            background: 'rgba(18, 30, 50, 0.55)',
-            border: '1px dashed rgba(226, 240, 255, 0.2)',
-          }}
-        >
-          <p style={{ fontSize: '14px', color: '#b4c7e2', margin: 0 }}>
-            Sua mesa está livre. Toque em <strong>+ Novo</strong> para colar um post-it.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-          <AnimatePresence initial={false}>
-            {itensFiltrados.map(({ id, materia, cor, texto, prazo, feito }, idx) => (
-              <motion.article
-                key={id}
-                layout={!reduced}
-                initial={reduced ? false : { opacity: 0, y: 12, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1, rotate: (idx % 3) - 1 }}
-                exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
-                transition={reduced ? { duration: 0 } : cardSpring}
-                className="study-paper-postit relative p-4 flex flex-col justify-between min-h-[168px]"
-                style={{
-                  '--postit-color': cor,
-                  borderRadius: '18px',
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: 'rgba(24, 32, 46, 0.68)',
-                      }}
-                    >
-                      {materia}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removerPostit(id)}
-                      aria-label={`Remover post-it: ${texto}`}
-                      style={{
-                        width: '26px',
-                        height: '26px',
-                        borderRadius: '999px',
-                        display: 'grid',
-                        placeItems: 'center',
-                        background: 'rgba(24, 32, 46, 0.08)',
-                        border: 'none',
-                        color: 'rgba(24, 32, 46, 0.65)',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-
-                  <p
-                    style={{
-                      fontSize: '14.5px',
-                      fontWeight: 560,
-                      color: '#1e2634',
-                      lineHeight: 1.42,
-                      textDecoration: feito ? 'line-through' : 'none',
-                      opacity: feito ? 0.55 : 1,
-                    }}
-                  >
-                    {texto}
-                  </p>
-                </div>
-
-                <div
-                  className="study-postit-footer"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginTop: '14px',
-                    paddingTop: '10px',
-                    borderTop: '1px solid rgba(30, 38, 52, 0.14)',
-                  }}
-                >
-                  <span style={{ fontSize: '11px', color: 'rgba(30, 38, 52, 0.65)', fontWeight: 500 }}>
-                    {formatarPrazo(prazo)}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleFeito(id)}
-                    aria-label={feito ? 'Marcar como pendente: ' + texto : 'Concluir: ' + texto}
-                    aria-pressed={feito}
-                    className="study-postit-complete"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      fontSize: '11.5px',
-                      fontWeight: 650,
-                      color: '#1e2634',
-                      background: feito ? 'rgba(16, 185, 129, 0.24)' : 'rgba(30, 38, 52, 0.08)',
-                      padding: '4px 10px',
-                      borderRadius: '999px',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {feito && <Check size={12} />}
-                    <span>{feito ? 'Feito' : 'Concluir'}</span>
-                  </button>
-                </div>
-              </motion.article>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
-
       {sheetAberto && <ModalNovoPostit onClose={() => setSheetAberto(false)} onSalvar={adicionarPostit} />}
-    </div>
+    </section>
   )
 }
 

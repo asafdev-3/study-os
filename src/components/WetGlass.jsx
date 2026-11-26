@@ -76,17 +76,20 @@ export default function WetGlass({ photoRef }) {
   useEffect(() => {
     const canvas = pane.current
     const photo = photoRef.current
+    const large = window.matchMedia('(min-width: 900px)')
     let frame = 0
     function schedule() {
       cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => paintPane(canvas, photo))
+      if (large.matches) frame = requestAnimationFrame(() => paintPane(canvas, photo))
     }
     const observer = new ResizeObserver(schedule)
     observer.observe(canvas)
+    large.addEventListener('change', schedule)
     photo.addEventListener('load', schedule)
     schedule()
     return () => {
       observer.disconnect()
+      large.removeEventListener('change', schedule)
       photo.removeEventListener('load', schedule)
       cancelAnimationFrame(frame)
     }

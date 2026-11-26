@@ -258,6 +258,7 @@ export default function EnemScreen({ userId }) {
   return (
     <motion.main
       ref={page}
+      data-enem-section={tab}
       data-chat-active={tab === "kira" || undefined}
       className="study-page study-enem"
       data-switched={switched || undefined}

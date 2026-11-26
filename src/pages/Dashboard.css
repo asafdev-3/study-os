@@ -25,8 +25,6 @@
 }
 .study-home-v2 .study-home-rain .rain-window { inset: 0; }
 .study-home-v2 .study-home-rain .rain-window img { object-position: 58% center; }
-.study-home-v2 .study-home-rain .rain-far { opacity: .38; filter: contrast(1.28) brightness(1.22); }
-.study-home-v2 .study-home-rain .rain-near { opacity: .56; filter: contrast(1.32) brightness(1.28); }
 .study-home-v2 .study-room-shade {
   z-index: -1;
   background:
@@ -249,7 +247,6 @@
   .study-home-v2 .study-room-kira { min-height: 68px; }
   .study-home-v2 .study-home-rain .rain-window img { object-position: 81% center; }
   .study-home-v2 .study-home-rain .rain-far { display: none; }
-  .study-home-v2 .study-home-rain .rain-near { opacity: .68; filter: contrast(1.42) brightness(1.35); }
   .study-home-v2 .study-home-session,
   .study-home-v2 .study-room-dock,
   .study-home-v2 .study-room-nfc,

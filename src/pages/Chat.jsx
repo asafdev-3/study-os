@@ -207,7 +207,7 @@ export default function Chat({ userId }) {
               marginInline: 'auto',
             }}
           >
-            <KiraAvatar size={isDesktop ? 142 : 110} hero />
+            <div className="chat-welcome-copy"><KiraAvatar size={isDesktop ? 156 : 100} hero />
 
             <motion.h2 {...fadeUp(0.04, reduced)} style={{ fontSize: isDesktop ? '32px' : '26px', fontWeight: 680, lineHeight: 1.12, color: '#f5f9ff', letterSpacing: '-0.035em', textAlign: 'center' }}>
               O que vamos estudar hoje?
@@ -215,6 +215,7 @@ export default function Chat({ userId }) {
             <motion.p {...fadeUp(0.08, reduced)} style={{ color: '#b4c7e2', fontSize: isDesktop ? 15 : 14, margin: '8px 0 24px', textAlign: 'center', maxWidth: '420px' }}>
               Escolha um caminho abaixo ou envie sua dúvida para começar.
             </motion.p>
+            </div>
 
             <div
               className="study-chat-starters"

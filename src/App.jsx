@@ -18,6 +18,7 @@ import './styles/ios27.css'
 import './styles/ios27-transitions.css'
 import './styles/apple-polish.css'
 import './styles/study-surfaces.css'
+import SceneBackdrop from './components/SceneBackdrop'
 import InstallPwaModal from './components/InstallPwaModal'
 
 const Lock = lazy(() => import('./pages/Lock'))
@@ -112,7 +113,7 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
   const scenic = !['dashboard', 'login', 'native-session'].includes(scene)
   return (
     <>
-      {scenic && <div aria-hidden="true" key={scene} data-scene={scene} className="study-scenery" />}
+      {scenic && scene !== 'splash' && <SceneBackdrop scene={scene} />}
       {comSidebar && <InstallPwaModal auto={location.pathname === '/dashboard'} />}
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}

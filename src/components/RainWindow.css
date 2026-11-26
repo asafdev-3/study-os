@@ -92,7 +92,11 @@
   .rain-sheet,.rain-runner { animation: none; }
 }
 
-/* Stronger rain visibility on the StudyOS room background. */
-.study-home-v2 .rain-window .rain-sheet { mix-blend-mode: screen; }
-.study-home-v2 .rain-window .rain-near { opacity: .62; filter: contrast(1.35) brightness(1.28); }
-@media (max-width: 760px) { .study-home-v2 .rain-window .rain-near { opacity: .7; filter: contrast(1.42) brightness(1.35); } }
+.rain-window picture { opacity: .65; }
+.rain-window .rain-wind { opacity: .38; }
+.rain-window .rain-pane, .rain-window .rain-runner { opacity: .25; }
+.study-home-v2 .rain-window picture { opacity: .53; }
+
+@media (max-width: 899px) {
+  .rain-window .rain-pane, .rain-window .rain-runner { display: none; }
+}
