@@ -1037,3 +1037,31 @@ select option { background:#1c293b; color:#f7f9ff; }
 .study-checkout-help summary { padding: 12px 0; cursor: pointer; }
 .study-checkout-help p { margin: 0 0 8px; }
 .study-checkout-help strong { color: #f4f4f5; font-variant-numeric: tabular-nums; }
+
+/* NFC setup */
+.study-nfc .study-nfc-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.study-nfc .study-nfc-back:focus-visible {
+  outline: 2px solid #d9e9ff;
+  outline-offset: 3px;
+}
+.study-nfc .nfc-intro { gap: clamp(20px, 4vw, 32px); }
+.study-nfc .study-nfc-builder input,
+.study-nfc .study-nfc-builder select { border-radius: 14px; }
+.study-nfc .study-nfc-help { padding-bottom: env(safe-area-inset-bottom); }
+@media (max-width: 600px) {
+  .study-nfc .nfc-intro { display: flex; flex-direction: column; align-items: stretch; }
+  .study-nfc .study-nfc-builder { grid-template-columns: minmax(0, 1fr); }
+  .study-nfc .study-nfc-builder > * { grid-column: 1; }
+}
