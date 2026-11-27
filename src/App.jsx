@@ -22,6 +22,7 @@ import SceneBackdrop from './components/SceneBackdrop'
 import InstallPwaModal from './components/InstallPwaModal'
 import DemoSession from './components/DemoSession'
 import GrowthMetrics from './components/GrowthMetrics'
+import StudyPrivacyChoice from './components/StudyPrivacyChoice'
 import { isDemo, demoExpiry, endDemo } from './lib/demo'
 
 const Admin = lazy(() => import('./pages/Admin'))
@@ -123,6 +124,7 @@ function AppContent({ sessao, bloqueado, desbloquear, onDemoEnd }) {
     <>
       {scenic && scene !== 'splash' && <SceneBackdrop scene={scene} />}
       {!adminRoute && <GrowthMetrics path={location.pathname} mode={isDemo(sessao) ? 'demo' : sessao ? 'account' : 'visitor'} />}
+      {!!userId && !bloqueado && !isDemo(sessao) && !adminRoute && <StudyPrivacyChoice userId={userId} /> }
       {comSidebar && <InstallPwaModal auto={!isDemo(sessao) && location.pathname === '/dashboard'} />}
       {isDemo(sessao) && <DemoSession session={sessao} onEnd={onDemoEnd} />}
       {comSidebar && <TopBar />}
