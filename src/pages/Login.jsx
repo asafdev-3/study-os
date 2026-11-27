@@ -168,6 +168,7 @@ export default function Login() {
   }
 
   const creating = mode === 'signup'
+  const awaitingConfirmation = creating && confirmationEmail && confirmationEmail === email.trim().toLowerCase()
   const reducedMotion = useStudyReducedMotion() || android
 
   return (
@@ -211,7 +212,14 @@ export default function Login() {
           <button type="button" aria-pressed={creating} className={creating ? 'is-active' : ''} onClick={() => changeMode('signup')}>Criar conta</button>
         </div>
 
-        <form className="study-auth-form"
+        {awaitingConfirmation ? <section className="study-auth-form" aria-label="Confirmação de e-mail">
+          <h2>Confirme seu e-mail</h2>
+          <p className="study-auth-feedback is-notice">Enviamos um link para {confirmationEmail}. Abra sua caixa de entrada ou spam e toque no link para ativar sua conta.</p>
+          <button type="button" className="study-auth-submit" onClick={() => changeMode('login')}>Já confirmei, entrar <ArrowRight size={18}/></button>
+          <button type="button" className="study-auth-google" disabled={loading || resendSeconds > 0} onClick={resendConfirmation}>{resendSeconds > 0 ? `Reenviar em ${resendSeconds}s` : 'Reenviar confirmação'}</button>
+          {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
+          <button type="button" className="study-auth-google" onClick={() => {setConfirmationEmail(''); setNotice(''); setErro('')}}>Corrigir endereço de e-mail</button>
+        </section> : <form className="study-auth-form"
           onFocusCapture={event => setFocusedField(event.target.name || null)}
           onBlurCapture={event => {
             if (!event.currentTarget.contains(event.relatedTarget)) setFocusedField(null)
@@ -257,7 +265,7 @@ export default function Login() {
             {loading ? 'Aguarde…' : creating ? 'Criar conta' : 'Entrar'}
             {!loading && <ArrowRight size={18} aria-hidden="true" />}
           </button>
-        </form>
+        </form>}
 
         <div className="study-auth-divider"><span>ou</span></div>
         <button className="study-auth-google" type="button" onClick={handleGoogle} disabled={loading || demoLoading}>
