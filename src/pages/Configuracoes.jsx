@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { isDemo, endDemo } from '../lib/demo'
 import { readPreferences, updatePreferences } from '../lib/preferences'
 import { InstallAnimation } from '../components/SetupAnimations'
 
@@ -88,6 +89,8 @@ export default function Configuracoes() {
   async function signOut() {
     setPending(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (isDemo(session)) { await endDemo(); navigate('/login', {replace:true}); return }
       const { error } = await supabase.auth.signOut({ scope: 'local' })
       if (error) throw error
       navigate('/login', { replace: true })

@@ -1,6 +1,6 @@
 import { FoldableTransition } from './components/FoldableTransition'
-import { createBrowserRouter, RouterProvider, Routes, Route, useLocation, Navigate } from 'react-router-dom'
-import { lazy, Suspense, useState, useEffect } from 'react'
+import { createBrowserRouter, RouterProvider, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useState, useEffect, useCallback } from 'react'
 import { supabase } from './lib/supabase'
 import { readPreferences } from './lib/preferences'
 import { StudyMotion, PageMotion } from './components/StudyMotion'
@@ -20,6 +20,8 @@ import './styles/apple-polish.css'
 import './styles/study-surfaces.css'
 import SceneBackdrop from './components/SceneBackdrop'
 import InstallPwaModal from './components/InstallPwaModal'
+import DemoSession from './components/DemoSession'
+import { isDemo, demoExpiry, endDemo } from './lib/demo'
 
 const Lock = lazy(() => import('./pages/Lock'))
 const Dashboard = lazy(loadStudyRoute['/dashboard'])
@@ -63,6 +65,8 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
   const location = useLocation()
   const publica = ROTAS_PUBLICAS.includes(location.pathname)
 
+  if (isDemo(sessao) && ['/upgrade','/sucesso','/lock','/native-session','/esqueci-senha','/configuracoes/assinatura'].includes(location.pathname)) return <Navigate to="/dashboard" replace />
+
   if (sessao && bloqueado && location.pathname !== '/lock') {
     return <Navigate to="/lock" replace state={{ destino: publica ? '/dashboard' : location.pathname + location.search }} />
   }
@@ -99,7 +103,7 @@ function AppRoutes({ sessao, bloqueado, desbloquear }) {
   )
 }
 
-function AppContent({ sessao, bloqueado, desbloquear }) {
+function AppContent({ sessao, bloqueado, desbloquear, onDemoEnd }) {
   const userId = sessao?.user.id
   useEffect(() => {
     if (!userId || bloqueado) return
@@ -114,11 +118,12 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
   return (
     <>
       {scenic && scene !== 'splash' && <SceneBackdrop scene={scene} />}
-      {comSidebar && <InstallPwaModal auto={location.pathname === '/dashboard'} />}
+      {comSidebar && <InstallPwaModal auto={!isDemo(sessao) && location.pathname === '/dashboard'} />}
+      {isDemo(sessao) && <DemoSession session={sessao} onEnd={onDemoEnd} />}
       {comSidebar && <TopBar />}
       {comSidebar && <Navbar />}
       {comSidebar && <FoldableTransition />}
-      {comSidebar && <PaywallModal />}
+      {comSidebar && !isDemo(sessao) && <PaywallModal />}
       <div style={{ paddingLeft: comSidebar ? undefined : 0 }} data-scene={scene} data-scenic={scenic || undefined} className={'study-route-stage' + (comSidebar && location.pathname !== '/dashboard' ? ' md:pl-[88px]' : '')}>
         <Suspense fallback={<TelaCarregando />}>
           <AppRoutes sessao={sessao} bloqueado={bloqueado} desbloquear={desbloquear} />
@@ -130,20 +135,25 @@ function AppContent({ sessao, bloqueado, desbloquear }) {
 
 function StudySession() {
   const [auth, setAuth] = useState({ session: undefined, locked: false })
+  const navigate = useNavigate()
+  const onDemoEnd = useCallback(() => {
+    setAuth({session:null, locked:false})
+    navigate('/login', {replace:true, state:{demoEnded:true}})
+  }, [navigate])
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setAuth((previous) => {
-        if (event === 'INITIAL_SESSION') return { session, locked: Boolean(session) && !oauthReturn && readPreferences().lock }
+        if (event === 'INITIAL_SESSION') return { session, locked: Boolean(session) && !isDemo(session) && !oauthReturn && readPreferences().lock }
         if (previous.session === undefined) return previous
-        return { session, locked: Boolean(session) && previous.locked }
+        return { session, locked: Boolean(session) && !isDemo(session) && previous.locked }
       })
     })
     return () => subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
-    if (!auth.session?.user.id) return
+    if (!auth.session?.user.id || isDemo(auth.session)) return
     let hiddenAt = null
     function onVisibility() {
       if (document.hidden) {
@@ -163,10 +173,12 @@ function StudySession() {
     setAuth((previous) => ({ ...previous, locked: false }))
   }
 
-  if (auth.session === undefined) return <TelaCarregando />
+  const expiredDemo = isDemo(auth.session) && demoExpiry(auth.session) <= Date.now()
+  useEffect(() => { if(expiredDemo){onDemoEnd();void endDemo()} }, [expiredDemo,onDemoEnd])
+  if (auth.session === undefined || expiredDemo) return <TelaCarregando />
 
   return <AppContent key={auth.session?.user.id ?? 'visitante'} sessao={auth.session}
-    bloqueado={auth.locked} desbloquear={desbloquear} />
+    bloqueado={auth.locked} desbloquear={desbloquear} onDemoEnd={onDemoEnd} />
 }
 
 const router = createBrowserRouter([{ path: '*', element: <StudySession /> }])

@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     })
     if (!auth.ok) return res.status(auth.status < 500 ? 401 : 502).json({ code: 'AUTH_UNAVAILABLE' })
     const user = await auth.json()
-    if (!user.id || user.is_anonymous) return res.status(401).json({ code: 'UNAUTHENTICATED' })
+    if (!user.id || user.is_anonymous || user.app_metadata?.studyos_demo === true) return res.status(401).json({ code: 'UNAUTHENTICATED' })
 
     const { plan, sessionId, attempt } = req.body ?? {}
     if (sessionId) {

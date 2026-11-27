@@ -417,3 +417,28 @@ html body #root .study-enem .enem-practice-hero {
   .enem-switch { background: #1a272e; backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 @media (forced-colors: active) { .enem-switch button[aria-pressed="true"] { outline: 2px solid Highlight; } }
+
+/* Optical consistency: one translucent layer, crisp rim and adaptive fallback. */
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  html:not(.is-android) body #root .study-auth-login .study-auth-card {
+    --control-glass-filter: blur(22px) saturate(1.35);
+    background:linear-gradient(145deg,#c7e6ff19,transparent 42%,#a9ccf00b),rgb(13 27 44 / .52) !important;
+    box-shadow:inset 0 1px #ffffff29,0 12px 36px #020a173b;
+  }
+  html:not(.is-android) body #root .study-navigation-inner {
+    --control-glass-surface:linear-gradient(145deg,#dcefff12,transparent 55%),rgb(21 32 41 / var(--ios27-glass-alpha,.67));
+    --control-glass-edge:#e1e7e53b;
+    --control-glass-shadow:inset 0 1px #ffffff20,0 5px 18px #02081030;
+    --control-glass-filter:blur(14px) saturate(1.2);
+  }
+  html:not(.is-android) body #root .study-chat .study-composer-field {
+    --control-glass-surface:rgb(27 39 47 / .76);
+    --control-glass-filter:blur(12px) saturate(1.2);
+  }
+}
+@media(prefers-reduced-transparency:reduce),(prefers-contrast:more),(forced-colors:active){
+  html:not(.is-android) body #root :is(.study-auth-login .study-auth-card,.study-navigation-inner,.study-chat .study-composer-field){
+    --control-glass-surface:#19293c;--control-glass-filter:none;
+    background:#19293c !important;box-shadow:none;
+  }
+}

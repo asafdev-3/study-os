@@ -1,0 +1,2 @@
+# StudyOS — sessão de visitante
+A função Edge `studyos-demo` está implantada no projeto Supabase StudyOS. A migração cria a reserva atômica e as políticas de acesso. O servidor emite sessão para uma identidade temporária, sem senha compartilhada, e confirma a expiração de 45 minutos. O endpoint aceita ações start/release. A função não deve ser substituída sem preservar o controle de vaga e a autenticação da ação release. A fonte implantada está disponível na área Edge Functions do Supabase.

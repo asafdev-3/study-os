@@ -1,0 +1,14 @@
+.study-install-banner {position:fixed;z-index:150;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(392px,calc(100% - 24px));padding:12px;color:#f4f7fd;border:1px solid #dbeaff38;border-radius:22px;background:#17273de8;box-shadow:0 12px 40px #04091266,inset 0 1px #ffffff26;-webkit-backdrop-filter:blur(20px) saturate(145%);backdrop-filter:blur(20px) saturate(145%);animation:study-install-in .26s cubic-bezier(.22,1,.36,1);}
+.study-install-head{display:flex;align-items:center;gap:10px;}
+.study-install-head img{border-radius:10px;flex-shrink:0;}
+.study-install-head>div{flex:1;min-width:0;}
+.study-install-head strong{font-size:14px;font-weight:650;}
+.study-install-head p{margin:2px 0 0;color:#c2cfe1;font-size:13px;}
+.study-install-close{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;color:#e5ecf5;background:transparent;flex-shrink:0;cursor:pointer;}
+.study-install-action{display:flex;justify-content:center;align-items:center;gap:6px;border:0;border-radius:12px;min-height:44px;width:100%;margin-top:7px;background:#ffffff13;color:#d8ebff;font-size:13px;cursor:pointer;}
+.study-install-steps{font-size:13px;line-height:1.5;color:#d1dbe9;padding:5px 2px 0;}
+.study-install-steps p{display:flex;align-items:center;gap:7px;margin:6px 0;}
+@keyframes study-install-in{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(prefers-reduced-motion:reduce){.study-install-banner{animation:none;}}
+@media(prefers-reduced-transparency:reduce){.study-install-banner{background:#17273d;backdrop-filter:none;-webkit-backdrop-filter:none;}}
+html.is-android .study-install-banner{background:#17273df7;backdrop-filter:none;-webkit-backdrop-filter:none;}

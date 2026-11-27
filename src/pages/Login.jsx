@@ -5,6 +5,7 @@ import { useStudyReducedMotion } from '../lib/motion'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Pause, Play } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
 import { supabase } from '../lib/supabase'
+import { startDemo } from '../lib/demo'
 import RainWindow from '../components/RainWindow'
 import KiraLoginScene from '../components/KiraLoginScene'
 import './Auth.css'
@@ -50,8 +51,10 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState(false)
+  const [demoError, setDemoError] = useState('')
   const [erro, setErro] = useState('')
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(() => location.state?.demoEnded ? 'Sua sessão de visitante terminou. Você pode criar uma conta gratuita.' : '')
 
   useEffect(() => { rememberDestination(location.state?.destino) }, [location.state])
 
@@ -138,6 +141,13 @@ export default function Login() {
     }
   }
 
+  async function handleDemo() {
+    setDemoLoading(true); setDemoError(''); setErro(''); setNotice('')
+    try { await startDemo(); navigate('/dashboard', { replace: true }) }
+    catch (error) { setDemoError(error.message || 'Demonstração indisponível.') }
+    finally { setDemoLoading(false) }
+  }
+
   const creating = mode === 'signup'
   const reducedMotion = useStudyReducedMotion() || android
 
@@ -170,6 +180,12 @@ export default function Login() {
           <h1 id="auth-title">{creating ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</h1>
           <p>{creating ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</p>
         </motion.div>
+
+        <button className="study-auth-demo" type="button" onClick={handleDemo} disabled={loading || demoLoading}>
+          {demoLoading ? 'Preparando demonstração…' : 'Experimentar como visitante'} <ArrowRight size={16} aria-hidden="true" />
+        </button>
+        <p className="study-demo-caption">45 minutos · uma sessão por vez · sem cadastro</p>
+        {demoError && <p className="study-auth-feedback is-error study-demo-error" role="alert">{demoError}</p>}
 
         <div className="study-auth-switch" data-creating={creating} role="group" aria-label="Acesso à conta">
           <button type="button" aria-pressed={!creating} className={!creating ? 'is-active' : ''} onClick={() => changeMode('login')}>Entrar</button>
@@ -217,16 +233,17 @@ export default function Login() {
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}
 
-          <button className="study-auth-submit" type="submit" disabled={loading}>
+          <button className="study-auth-submit" type="submit" disabled={loading || demoLoading}>
             {loading ? 'Aguarde…' : creating ? 'Criar conta' : 'Entrar'}
             {!loading && <ArrowRight size={18} aria-hidden="true" />}
           </button>
         </form>
 
         <div className="study-auth-divider"><span>ou</span></div>
-        <button className="study-auth-google" type="button" onClick={handleGoogle} disabled={loading}>
+        <button className="study-auth-google" type="button" onClick={handleGoogle} disabled={loading || demoLoading}>
           <GoogleIcon /> Continuar com Google
         </button>
+
 
       </section>
     </main>
