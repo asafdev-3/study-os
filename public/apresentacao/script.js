@@ -99,7 +99,7 @@ planButtons.forEach((btn) => {
       priceSub.textContent = 'cobrado mensalmente · cancele quando quiser';
       priceBadge.textContent = 'FLEXÍVEL';
     } else {
-      priceValue.textContent = '15,82';
+      priceValue.textContent = '15,83';
       priceSub.textContent = 'cobrado R$ 189,90 por ano';
       priceBadge.textContent = 'PLANO ANUAL';
     }

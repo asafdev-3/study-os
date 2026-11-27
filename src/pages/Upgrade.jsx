@@ -13,7 +13,7 @@ const PLANOS = [
     id: 'anual',
     label: 'Anual',
     badge: 'PLANO ANUAL',
-    preco: 'R$ 15,82',
+    preco: 'R$ 15,83',
     sub: '/mês · cobrado R$ 189,90/ano',
     destaque: true,
   },
@@ -159,7 +159,7 @@ function Upgrade() {
               </em>
             </p>
             <p style={{ fontSize: 13, color: '#a1a1aa', fontFamily: 'Geist, sans-serif' }}>
-              Checkout em preparação. Nenhuma cobrança real está ativa.
+              A demonstração usa o ambiente de testes da Stripe.
             </p>
           </div>
         </div>
@@ -336,6 +336,10 @@ function Upgrade() {
           {opening ? 'Abrindo checkout…' : available === null ? 'Verificando checkout…' : available ? 'Abrir checkout de teste' : 'Checkout indisponível'}
         </button>
 
+        {available && <details className="study-checkout-help">
+          <summary>Como testar na feira</summary>
+          <p>Use o cartão de teste <strong>4242 4242 4242 4242</strong>, validade <strong>12/30</strong> e código <strong>123</strong>.</p>
+        </details>}
         {checkoutError && <p role="alert" className="study-note text-rose-300">{checkoutError}</p>}
         <p style={{
           fontSize: 11, color: '#3f3f46',

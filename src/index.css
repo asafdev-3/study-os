@@ -1032,3 +1032,8 @@ select option { background:#1c293b; color:#f7f9ff; }
 @keyframes setup-home-pop { 0%,62%,100% { opacity:0; transform:translateY(12px) scale(.7); } 72%,90% { opacity:1; transform:translateY(0) scale(1); } }
 @media (prefers-reduced-motion:reduce) { .setup-nfc-wave,.setup-share,.setup-home-dot { animation:none; } .setup-nfc-wave { opacity:.35; transform:translateY(-50%); } .setup-home-dot { opacity:1; } }
 @media (prefers-reduced-transparency:reduce),(prefers-contrast:more) { .study-navigation-inner,.study-room-header-actions .study-room-nfc,.study-room-header-actions .study-home-rain-toggle,.study-topbar a,.study-nfc-buttons .study-primary,.study-nfc-write { background:#1c2c43; -webkit-backdrop-filter:none; backdrop-filter:none; } }
+
+.study-checkout-help { margin: 2px 0 12px; color: #c3c8d0; font-size: 14px; line-height: 1.5; }
+.study-checkout-help summary { padding: 12px 0; cursor: pointer; }
+.study-checkout-help p { margin: 0 0 8px; }
+.study-checkout-help strong { color: #f4f4f5; font-variant-numeric: tabular-nums; }
