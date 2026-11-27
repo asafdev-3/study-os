@@ -52,17 +52,7 @@
         <div class="phone phone-main">
           <div class="phone-island"></div>
           <div class="app-screen dashboard-screen">
-<div class="preview-home">
-  <small>QUINTA-FEIRA, 26 DE NOVEMBRO</small><h4>Olá, Vitor.</h4>
-  <div class="preview-paper"><small>ÚLTIMA ANOTAÇÃO</small><strong>Oxirredução</strong><p>Oxidação é perda de elétrons.</p></div>
-  <div class="preview-tools"><div class="preview-row">Estudar para o ENEM <span>→</span></div><div class="preview-row">Revisar Química com Kira <span>→</span></div><div class="preview-row">25 minutos de foco <span>→</span></div><div class="preview-row">Meus post-its <span>→</span></div></div>
-</div>            <div class="mobile-nav">
-              <span class="active">⌂<small>Início</small></span>
-              <span>▤<small>Notas</small></span>
-              <span>✦<small>Kira</small></span>
-              <span>▱<small>ENEM</small></span>
-              <span>◯<small>Perfil</small></span>
-            </div>
+<img class="product-screen-shot hero-shot" src="/apresentacao/telas/mesa.webp" alt="Dashboard do StudyOS com a última anotação e os atalhos de estudo" width="390" height="844" fetchpriority="high" decoding="async" />
           </div>
         </div>
 
@@ -112,25 +102,28 @@
           <p class="section-kicker on-dark">DEMONSTRAÇÃO INTERATIVA</p>
           <h2>Não imagine.<br><em>Use.</em></h2>
         </div>
-        <p>Explore algumas das telas centrais do StudyOS. Veja as telas com exemplos de estudo. A Kira desta prévia usa respostas prontas.</p>
+        <p>Explore o app com dados de exemplo. Na demonstração, a Kira usa respostas prontas.</p>
       </div>
 
       <div class="showcase-stage reveal delay-1" id="showcaseStage">
         <aside class="demo-menu" aria-label="Telas da demonstração">
-          <button class="demo-tab active" data-demo-target="dashboard">
+          <button class="demo-tab active" data-demo-target="dashboard" aria-pressed="true">
             <span class="demo-index">01</span><span><strong>Início</strong><small>Caderno e ferramentas de estudo</small></span><i>↗</i>
           </button>
-          <button class="demo-tab" data-demo-target="notes">
+          <button class="demo-tab" data-demo-target="notes" aria-pressed="false">
             <span class="demo-index">02</span><span><strong>Caderno</strong><small>Anotações por matéria</small></span><i>↗</i>
           </button>
-          <button class="demo-tab" data-demo-target="kira">
+          <button class="demo-tab" data-demo-target="kira" aria-pressed="false">
             <span class="demo-index">03</span><span><strong>Kira</strong><small>Explicações e exercícios</small></span><i>↗</i>
           </button>
-          <button class="demo-tab" data-demo-target="postits">
-            <span class="demo-index">04</span><span><strong>ENEM e Post-its</strong><small>Mural de revisão por matéria</small></span><i>↗</i>
+          <button class="demo-tab" data-demo-target="enem" aria-pressed="false">
+            <span class="demo-index">04</span><span><strong>ENEM</strong><small>Prática e mural de revisão</small></span><i>↗</i>
           </button>
-          <button class="demo-tab" data-demo-target="progress">
-            <span class="demo-index">05</span><span><strong>Progresso</strong><small>Sessões e dias de estudo</small></span><i>↗</i>
+          <button class="demo-tab" data-demo-target="progress" aria-pressed="false">
+            <span class="demo-index">05</span><span><strong>Perfil</strong><small>Sessões e dias de estudo</small></span><i>↗</i>
+          </button>
+          <button class="demo-tab" data-demo-target="settings" aria-pressed="false">
+            <span class="demo-index">06</span><span><strong>Ajustes</strong><small>Seu ambiente de estudo</small></span><i>↗</i>
           </button>
         </aside>
 
@@ -142,19 +135,8 @@
             <div class="demo-screen">
               <div class="demo-status"><span>9:41</span><span>● ●● ◢</span></div>
 
-              <div class="demo-view active" data-demo-view="dashboard"><div class="demo-scroll"><div class="preview-home">
-  <small>QUINTA-FEIRA, 26 DE NOVEMBRO</small><h4>Olá, Vitor.</h4>
-  <div class="preview-paper"><small>ÚLTIMA ANOTAÇÃO</small><strong>Oxirredução</strong><p>Oxidação é perda de elétrons.</p></div>
-  <div class="preview-tools"><div class="preview-row">Estudar para o ENEM <span>→</span></div><div class="preview-row">Revisar Química com Kira <span>→</span></div><div class="preview-row">25 minutos de foco <span>→</span></div><div class="preview-row">Meus post-its <span>→</span></div></div>
-</div></div></div>
-              <div class="demo-view" data-demo-view="notes">
-                <div class="demo-toolbar"><h4>Caderno</h4></div>
-                <div class="demo-scroll">
-                  <div class="preview-paper"><small>QUÍMICA</small><strong>Oxirredução</strong><p>Quem perde elétrons sofre oxidação.</p></div>
-                  <div class="preview-row">Guerra Fria <span>→</span></div>
-                </div>
-              </div>
-
+<div class="demo-view product-capture active" data-demo-view="dashboard"><img src="/apresentacao/telas/inicio.webp" width="390" height="774" alt="Início com caderno e ferramentas de estudo" loading="lazy" decoding="async" /></div>
+<div class="demo-view product-capture" data-demo-view="notes"><img src="/apresentacao/telas/notas.webp" width="390" height="774" alt="Seus cadernos organizados por matéria" loading="lazy" decoding="async" /></div>
               <div class="demo-view" data-demo-view="kira">
                 <div class="demo-toolbar kira-toolbar"><div><small>Tutora de estudos</small><h4>Kira</h4></div><img class="preview-kira-icon" src="/apresentacao/kira-avatar.webp" alt="" width="48" height="32" /></div>
                 <div class="demo-scroll kira-chat-screen" id="kiraMiniChat">
@@ -165,11 +147,12 @@
                   </div>
                   <div class="kira-dynamic" id="kiraDynamic"></div>
                 </div>
-                <div class="mini-composer"><span>Pergunte à Kira...</span><button>↑</button></div>
+                <div class="mini-composer"><span>Pergunte à Kira…</span><span aria-hidden="true">↑</span></div>
               </div>
 
+<div class="demo-view product-capture" data-demo-view="enem"><img src="/apresentacao/telas/enem.webp" width="390" height="774" alt="ENEM com ficha de prática, diário de erros e materiais oficiais" loading="lazy" decoding="async" /><button class="preview-open" data-show-demo="postits">Abrir mural de post-its →</button></div>
               <div class="demo-view" data-demo-view="postits">
-                <div class="demo-toolbar"><div><h4>Modo ENEM</h4><small>Post-its · Mural de revisão</small></div><button class="icon-btn" id="addPostit" aria-label="Novo post-it">＋</button></div>
+                <div class="demo-toolbar"><div><h4>ENEM</h4><small>Post-its · Mural de revisão</small></div><button class="icon-btn" id="addPostit" aria-label="Novo post-it">＋</button></div>
                 <div class="demo-scroll postit-board" id="postitBoard">
                   <button class="mini-post p-yellow"><small>HISTÓRIA</small><b>Guerra Fria</b><span>1947–1991</span></button>
                   <button class="mini-post p-purple"><small>INGLÊS</small><b>Phrasal verbs</b><span>set aside · set out</span></button>
@@ -179,21 +162,14 @@
                 </div>
               </div>
 
-              <div class="demo-view" data-demo-view="progress">
-                <div class="demo-toolbar"><h4>Perfil</h4></div>
-                <div class="demo-scroll progress-screen">
-                  <div class="preview-row">Dias seguidos <strong>3</strong></div>
-                  <div class="preview-row">Sessões concluídas <strong>7</strong></div>
-                  <p>Conquistas deste mês</p><div class="preview-row">Primeiro passo <span>Concluída</span></div>
-                </div>
-              </div>
-
+<div class="demo-view product-capture" data-demo-view="progress"><img src="/apresentacao/telas/perfil.webp" width="390" height="774" alt="Perfil do estudante e histórico de estudo" loading="lazy" decoding="async" /><button class="preview-open" data-show-demo="settings">Abrir ajustes →</button></div>
+<div class="demo-view product-capture" data-demo-view="settings"><img src="/apresentacao/telas/ajustes.webp" width="390" height="774" alt="Ajustes de acesso, preferências de estudo e assinatura" loading="lazy" decoding="async" /></div>
               <nav class="demo-bottom-nav" aria-label="Navegação da demonstração">
-                <button class="active" data-bottom-target="dashboard">⌂<small>Início</small></button>
-                <button data-bottom-target="notes">▤<small>Notas</small></button>
-                <button data-bottom-target="kira">✦<small>Kira</small></button>
-                <button data-bottom-target="postits">▱<small>ENEM</small></button>
-                <button data-bottom-target="progress">◯<small>Perfil</small></button>
+                <button class="active" data-bottom-target="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><small>Início</small></button>
+                <button data-bottom-target="notes"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open" aria-hidden="true"><path d="M12 5v16"></path><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"></path></svg><small>Notas</small></button>
+                <button data-bottom-target="kira"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"></path></svg><small>Kira</small></button>
+                <button data-bottom-target="enem"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg><small>ENEM</small></button>
+                <button data-bottom-target="progress"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round" aria-hidden="true"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"></path><circle cx="12" cy="11" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg><small>Perfil</small></button>
               </nav>
             </div>
           </div>

@@ -568,10 +568,10 @@ details p { margin:-6px 0 27px; color:#666269; line-height:1.65; max-width:650px
 @keyframes kiraOrb { 0%,100%{transform:scale(.93);box-shadow:0 0 16px rgba(45,127,249,.26)} 50%{transform:scale(1.05);box-shadow:0 0 28px rgba(139,92,246,.48)} }
 
 @media (max-width:1050px){
-  .showcase-heading{grid-template-columns:1fr;gap:24px}.showcase-heading>p{margin:0;max-width:650px}.showcase-stage{grid-template-columns:1fr;gap:25px}.demo-menu{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;overflow-x:auto}.demo-tab{min-width:150px;min-height:72px;grid-template-columns:25px 1fr;padding:10px}.demo-tab i{display:none}.demo-tab.active{transform:none}.demo-tab small{display:none}.demo-device-wrap{min-height:720px}
+  .showcase-heading{grid-template-columns:1fr;gap:24px}.showcase-heading>p{margin:0;max-width:650px}.showcase-stage{grid-template-columns:minmax(0,1fr);gap:25px}.demo-menu{min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.demo-tab{min-width:0;min-height:72px;grid-template-columns:25px 1fr;padding:10px}.demo-tab i{display:none}.demo-tab.active{transform:none}.demo-tab small{display:none}.demo-device-wrap{min-height:720px}
 }
 @media (max-width:760px){
-  .app-showcase{padding:90px 12px 100px}.showcase-heading{padding:0 8px;margin-bottom:38px}.showcase-heading h2{font-size:58px}.showcase-heading>p{font-size:16px}.showcase-stage{padding:14px 10px 26px;border-radius:26px;min-height:auto}.demo-menu{margin:0 -1px;padding:2px 0 4px}.demo-tab{min-width:132px;min-height:58px;border-radius:14px;grid-template-columns:1fr;padding:9px 10px}.demo-index{display:none}.demo-tab strong{font-size:13px}.demo-device-wrap{min-height:690px;margin:0 -6px}.demo-phone{width:min(332px,92vw);transform:none}.demo-callout{display:none}
+  .app-showcase{padding:90px 12px 100px}.showcase-heading{padding:0 8px;margin-bottom:38px}.showcase-heading h2{font-size:58px}.showcase-heading>p{font-size:16px}.showcase-stage{padding:14px 10px 26px;border-radius:26px;min-height:auto}.demo-menu{margin:0 -1px;padding:2px 0 4px}.demo-tab{min-width:0;min-height:46px;border-radius:14px;grid-template-columns:1fr;padding:9px 10px}.demo-index{display:none}.demo-tab strong{font-size:13px}.demo-device-wrap{min-width:0;min-height:0;margin:0}.demo-phone{width:min(332px,100%);transform:none}.demo-callout{display:none}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -627,3 +627,17 @@ details p { margin:-6px 0 27px; color:#666269; line-height:1.65; max-width:650px
   .hero-product::before { animation: landing-drizzle 2.1s linear infinite; }
 }
 @keyframes landing-drizzle { to { background-position:0 180px; } }
+
+/* WebP captures come from the same StudyOS screens as the installed app. */
+.dashboard-screen:has(.hero-shot) { padding: 30px 0 0; background: #15202a; }
+.product-screen-shot,.demo-view.product-capture img { display: block; width: 100%; height: auto; }
+.demo-view.product-capture { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; background: #111b23; }
+.demo-view.product-capture img { pointer-events: none; }
+.demo-screen,.demo-screen .demo-view { background-color: #101b24; }
+.demo-view.product-capture .preview-open {
+  position: sticky; bottom: 6px; display: block; width: max-content; max-width: 96%; min-height: 44px;
+  margin: 0 auto; padding: 8px 16px; border: 1px solid #f1ecdf77; border-radius: 22px; color: #182222; background: #f0eadc; font: 600 12px system-ui,sans-serif; cursor: pointer;
+}
+.demo-screen .demo-bottom-nav { background: #17252de6; border-color: #dce7df2b; }
+.demo-screen :is(.mini-quick-actions button,.icon-btn) { min-height: 44px; }
+.demo-screen .postit-board { overflow-y: auto; background: #36332e; border-radius: 16px; }

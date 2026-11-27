@@ -148,13 +148,18 @@ function switchDemo(target) {
     view.classList.toggle('active', view.dataset.demoView === target);
   });
   requestAnimationFrame(() => demoViews.forEach(v => v.classList.remove('enter-back')));
-  demoTabs.forEach(btn => btn.classList.toggle('active', btn.dataset.demoTarget === target));
-  demoBottom.forEach(btn => btn.classList.toggle('active', btn.dataset.bottomTarget === target));
+  const parent = target === 'postits' ? 'enem' : target;
+  demoTabs.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.demoTarget === parent);
+    btn.setAttribute('aria-pressed', String(btn.dataset.demoTarget === parent));
+  });
+  demoBottom.forEach(btn => btn.classList.toggle('active', btn.dataset.bottomTarget === (parent === 'settings' ? 'progress' : parent)));
   currentDemo = target;
   currentDemoIndex = nextIndex;
 }
 
 demoTabs.forEach(btn => btn.addEventListener('click', () => switchDemo(btn.dataset.demoTarget)));
+document.querySelectorAll('[data-show-demo]').forEach(btn => btn.addEventListener('click', () => switchDemo(btn.dataset.showDemo)));
 demoBottom.forEach(btn => btn.addEventListener('click', () => switchDemo(btn.dataset.bottomTarget)));
 
 if (finePointer && !reduceMotion && demoWrap && demoPhone) {
