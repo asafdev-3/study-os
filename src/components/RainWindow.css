@@ -94,9 +94,10 @@
 
 .rain-window picture { opacity: .65; }
 .rain-window .rain-wind { opacity: .38; }
-.rain-window .rain-pane, .rain-window .rain-runner { opacity: .25; }
+.rain-window .rain-pane { opacity: .72; }
+.rain-window .rain-runner { opacity: .45; }
 .study-home-v2 .rain-window picture { opacity: .53; }
 
 @media (max-width: 899px) {
-  .rain-window .rain-pane, .rain-window .rain-runner { display: none; }
+  .rain-window .rain-runner { display: none; }
 }

@@ -14,6 +14,10 @@ const greetings = [
   'Uma pergunta bem feita muda o estudo.',
   'O ENEM fica mais simples com prática.',
   'Quando entrar, me chama na aba Kira.',
+  'Qual foi a última coisa que você aprendeu?',
+  'Quer tentar uma questão antes do resumo?',
+  'Chuva assim combina com uma boa leitura.',
+  'Que dúvida você levaria para a prova?',
 ]
 
 const faceSpring = { stiffness: 220, damping: 28, mass: 0.7 }

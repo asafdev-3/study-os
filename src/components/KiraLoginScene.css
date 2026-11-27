@@ -16,6 +16,7 @@
   height: 100%;
   aspect-ratio: auto;
   object-fit: contain;
+  filter: saturate(.80) brightness(.97);
 }
 .kira-image-stack > .kira-frame--private {
   pointer-events: none;

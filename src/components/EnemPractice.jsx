@@ -1,3 +1,4 @@
+import KiraNoteSaved from './KiraNoteSaved'
 import { ArrowRight, BookMarked, ChevronDown, LibraryBig } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -8,6 +9,7 @@ export default function EnemPractice({ userId }) {
   const [topic, setTopic] = useState('')
   const [reason, setReason] = useState('Não entendi o conteúdo')
   const [notice, setNotice] = useState('')
+  const [savedId, setSavedId] = useState(null)
   const key = 'studyos:errors:' + userId
   const [entries, setEntries] = useState(() => {
     try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value.filter(x => typeof x.topic === 'string' && typeof x.area === 'string').slice(0,50) : [] } catch { return [] }
@@ -17,10 +19,19 @@ export default function EnemPractice({ userId }) {
     event.preventDefault()
     if (!topic.trim()) return
     const next = [{ id: crypto.randomUUID(), area, topic: topic.trim(), reason }, ...entries].slice(0,50)
-    try { localStorage.setItem(key, JSON.stringify(next)); setEntries(next); setTopic(''); setNotice('Guardado para sua próxima revisão.') }
-    catch { setNotice('Não foi possível guardar neste navegador. Tente novamente.') }
+    try {
+      localStorage.setItem(key, JSON.stringify(next))
+      setEntries(next)
+      setTopic('')
+      setNotice('Guardado para sua próxima revisão.')
+      setSavedId(next[0].id)
+    } catch {
+      setSavedId(null)
+      setNotice('Não foi possível guardar neste navegador. Tente novamente.')
+    }
   }
   return <section className="enem-practice">
+    {savedId && <KiraNoteSaved saveId={savedId} />}
     <div className="enem-practice-hero">
       <h2>Uma questão <em>por vez.</em></h2>
       <p>Escolha a matéria. A Kira prepara uma questão e comenta sua tentativa.</p>

@@ -19,7 +19,7 @@ export default function KiraNoteSaved({ saveId }) {
     }
   }, [saveId, reducedMotion])
 
-  if (visibleId !== saveId) return null
+  if (!saveId || visibleId !== saveId) return null
   return (
     <div className="kira-note-saved" role="status" aria-live="polite">
       <img key={saveId} src={reducedMotion ? kiraRest : noteSavedClip} alt="" width="104" height="88" />

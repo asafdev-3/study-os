@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 function paintPane(canvas, photo) {
   const { clientWidth: width, clientHeight: height } = canvas
   if (!width || !height || !photo.naturalWidth) return
-  const scale = Math.min(window.devicePixelRatio || 1, 1.5, 2000 / Math.max(width, height))
+  const scale = Math.min(window.devicePixelRatio || 1, width < 900 ? 1 : 1.5, 2000 / Math.max(width, height))
   canvas.width = Math.round(width * scale)
   canvas.height = Math.round(height * scale)
   const ctx = canvas.getContext('2d')
@@ -24,7 +24,7 @@ function paintPane(canvas, photo) {
     const h = radius * (.87 + random() * .48)
     ctx.save()
     ctx.translate(x, y)
-    ctx.rotate((random() - .5) * .55)
+    ctx.rotate((random() - .5) * .95)
     ctx.scale(radius, h)
     ctx.beginPath()
     ctx.moveTo(-.96, -.07)
@@ -34,7 +34,7 @@ function paintPane(canvas, photo) {
     ctx.closePath()
     ctx.clip()
     // Each bead acts as a tiny inverted lens on its own part of the park.
-    const sample = Math.min((radius * 17 + 32) / fit, photo.naturalWidth, photo.naturalHeight)
+    const sample = Math.min((radius * 27 + 42) / fit, photo.naturalWidth, photo.naturalHeight)
     const sx = Math.min(photo.naturalWidth - sample, Math.max(0, cropX + x / fit - sample / 2))
     const sy = Math.min(photo.naturalHeight - sample, Math.max(0, cropY + y / fit - sample / 2))
     ctx.save()
@@ -48,7 +48,7 @@ function paintPane(canvas, photo) {
     rim.addColorStop(1, 'rgba(172,186,197,.22)')
     ctx.fillStyle = rim
     ctx.fillRect(-1, -1.2, 2, 2.4)
-    ctx.fillStyle = 'rgba(224,238,245,.64)'
+    ctx.fillStyle = x > width * .62 ? 'rgba(255,218,159,.73)' : 'rgba(204,226,241,.56)'
     ctx.beginPath()
     ctx.ellipse(-.32, -.56, .21, .11, -.55, 0, Math.PI * 2)
     ctx.fill()
@@ -60,10 +60,10 @@ function paintPane(canvas, photo) {
     ctx.restore()
   }
 
-  const count = Math.min(460, Math.ceil(width * height / 2900))
+  const count = Math.min(width < 900 ? 200 : 740, Math.ceil(width * height / 1650))
   for (let i = 0; i < count; i++) {
     const x = random() * width, y = random() * height
-    const radius = .72 + Math.pow(random(), 3.5) * 4.8
+    const radius = .72 + Math.pow(random(), 3.6) * 7.8
     drawDrop(x, y, radius)
     if (radius > 3.5) {
       drawDrop(x + 4 + random() * 8, y - 3 - random() * 17, .66 + random() * 1.05)
@@ -76,20 +76,17 @@ export default function WetGlass({ photoRef }) {
   useEffect(() => {
     const canvas = pane.current
     const photo = photoRef.current
-    const large = window.matchMedia('(min-width: 900px)')
     let frame = 0
     function schedule() {
       cancelAnimationFrame(frame)
-      if (large.matches) frame = requestAnimationFrame(() => paintPane(canvas, photo))
+      frame = requestAnimationFrame(() => paintPane(canvas, photo))
     }
     const observer = new ResizeObserver(schedule)
     observer.observe(canvas)
-    large.addEventListener('change', schedule)
     photo.addEventListener('load', schedule)
     schedule()
     return () => {
       observer.disconnect()
-      large.removeEventListener('change', schedule)
       photo.removeEventListener('load', schedule)
       cancelAnimationFrame(frame)
     }
