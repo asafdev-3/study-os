@@ -161,7 +161,7 @@ export default function Login() {
         aria-labelledby="auth-title"
       >
         <header className="study-auth-login-brand">
-          <a className="study-auth-login-wordmark" href="/apresentacao/index.html" aria-label="Conhecer o StudyOS">StudyOS ↗</a>
+          <a className="study-auth-login-wordmark" href="/apresentacao/index.html" aria-label="Conhecer o StudyOS"><img className="study-auth-login-logo" src="/icons/icon-192.png" alt="" width="36" height="36" /><span>StudyOS <span aria-hidden="true">↗</span></span></a>
           {!reducedMotion && !android && (
             <button type="button" className="rain-toggle" onClick={() => setRainPaused(value => !value)}
               aria-label={rainPaused ? 'Retomar chuva' : 'Pausar chuva'} title={rainPaused ? 'Retomar chuva' : 'Pausar chuva'}>

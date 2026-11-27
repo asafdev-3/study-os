@@ -681,3 +681,9 @@
 .study-demo-caption {margin:6px 0 14px;}
 .study-demo-error {margin-bottom:12px;}
 @media(max-width:760px){.study-entry.study-auth-login{--rain-glass-blur:24px;}}
+
+/* Original StudyOS identity inside both authentication modes. */
+.study-auth-login-wordmark { display:inline-flex; align-items:center; gap:10px; min-height:44px; text-decoration:none; }
+.study-auth-login-logo { display:block; width:36px; height:36px; object-fit:contain; border-radius:10px; flex-shrink:0; }
+.study-auth-login-brand { min-height:44px; gap:12px; }
+@media(max-width:360px){.study-auth-login-logo{width:32px;height:32px;border-radius:9px;}.study-auth-login-wordmark{gap:8px;}}
