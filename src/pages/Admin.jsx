@@ -1,0 +1,55 @@
+import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import './Admin.css'
+const money=x=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(x/100)
+const num=x=>new Intl.NumberFormat('pt-BR').format(x)
+const date=x=>x?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short',timeZone:'America/Sao_Paulo'}).format(new Date(typeof x==='number'?x*1000:x)):'—'
+const states={active:'Ativa',trialing:'Em teste',past_due:'Em atraso',unpaid:'Não paga',canceled:'Cancelada',incomplete:'Incompleta',incomplete_expired:'Expirada',paused:'Pausada',paid:'Paga',open:'Em aberto',void:'Anulada',uncollectible:'Incobrável',draft:'Rascunho'}
+const tabs=['Visão geral','Assinaturas','Pagamentos','Usuários','Tráfego']
+function Metric({label,value,detail}){return <article className="admin-metric"><span>{label}</span><strong>{value}</strong>{detail&&<small>{detail}</small>}</article>}
+function Table({headers,rows}){return <div className="admin-table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.length?rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c}</td>)}</tr>):<tr><td colSpan={headers.length}>Nenhum registro.</td></tr>}</tbody></table></div>}
+export default function Admin(){
+ const navigate=useNavigate()
+ const [data,setData]=useState(null),[status,setStatus]=useState('loading'),[tab,setTab]=useState(tabs[0]),[search,setSearch]=useState(''),[filter,setFilter]=useState('all'),[offset,setOffset]=useState(0)
+ const load=useCallback(async(page=0,signal)=>{
+  try{
+   const {data:{session}}=await supabase.auth.getSession()
+   if(signal?.aborted)return
+   if(!session){setData(null);setStatus('denied');return}
+   const r=await fetch('/api/admin?offset='+page,{headers:{Authorization:'Bearer '+session.access_token},cache:'no-store',signal})
+   if(signal?.aborted)return
+   if(r.status===401||r.status===403){setData(null);setStatus('denied');return}
+   if(!r.ok)throw new Error('fetch')
+   const result=await r.json()
+   if(!result.snapshot)throw new Error('fetch')
+   if(signal?.aborted)return
+   setData(old=>({...result,finance:result.finance??old?.finance}));setOffset(page);setStatus('ready')
+  }catch(e){if(!signal?.aborted&&e.name!=='AbortError'){setData(null);setStatus('error')}}
+ },[])
+ useEffect(()=>{const controller=new AbortController();const timer=setTimeout(()=>{void load(0,controller.signal)},0);return()=>{clearTimeout(timer);controller.abort()}},[load])
+ const refresh=(page=0)=>{setStatus('loading');void load(page)}
+ const s=data?.snapshot,f=data?.finance,hasFinance=f?.available
+ const isTest=f?.mode==='test'
+ const byEvent=(type,day)=>s?.traffic.filter(x=>x.event_name===type&&(!day||x.event_day===day)).reduce((a,x)=>a+x.total,0)||0
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
+ const byDay=Object.entries((s?.traffic||[]).filter(x=>x.event_name==='app_open').reduce((a,x)=>({...a,[x.event_day]:(a[x.event_day]||0)+x.total}),{})).sort((a,b)=>b[0].localeCompare(a[0]))
+ const byScreen=Object.entries((s?.traffic||[]).filter(x=>x.event_name==='screen_view').reduce((a,x)=>({...a,[x.screen]:(a[x.screen]||0)+x.total}),{})).sort((a,b)=>b[1]-a[1])
+ const bySource=Object.entries((s?.traffic||[]).filter(x=>x.event_name==='app_open').reduce((a,x)=>({...a,[x.entry_source]:(a[x.entry_source]||0)+x.total}),{})).sort((a,b)=>b[1]-a[1])
+ const matches=(...values)=>values.some(v=>String(v??'').toLowerCase().includes(search.trim().toLowerCase()))
+ const selectTab=t=>{setTab(t);setSearch('');setFilter('all')}
+ const financialValue=(n,format=num)=>hasFinance?format(n):'—'
+ if(!data)return <main className="admin-shell admin-center"><section><small>STUDYOS / ADMIN</small><h1>{status==='loading'?'Verificando acesso…':status==='denied'?'Acesso restrito':'Painel indisponível'}</h1><p>{status==='denied'?'Somente a conta proprietária autorizada pode acessar.':status==='error'?'Não foi possível consultar os dados com segurança.':''}</p><div className="admin-actions"><button onClick={()=>navigate('/dashboard')}>Voltar ao StudyOS</button>{status==='error'&&<button onClick={()=>refresh()}>Tentar novamente</button>}</div></section></main>
+ return <main className="admin-shell">
+  <aside className="admin-side"><div className="admin-brand">StudyOS <span>ADMIN</span></div><small>CONSOLE DO PROPRIETÁRIO</small><nav>{tabs.map(t=><button key={t} className={t===tab?'selected':''} onClick={()=>selectTab(t)}>{t}</button>)}</nav><button className="admin-exit" onClick={()=>navigate('/dashboard')}>Voltar ao app</button></aside>
+  <section className="admin-body">
+   <header className="admin-header"><div><small>OPERAÇÕES / {tab.toUpperCase()}</small><h1>{tab}</h1><p>Atualizado em {date(data.generatedAt)}</p></div><button disabled={status==='loading'} onClick={()=>refresh(0)}>{status==='loading'?'Atualizando…':'Atualizar dados'}</button></header>
+   {(!hasFinance||isTest||f.partial)&&<div className="admin-warning">{isTest?'Ambiente de testes Stripe. Nenhum valor exibido representa receita real. ':f?.mode==='live'?'Ambiente real Stripe. ':''}{!hasFinance?'Dados financeiros indisponíveis. Não interprete como zero. ':''}{f?.partial?'Consulta financeira limitada a 1.000 registros por lista; totais parciais.':''}</div>}
+   {tab==='Visão geral'&&<><div className="admin-grid"><Metric label="Contas cadastradas" value={num(s.accounts)} detail={num(s.confirmed)+' confirmadas'}/><Metric label="Cadastros hoje" value={num(s.new_today)}/><Metric label="Assinaturas ativas" value={financialValue(f?.active)} detail={isTest?'Simuladas':undefined}/><Metric label="Pessoas que pagaram" value={financialValue(f?.paidUsers)}/><Metric label="Pagamentos recebidos" value={financialValue(f?.paidCount)} detail="Faturas pagas com valor positivo"/><Metric label="Receita bruta recebida" value={financialValue(f?.gross,money)} detail="Antes de estornos, taxas e impostos"/><Metric label="MRR estimado" value={financialValue(f?.mrr,money)} detail="Mensal + anual dividido por 12"/><Metric label="Acessos hoje" value={num(byEvent('app_open',today))} detail="Eventos com consentimento; não pessoas únicas"/></div><h2>Últimos acessos registrados</h2><Table headers={['Dia','Aberturas']} rows={byDay.slice(0,10).map(([d,n])=>[d,num(n)])}/></>}
+   {tab==='Assinaturas'&&<><div className="admin-grid"><Metric label="Ativas" value={financialValue(f?.active)}/><Metric label="Em teste" value={financialValue(f?.trialing)}/><Metric label="Em atraso" value={financialValue(f?.overdue)}/><Metric label="Canceladas" value={financialValue(f?.canceled)}/></div><div className="admin-tools"><input placeholder="Buscar por e-mail ou ID" value={search} onChange={e=>setSearch(e.target.value)}/><select value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">Todos os status</option>{Object.entries(states).slice(0,8).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></div><Table headers={['Cliente','Plano','Status','Criada em','Renovação']} rows={(f?.subscriptions||[]).filter(x=>matches(x.email,x.userId,x.id)&&(filter==='all'||filter===x.status)).map(x=>[x.email||x.userId,x.plan,states[x.status]||x.status,date(x.created),x.cancelAtPeriodEnd?'Cancelamento agendado':'—'])}/></>}
+   {tab==='Pagamentos'&&<><div className="admin-grid"><Metric label="Receita bruta" value={financialValue(f?.gross,money)}/><Metric label="Pagamentos recebidos" value={financialValue(f?.paidCount)}/><Metric label="Pagantes únicos" value={financialValue(f?.paidUsers)}/></div><div className="admin-tools"><input placeholder="Buscar cliente ou fatura" value={search} onChange={e=>setSearch(e.target.value)}/><select value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">Todos os status</option>{['paid','open','void','uncollectible','draft'].map(k=><option key={k} value={k}>{states[k]}</option>)}</select></div><Table headers={['Cliente','Plano','Status','Pago','Devido','Data']} rows={(f?.invoices||[]).filter(x=>matches(x.email,x.userId,x.id)&&(filter==='all'||filter===x.status)).map(x=>[x.email||x.userId,x.plan,states[x.status]||x.status,money(x.amountPaid),money(x.amountDue),date(x.paidAt||x.created)])}/></>}
+   {tab==='Usuários'&&<><div className="admin-grid"><Metric label="Contas" value={num(s.accounts)}/><Metric label="Confirmadas" value={num(s.confirmed)}/><Metric label="Novas hoje" value={num(s.new_today)}/></div><div className="admin-tools"><input placeholder="Buscar nesta página" value={search} onChange={e=>setSearch(e.target.value)}/><button disabled={offset===0||status==='loading'} onClick={()=>refresh(Math.max(0,offset-100))}>Anterior</button><button disabled={offset+100>=s.accounts||status==='loading'} onClick={()=>refresh(offset+100)}>Próxima</button><small>{offset+1}–{Math.min(offset+100,s.accounts)} de {s.accounts}</small></div><Table headers={['E-mail','Confirmação','Cadastro','Último login']} rows={s.users.filter(x=>matches(x.email,x.id)).map(x=>[x.email||'Sem e-mail',x.email_confirmed_at?'Confirmado':'Pendente',date(x.created_at),date(x.last_sign_in_at)])}/></>}
+   {tab==='Tráfego'&&<><p>Últimos 30 dias. Contagens opcionais, sem identificação individual.</p><div className="admin-grid"><Metric label="Aberturas" value={num(byEvent('app_open'))}/><Metric label="Telas vistas" value={num(byEvent('screen_view'))}/><Metric label="Entradas demo" value={num(byEvent('demo_open'))}/><Metric label="Entradas com conta" value={num(byEvent('account_open'))}/></div><h2>Acessos por dia</h2><Table headers={['Dia','Aberturas']} rows={byDay.map(([d,n])=>[d,num(n)])}/><h2>Origem dos acessos</h2><Table headers={['Origem','Aberturas']} rows={bySource.map(([d,n])=>[d,num(n)])}/><h2>Telas mais acessadas</h2><Table headers={['Tela','Visualizações']} rows={byScreen.map(([d,n])=>[d,num(n)])}/></>}
+  </section>
+ </main>
+}

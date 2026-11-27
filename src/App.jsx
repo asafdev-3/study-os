@@ -24,6 +24,7 @@ import DemoSession from './components/DemoSession'
 import GrowthMetrics from './components/GrowthMetrics'
 import { isDemo, demoExpiry, endDemo } from './lib/demo'
 
+const Admin = lazy(() => import('./pages/Admin'))
 const Lock = lazy(() => import('./pages/Lock'))
 const Dashboard = lazy(loadStudyRoute['/dashboard'])
 const Anotacoes = lazy(loadStudyRoute['/anotacoes'])
@@ -112,6 +113,8 @@ function AppContent({ sessao, bloqueado, desbloquear, onDemoEnd }) {
     return warmStudyRoutes()
   }, [userId, bloqueado])
   const location = useLocation()
+  const adminRoute = location.pathname === '/admin'
+  if (adminRoute && sessao && !bloqueado) return <Suspense fallback={<TelaCarregando />}><Admin /></Suspense>
   const comSidebar = !!sessao && !bloqueado && !SEM_SIDEBAR.includes(location.pathname)
 
   const scene = location.pathname.split('/')[1] || 'splash'
@@ -119,7 +122,7 @@ function AppContent({ sessao, bloqueado, desbloquear, onDemoEnd }) {
   return (
     <>
       {scenic && scene !== 'splash' && <SceneBackdrop scene={scene} />}
-      <GrowthMetrics path={location.pathname} mode={isDemo(sessao) ? 'demo' : sessao ? 'account' : 'visitor'} />
+      {!adminRoute && <GrowthMetrics path={location.pathname} mode={isDemo(sessao) ? 'demo' : sessao ? 'account' : 'visitor'} />}
       {comSidebar && <InstallPwaModal auto={!isDemo(sessao) && location.pathname === '/dashboard'} />}
       {isDemo(sessao) && <DemoSession session={sessao} onEnd={onDemoEnd} />}
       {comSidebar && <TopBar />}
