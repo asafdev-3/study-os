@@ -49,6 +49,10 @@ test('sandbox checkout validates plans, amount, owner and payment status', async
   assert.equal((await call('POST',body,headers)).data.complete,true)
   reference = 'different-user'
   assert.equal((await call('POST',body,headers)).code,404)
+  process.env.STRIPE_SECRET_KEY = 'rk_test_fixture'
+  assert.equal((await call('GET')).data.available, true)
+  process.env.STRIPE_SECRET_KEY = 'rk_live_fixture'
+  assert.equal((await call('GET')).data.available, false)
   delete process.env.STRIPE_SECRET_KEY
   assert.equal((await call('GET')).data.available,false)
 })
