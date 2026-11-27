@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion } from '../lib/motion'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Pause, Play } from 'lucide-react'
 import { rememberDestination } from '../lib/nfc'
@@ -9,6 +8,9 @@ import { startDemo } from '../lib/demo'
 import RainWindow from '../components/RainWindow'
 import KiraLoginScene from '../components/KiraLoginScene'
 import './Auth.css'
+
+const StableRainWindow = memo(RainWindow)
+const StableKiraLoginScene = memo(KiraLoginScene)
 
 const isAndroidDevice = () => document.documentElement.classList.contains('is-android')
 
@@ -65,6 +67,7 @@ export default function Login() {
   useEffect(() => { rememberDestination(location.state?.destino) }, [location.state])
 
   function changeMode(next) {
+    if (next === mode) return
     setMode(next)
     setErro('')
     setNotice('')
@@ -173,8 +176,8 @@ export default function Login() {
 
   return (
     <main className="study-entry study-auth-page study-auth-login">
-      <RainWindow still={reducedMotion || rainPaused} />
-      <KiraLoginScene reducedMotion={reducedMotion} creating={creating} focusedField={focusedField} />
+      <StableRainWindow still={reducedMotion || rainPaused} />
+      <StableKiraLoginScene reducedMotion={reducedMotion} creating={creating} focusedField={focusedField} />
 
       <section
         className="study-auth-card"
@@ -190,16 +193,10 @@ export default function Login() {
           )}
         </header>
 
-        <motion.div
-          key={mode}
-          className="study-auth-heading"
-          initial={reducedMotion ? false : { opacity: 0.55, y: 7 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        >
+        <div className="study-auth-heading">
           <h1 id="auth-title">{creating ? 'Seu estudo começa aqui.' : 'Seu espaço de estudo.'}</h1>
           <p>{creating ? 'Crie sua conta para começar.' : 'Entre e continue de onde parou.'}</p>
-        </motion.div>
+        </div>
 
         <button className="study-auth-demo" type="button" onClick={handleDemo} disabled={loading || demoLoading}>
           {demoLoading ? 'Preparando demonstração…' : 'Experimentar como visitante'} <ArrowRight size={16} aria-hidden="true" />
@@ -245,8 +242,8 @@ export default function Login() {
               </button>
             </span>
           </div>
-          <div className="study-auth-confirm" data-open={creating} inert={!creating}>
-            <div className="study-auth-confirm-clip">
+          <div className="study-auth-confirm" data-open={creating} inert={!creating} style={{ transition: 'none' }}>
+            <div className="study-auth-confirm-clip" style={{ transition: 'none' }}>
               <label className="study-auth-field">
                 <span>Confirmar senha</span>
                 <span className="study-auth-input-wrap">
