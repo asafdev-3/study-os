@@ -21,6 +21,7 @@ import './styles/study-surfaces.css'
 import SceneBackdrop from './components/SceneBackdrop'
 import InstallPwaModal from './components/InstallPwaModal'
 import DemoSession from './components/DemoSession'
+import GrowthMetrics from './components/GrowthMetrics'
 import { isDemo, demoExpiry, endDemo } from './lib/demo'
 
 const Lock = lazy(() => import('./pages/Lock'))
@@ -118,6 +119,7 @@ function AppContent({ sessao, bloqueado, desbloquear, onDemoEnd }) {
   return (
     <>
       {scenic && scene !== 'splash' && <SceneBackdrop scene={scene} />}
+      <GrowthMetrics path={location.pathname} mode={isDemo(sessao) ? 'demo' : sessao ? 'account' : 'visitor'} />
       {comSidebar && <InstallPwaModal auto={!isDemo(sessao) && location.pathname === '/dashboard'} />}
       {isDemo(sessao) && <DemoSession session={sessao} onEnd={onDemoEnd} />}
       {comSidebar && <TopBar />}

@@ -20,6 +20,7 @@ import { readPreferences, updatePreferences } from '../lib/preferences'
 import { InstallAnimation } from '../components/SetupAnimations'
 
 import './Configuracoes.css'
+import { GrowthMetricsPreference } from '../components/GrowthMetrics'
 
 const wideLayout = window.matchMedia('(min-width: 940px)')
 function subscribeLayout(callback) {
@@ -243,6 +244,7 @@ export default function Configuracoes() {
 
       {section === 'dados' && (
         <section className="pref-panel">
+          <GrowthMetricsPreference />
           <button type="button" className="study-settings-row"  disabled={pending} onClick={exportNotes}>
             <span><strong>Baixar anotações em Markdown</strong><small>Arquivo .md com todo o seu caderno</small></span>
             <ChevronRight size={17} />
