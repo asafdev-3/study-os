@@ -180,9 +180,12 @@ function StudySession() {
     setAuth((previous) => ({ ...previous, locked: false }))
   }
 
-  const expiredDemo = isDemo(auth.session) && demoExpiry(auth.session) <= Date.now()
-  useEffect(() => { if(expiredDemo){onDemoEnd();void endDemo()} }, [expiredDemo,onDemoEnd])
-  if (auth.session === undefined || expiredDemo) return <TelaCarregando />
+  useEffect(() => {
+    if (!isDemo(auth.session)) return
+    const timeout = window.setTimeout(() => { onDemoEnd(); void endDemo() }, Math.max(0, demoExpiry(auth.session) - Date.now()))
+    return () => window.clearTimeout(timeout)
+  }, [auth.session, onDemoEnd])
+  if (auth.session === undefined) return <TelaCarregando />
 
   return <AppContent key={auth.session?.user.id ?? 'visitante'} sessao={auth.session}
     bloqueado={auth.locked} desbloquear={desbloquear} onDemoEnd={onDemoEnd} />
