@@ -4,7 +4,7 @@ import PromptField from '../components/PromptField'
 import { m as motion } from 'framer-motion'
 import { useStudyReducedMotion, pageSpring, softTransition } from '../lib/motion'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ArrowUp, BookmarkPlus, Check, Copy, BookOpen } from 'lucide-react'
+import { ArrowUp, BookmarkPlus, Check, Copy, BookOpen, Camera } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { KiraAvatar } from '../components/KiraAvatar'
 import { KIRA_DAILY_LIMIT } from '../lib/groq'
@@ -20,6 +20,13 @@ export default function Chat({ userId }) {
   const navigate = useNavigate()
   const [activity, setActivity] = useState(false)
   const [copyStatus, setCopyStatus] = useState(null)
+  const [ocrBusy, setOcrBusy] = useState(false)
+  const [ocrStatus, setOcrStatus] = useState('')
+  const [ocrError, setOcrError] = useState(false)
+  const photoInput = useRef(null)
+  const ocrActive = useRef(false)
+  const mounted = useRef(true)
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const reduced = useStudyReducedMotion()
   const [input, setInput] = useState(() => location.state?.prompt ?? '')
   const { messages, remaining, loading, error, send } = useKira(true, userId ? `studyos:chat:${userId}` : null)
@@ -93,10 +100,41 @@ export default function Chat({ userId }) {
 
   async function submit(event) {
     event.preventDefault()
-    if (!input.trim() || loading) return
+    if (!input.trim() || loading || ocrBusy) return
     follow.current = true
     const draft = input
     if (await send(draft, activity)) setInput((current) => current === draft ? '' : current)
+  }
+
+  async function capturePhoto(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || ocrActive.current) return
+    ocrActive.current = true
+    setOcrBusy(true)
+    setOcrError(false)
+    setOcrStatus('Preparando leitura da foto…')
+    try {
+      const { readPhoto } = await import('../lib/ocr')
+      const text = await readPhoto(file, progress => {
+        if (mounted.current) setOcrStatus('Lendo texto… ' + progress + '%')
+      })
+      if (!mounted.current) return
+      const draft = input.trim()
+      const combined = [draft, text].filter(Boolean).join('\n\n')
+      setInput(combined.slice(0, 1600))
+      setOcrStatus(combined.length > 1600
+        ? 'Texto limitado a 1.600 caracteres. Fotografe em partes para ler o restante.'
+        : 'Texto extraído. Revise e envie para a Kira.')
+    } catch (error) {
+      if (mounted.current) {
+        setOcrError(true)
+        setOcrStatus(error.message === 'Nenhum texto encontrado. Tente uma foto mais nítida.' || error.message === 'Escolha uma foto de até 20 MB.' || error.message === 'Selecione uma imagem válida.' ? error.message : 'Não foi possível ler a foto. Tente novamente com uma imagem nítida.')
+      }
+    } finally {
+      ocrActive.current = false
+      if (mounted.current) setOcrBusy(false)
+    }
   }
 
   async function copyReply(content, index) {
@@ -201,12 +239,19 @@ export default function Chat({ userId }) {
             {error}
           </p>
         )}
+        {ocrStatus && <p role={ocrError ? 'alert' : 'status'} className="study-ocr-status" data-error={ocrError}>{ocrStatus}</p>}
+        <input ref={photoInput} type="file" accept="image/*" capture="environment" hidden onChange={capturePhoto} />
         <div className="study-composer-field">
           <button type="button" className="kira-mode" aria-label="Resolver atividade" title="Resolver atividade"
             aria-pressed={activity} onClick={() => { setActivity(value => !value); field.current?.focus() }}>
             <BookOpen size={19} />
           </button>
+          <button type="button" className="kira-camera" aria-label="Fotografar texto" title="Fotografar texto"
+            disabled={ocrBusy || loading} onClick={() => photoInput.current?.click()}>
+            <Camera size={19} aria-hidden="true" />
+          </button>
           <PromptField
+            readOnly={ocrBusy}
             fieldRef={field}
             aria-label="Mensagem para a Kira"
             value={input}
@@ -222,7 +267,7 @@ export default function Chat({ userId }) {
           <button
             type="submit"
             aria-label="Enviar mensagem"
-            disabled={loading || !input.trim()}
+            disabled={loading || ocrBusy || !input.trim()}
 
           >
             <ArrowUp size={18} aria-hidden="true" />

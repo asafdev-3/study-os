@@ -442,3 +442,14 @@ html body #root .study-enem .enem-practice-hero {
     background:#19293c !important;box-shadow:none;
   }
 }
+
+/* Kira: capture a printed exercise without leaving the conversation. */
+html body #root .study-chat .study-composer .kira-camera {
+  background: transparent; color: #bdc9ce;
+  width: 40px; height: 44px; flex: 0 0 40px;
+}
+html body #root .study-chat .study-composer .kira-camera:active { color: #fff; }
+.study-chat .study-composer .study-ocr-status {
+  color: #c8d5e5; font-size: 12px; line-height: 1.4; padding: 2px 9px 7px;
+}
+.study-chat .study-composer .study-ocr-status[data-error="true"] { color: #fda4af; }

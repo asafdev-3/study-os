@@ -29,3 +29,6 @@ dist-ssr
 native/.expo/
 native/ios/
 native/android/
+
+# Generated local OCR engine assets
+/public/ocr/
