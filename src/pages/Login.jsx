@@ -27,8 +27,9 @@ function authMessage(error, mode) {
   if (message.includes('already registered') || message.includes('already been registered') || message.includes('user already exists')) {
     return 'Este e-mail já tem cadastro. Clique em "Entrar" acima.'
   }
-  if (message.includes('password')) return 'A senha precisa ter pelo menos 8 caracteres.'
+  if (error?.code === 'weak_password' || message.includes('password')) return error?.message || 'A senha não atende aos requisitos de segurança.'
   if (message.includes('email not confirmed')) return 'Confirme seu e-mail pelo link enviado antes de entrar.'
+  if (error?.code === 'over_email_send_rate_limit') return 'Aguarde 60 segundos antes de solicitar outro e-mail. Confira também a caixa de spam.'
   if (message.includes('rate limit') || message.includes('too many requests') || message.includes('email rate limit exceeded')) {
     return 'Limite de envio de e-mails atingido no servidor. Tente entrar com Google ou aguarde alguns minutos.'
   }
@@ -51,6 +52,11 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [confirmationEmail, setConfirmationEmail] = useState('')
+  const [resendAt, setResendAt] = useState(0)
+  const [clock, setClock] = useState(Date.now)
+  useEffect(() => { if (!resendAt) return; const timer = setInterval(() => setClock(Date.now()), 1000); return () => clearInterval(timer) }, [resendAt])
+  const resendSeconds = Math.max(0, Math.ceil((resendAt-clock)/1000))
   const [demoLoading, setDemoLoading] = useState(false)
   const [demoError, setDemoError] = useState('')
   const [erro, setErro] = useState('')
@@ -67,6 +73,7 @@ export default function Login() {
 
   async function handleSubmit(event) {
     event.preventDefault()
+    if (loading || demoLoading) return
     setErro('')
     setNotice('')
     const normalizedEmail = email.trim().toLowerCase()
@@ -102,12 +109,8 @@ export default function Login() {
         }
 
         if (!data.session) {
-          // Tenta login imediato caso a confirmação de e-mail tenha sido desligada no painel
-          const signInFallback = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
-          if (signInFallback.data?.session) {
-            navigate('/onboarding', { replace: true })
-            return
-          }
+          setConfirmationEmail(normalizedEmail)
+          setClock(Date.now()); setResendAt(Date.now()+60000)
           setNotice('Conta criada! Abra seu e-mail e clique no link de confirmação para ativar o acesso.')
           return
         }
@@ -119,10 +122,26 @@ export default function Login() {
       }
     } catch (error) {
       console.error('[StudyOS Auth]', error)
+      if (error?.code === 'email_not_confirmed' || error?.code === 'over_email_send_rate_limit') {
+        setConfirmationEmail(normalizedEmail)
+        if (error.code === 'over_email_send_rate_limit') { setClock(Date.now()); setResendAt(Date.now()+60000) }
+      }
       setErro(authMessage(error, mode))
     } finally {
       setLoading(false)
     }
+  }
+
+  async function resendConfirmation() {
+    if (loading || resendSeconds || !confirmationEmail) return
+    setLoading(true); setErro(''); setNotice('')
+    setClock(Date.now()); setResendAt(Date.now()+60000)
+    try {
+      const { error } = await supabase.auth.resend({type:'signup', email:confirmationEmail, options:{emailRedirectTo:window.location.origin+'/onboarding'}})
+      if (error) throw error
+      setNotice('Confira sua caixa de entrada e spam. Após confirmar, entre com sua senha.')
+    } catch (error) { setErro(authMessage(error, 'signup')) }
+    finally { setLoading(false) }
   }
 
   async function handleGoogle() {
@@ -184,7 +203,7 @@ export default function Login() {
         <button className="study-auth-demo" type="button" onClick={handleDemo} disabled={loading || demoLoading}>
           {demoLoading ? 'Preparando demonstração…' : 'Experimentar como visitante'} <ArrowRight size={16} aria-hidden="true" />
         </button>
-        <p className="study-demo-caption">45 minutos · uma sessão por vez · sem cadastro</p>
+        <p className="study-demo-caption">45 minutos · sem cadastro</p>
         {demoError && <p className="study-auth-feedback is-error study-demo-error" role="alert">{demoError}</p>}
 
         <div className="study-auth-switch" data-creating={creating} role="group" aria-label="Acesso à conta">
@@ -212,7 +231,7 @@ export default function Login() {
             </div>
             <span className="study-auth-input-wrap">
               <LockKeyhole size={18} aria-hidden="true" />
-              <input type={showPassword ? 'text' : 'password'} autoComplete={creating ? 'off' : 'current-password'} name="password" id="auth-password" placeholder={creating ? 'Mínimo de 8 caracteres' : 'Sua senha'} value={password} onChange={event => setPassword(event.target.value)} required />
+              <input type={showPassword ? 'text' : 'password'} autoComplete={creating ? 'new-password' : 'current-password'} name="password" id="auth-password" placeholder={creating ? 'Mínimo de 8 caracteres' : 'Sua senha'} value={password} onChange={event => setPassword(event.target.value)} required />
               <button className="study-auth-reveal" type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword(value => !value)}>
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -232,6 +251,7 @@ export default function Login() {
 
           {erro && <p className="study-auth-feedback is-error" role="alert">{erro}</p>}
           {notice && <p className="study-auth-feedback is-notice" role="status">{notice}</p>}
+          {confirmationEmail && confirmationEmail === email.trim().toLowerCase() && <button type="button" className="study-auth-google" disabled={loading || resendSeconds > 0} onClick={resendConfirmation}>{resendSeconds > 0 ? `Reenviar confirmação em ${resendSeconds}s` : 'Reenviar e-mail de confirmação'}</button>}
 
           <button className="study-auth-submit" type="submit" disabled={loading || demoLoading}>
             {loading ? 'Aguarde…' : creating ? 'Criar conta' : 'Entrar'}
