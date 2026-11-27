@@ -22,6 +22,7 @@ import SceneBackdrop from './components/SceneBackdrop'
 import InstallPwaModal from './components/InstallPwaModal'
 import DemoSession from './components/DemoSession'
 import GrowthMetrics from './components/GrowthMetrics'
+import StudyPrivacyChoice from './components/StudyPrivacyChoice'
 import { isDemo, demoExpiry, endDemo } from './lib/demo'
 
 const Admin = lazy(() => import('./pages/Admin'))
@@ -123,6 +124,7 @@ function AppContent({ sessao, bloqueado, desbloquear, onDemoEnd }) {
     <>
       {scenic && scene !== 'splash' && <SceneBackdrop scene={scene} />}
       {!adminRoute && <GrowthMetrics path={location.pathname} mode={isDemo(sessao) ? 'demo' : sessao ? 'account' : 'visitor'} />}
+      {!!userId && !bloqueado && !isDemo(sessao) && !adminRoute && <StudyPrivacyChoice userId={userId} /> }
       {comSidebar && <InstallPwaModal auto={!isDemo(sessao) && location.pathname === '/dashboard'} />}
       {isDemo(sessao) && <DemoSession session={sessao} onEnd={onDemoEnd} />}
       {comSidebar && <TopBar />}
@@ -178,9 +180,12 @@ function StudySession() {
     setAuth((previous) => ({ ...previous, locked: false }))
   }
 
-  const expiredDemo = isDemo(auth.session) && demoExpiry(auth.session) <= Date.now()
-  useEffect(() => { if(expiredDemo){onDemoEnd();void endDemo()} }, [expiredDemo,onDemoEnd])
-  if (auth.session === undefined || expiredDemo) return <TelaCarregando />
+  useEffect(() => {
+    if (!isDemo(auth.session)) return
+    const timeout = window.setTimeout(() => { onDemoEnd(); void endDemo() }, Math.max(0, demoExpiry(auth.session) - Date.now()))
+    return () => window.clearTimeout(timeout)
+  }, [auth.session, onDemoEnd])
+  if (auth.session === undefined) return <TelaCarregando />
 
   return <AppContent key={auth.session?.user.id ?? 'visitante'} sessao={auth.session}
     bloqueado={auth.locked} desbloquear={desbloquear} onDemoEnd={onDemoEnd} />
